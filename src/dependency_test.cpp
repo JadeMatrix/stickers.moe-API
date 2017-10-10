@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "common/formatting.hpp"
 #include "common/json.hpp"
 #include "common/postgres.hpp"
 #include "common/redis.hpp"
@@ -39,7 +40,7 @@ int main( int argc, char* argv[] )
         redox::Redox redox;
         if( !redox.connect( "localhost", 6379 ) )
         {
-            std::cerr << "could not connect to Redis server" << std::endl;
+            ff::writeln( std::cerr, "could not connect to Redis server" );
             return 1;
         }
         
@@ -55,11 +56,11 @@ int main( int argc, char* argv[] )
         
         redox.disconnect();
         
-        std::cout << message << std::endl;
+        ff::writeln( std::cout, message );
     }
     catch( const std::exception &e )
     {
-        std::cerr << e.what() << std::endl;
+        ff::writeln( std::cerr, e.what() );
         return 1;
     }
     
