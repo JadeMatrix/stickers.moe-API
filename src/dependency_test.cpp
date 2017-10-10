@@ -1,15 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include <pqxx/pqxx>
-#include <json.hpp>
-#include <redox.hpp>
-
-
-namespace nlj = nlohmann;
-
-
-#define PSQL( ... ) #__VA_ARGS__
+#include "common/json.hpp"
+#include "common/postgres.hpp"
+#include "common/redis.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
