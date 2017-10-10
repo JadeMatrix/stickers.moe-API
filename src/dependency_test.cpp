@@ -2,6 +2,10 @@
 #include <string>
 
 #include <pqxx/pqxx>
+#include <json.hpp>
+
+
+namespace nlj = nlohmann;
 
 
 #define PSQL( ... ) #__VA_ARGS__
@@ -17,23 +21,30 @@ int main( int argc, char* argv[] )
         pqxx::connection connection(
             "user=postgres"
         );
-        pqxx::work w( connection );
+        pqxx::work transaction( connection );
         
-        std::string test_string = "Robert'); DROP TABLE Students;--";
+        nlj::json test_json = {
+            { "foo", true },
+            { "bar", { 1234123, "Hello World", true, 3.14 } }
+        };
+        
+        connection.prepare(
+            "test_query",
+            PSQL(
+                SELECT $1::JSONB->'bar'->>1 AS test_json;
+            )
+        );
+        
+        pqxx::result result = transaction.prepared( "test_query" )(
+            test_json.dump()
+        ).exec();
+        
+        transaction.commit();
         
         std::cout
-            <<   "    raw string: "
-            << test_string
-            << "\nescaped string: "
-            << connection.esc( test_string )
-            << "\n"
+            << result[ 0 ][ "test_json" ].as< std::string >()
+            << std::endl
         ;
-        
-        pqxx::result result = w.exec( PSQL(
-            SELECT 1
-        ) );
-        w.commit();
-        std::cout << result[ 0 ][ 0 ].as< int >() << std::endl;
     }
     catch( const std::exception &e )
     {
