@@ -3,6 +3,7 @@
 
 #include <pqxx/pqxx>
 #include <json.hpp>
+#include <redox.hpp>
 
 
 namespace nlj = nlohmann;
@@ -31,7 +32,7 @@ int main( int argc, char* argv[] )
         connection.prepare(
             "test_query",
             PSQL(
-                SELECT $1::JSONB->'bar'->>1 AS test_json;
+                SELECT $1::JSONB->'bar' AS test_json;
             )
         );
         
@@ -41,10 +42,26 @@ int main( int argc, char* argv[] )
         
         transaction.commit();
         
-        std::cout
-            << result[ 0 ][ "test_json" ].as< std::string >()
-            << std::endl
-        ;
+        redox::Redox redox;
+        if( !redox.connect( "localhost", 6379 ) )
+        {
+            std::cerr << "could not connect to Redis server" << std::endl;
+            return 1;
+        }
+        
+        redox.set(
+            "test_json",
+            result[ 0 ][ "test_json" ].as< std::string >()
+        );
+        
+        test_json = nlj::json::parse(
+            redox.get( "test_json" )
+        );
+        std::string message = test_json[ 1 ];
+        
+        redox.disconnect();
+        
+        std::cout << message << std::endl;
     }
     catch( const std::exception &e )
     {
