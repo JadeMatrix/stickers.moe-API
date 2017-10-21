@@ -6,6 +6,7 @@
 #include <string>
 
 #include "bigid.hpp"
+#include "datetime.hpp"
 #include "exception.hpp"
 #include "hashing.hpp"
 
@@ -30,8 +31,8 @@ namespace stickers
     struct user_info
     {
         password    password;
-        // created
-        // revised
+        datetime    created;
+        datetime    revised;
         std::string display_name;
         std::string real_name;
         // sha256      avatar_hash;
