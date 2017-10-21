@@ -17,6 +17,10 @@ find_library( FASTFORMAT_LIBRARY FastFormat )
 add_executable(
     server
     src/server/main.cpp
+    src/common/config.cpp
+    src/common/user.cpp
+    src/common/bigid.cpp
+    src/common/postgres.cpp
 )
 target_link_libraries(
     server
