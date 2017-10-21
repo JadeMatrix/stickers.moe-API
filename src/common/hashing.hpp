@@ -3,6 +3,9 @@
 #define STICKERS_MOE_COMMON_HASHING_HPP
 
 
+#include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
+
 #include <string>
 
 

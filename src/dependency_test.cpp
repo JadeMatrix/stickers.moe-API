@@ -2,12 +2,10 @@
 #include <string>
 
 #include "common/formatting.hpp"
+#include "common/hashing.hpp"
 #include "common/json.hpp"
 #include "common/postgres.hpp"
 #include "common/redis.hpp"
-
-#include <cryptopp/sha.h>
-#include <cryptopp/hex.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
