@@ -12,10 +12,16 @@
 
 int main( int argc, char* argv[] )
 {
+    if( argc < 2 )
+    {
+        ff::writeln( std::cerr, "usage: ", argv[ 0 ], " <dbname>" );
+        return -1;
+    }
+    
     try
     {
         pqxx::connection connection(
-            "user=postgres"
+            "user=postgres dbname=" + std::string( argv[ 1 ] )
         );
         pqxx::work transaction( connection );
         
