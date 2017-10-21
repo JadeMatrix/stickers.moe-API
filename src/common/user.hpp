@@ -9,6 +9,7 @@
 #include "datetime.hpp"
 #include "exception.hpp"
 #include "hashing.hpp"
+#include "postgres.hpp"
 
 
 namespace stickers
@@ -73,6 +74,28 @@ namespace stickers
         no_such_user( const bigid& );
         virtual const char* what() const noexcept;
     };
+}
+
+
+// Template specialization of `pqxx::field::to<>(&)` for
+// `stickers::password_type`, which also allows use of `pqxx::field::as<>(&)`
+template<> inline bool pqxx::field::to< stickers::password_type >(
+    stickers::password_type& pt
+) const
+{
+    if ( is_null() )
+        return false;
+    else
+    {
+        std::string s = as< std::string >();
+        if( s == "bcrypt" )
+            pt = stickers::BCRYPT;
+        else if( s == "invalid" )
+            pt = stickers::INVALID;
+        else
+            return false;
+        return true;
+    }
 }
 
 

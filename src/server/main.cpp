@@ -70,6 +70,13 @@ int main( int argc, char* argv[] )
             // { "avatar_hash", info.avatar_hash },
             { "email", info.email }
         };
+        switch( info.password.type )
+        {
+        case stickers::BCRYPT:
+            user[ "password" ][ "type" ] = "bcrypt";
+        default:
+            user[ "password" ][ "type" ] = nullptr;
+        }
         if( info.real_name == "" )
             user[ "real_name" ] = nullptr;
         // if( info.avatar_hash == "" )

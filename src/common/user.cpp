@@ -48,15 +48,8 @@ namespace stickers
         if( result.size() < 1 )
             throw no_such_user( id );
         
-        // TODO: `pqxx::field::as< stickers::password_type >()` specialization
-        password_type found_pass_type = UNKNOWN;
-        if( result[ 0 ][ "password_type" ].as< std::string >() == "bcrypt" )
-            found_pass_type = BCRYPT;
-        else if( result[ 0 ][ "password_type" ].as< std::string >() == "invalid" )
-            found_pass_type = INVALID;
-        
         password found_pass = {
-            found_pass_type,
+            result[ 0 ][ "password_type" ].as< password_type >( UNKNOWN ),
             pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
             pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
             result[ 0 ][ "password_factor" ].as< int >()
