@@ -3,11 +3,6 @@
 #include "redis.hpp"
 #include "user.hpp"
 
-// DEBUG:
-#include <iostream>
-#include "formatting.hpp"
-#include <vector>
-
 
 // User management -------------------------------------------------------------
 
@@ -30,7 +25,10 @@ namespace stickers
             PSQL(
                 SELECT
                     user_id,
-                    password,
+                    ( password ).type AS password_type,
+                    ( password ).hash AS password_hash,
+                    ( password ).salt AS password_salt,
+                    ( password ).factor AS password_factor,
                     created,
                     revised,
                     display_name,
@@ -50,25 +48,18 @@ namespace stickers
         if( result.size() < 1 )
             throw no_such_user( id );
         
-        ff::writeln(
-            std::cout,
-            result[ 0 ][ "password" ].c_str()
-        );
-        
-        auto p = split_pg_field( result[ 0 ][ "password" ] );
-        
-        // std::string pass_type = result[ 0 ][ "password" ][ "type" ].as< std::string >();
+        // TODO: `pqxx::field::as< stickers::password_type >()` specialization
         password_type found_pass_type = UNKNOWN;
-        if( p[ 0 ] == "bcrypt" )
+        if( result[ 0 ][ "password_type" ].as< std::string >() == "bcrypt" )
             found_pass_type = BCRYPT;
-        else if( p[ 0 ] == "invalid" )
+        else if( result[ 0 ][ "password_type" ].as< std::string >() == "invalid" )
             found_pass_type = INVALID;
         
         password found_pass = {
             found_pass_type,
-            p[ 1 ],
-            p[ 2 ],
-            std::stoi( p[ 3 ] )
+            pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
+            pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
+            result[ 0 ][ "password_factor" ].as< int >()
         };
         
         user_info found_info = {
