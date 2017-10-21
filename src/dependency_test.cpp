@@ -6,6 +6,9 @@
 #include "common/postgres.hpp"
 #include "common/redis.hpp"
 
+#include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,11 +66,30 @@ int main( int argc, char* argv[] )
         redox.disconnect();
         
         ff::writeln( std::cout, message );
+        
+        CryptoPP::SecByteBlock abDigest( CryptoPP::SHA256::DIGESTSIZE );
+        CryptoPP::SHA256().CalculateDigest(
+            abDigest.begin(),
+            ( byte* )message.c_str(),
+            message.size()
+        );
+        std::string message_hash;
+        CryptoPP::HexEncoder( new CryptoPP::StringSink( message_hash ) ).Put(
+            abDigest.begin(),
+            abDigest.size()
+        );
+        
+        ff::writeln( std::cout, message_hash );
     }
     catch( const std::exception &e )
     {
         ff::writeln( std::cerr, e.what() );
         return 1;
+    }
+    catch( ... )
+    {
+        ff::writeln( std::cerr, "uncaught non-std::exception in main()" );
+        return 2;
     }
     
     return 0;

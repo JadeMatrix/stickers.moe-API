@@ -10,9 +10,10 @@ project(
 )
 
 
-find_library( LIBPQXX_LIBRARY    pqxx       )
+find_library( PQXX_LIBRARY       pqxx       )
 find_library( REDOX_LIBRARY      redox      )
 find_library( FASTFORMAT_LIBRARY FastFormat )
+find_library( CRYPTOPP_LIBRARY   cryptopp   )
 
 add_executable(
     server
@@ -23,7 +24,20 @@ add_executable(
 )
 target_link_libraries(
     server
-    ${LIBPQXX_LIBRARY}
+    ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
+    ${CRYPTOPP_LIBRARY}
+)
+
+add_executable(
+    dependency_test
+    src/dependency_test.cpp
+)
+target_link_libraries(
+    dependency_test
+    ${PQXX_LIBRARY}
+    ${REDOX_LIBRARY}
+    ${FASTFORMAT_LIBRARY}
+    ${CRYPTOPP_LIBRARY}
 )
