@@ -15,6 +15,18 @@ namespace stickers
     void  set_config( const nlj::json  & );
     void  set_config( const std::string& );
     // void open_config( const std::string& );
+    
+    enum log_level_type
+    {
+        SILENT   = 00,
+        ERRORS   = 10,
+        WARNINGS = 20,
+        NORMAL   = 30,
+        VERBOSE  = 40,
+        DEBUG    = 50
+    };
+    
+    log_level_type log_level();
 }
 
 
