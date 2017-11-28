@@ -5,12 +5,27 @@
 
 #include <show.hpp>
 
+#include <list>
+#include <thread>
+
+
 // DEVEL:
 #include "../common/user.hpp"
 
 
-namespace stickers
+namespace
 {
+    const show::headers_t::value_type server_header = {
+        "Server",
+        {
+            show::version.name
+            + " v"
+            + show::version.string
+        }
+    };
+    
+    std::list< std::thread > workers;
+    
     void handle_request( show::request&& request )
     {
         if( !request.unknown_content_length )
@@ -54,11 +69,7 @@ namespace stickers
             show::HTTP_1_0,
             { 200, "OK" },
             {
-                { "Server", {
-                    show::version.name
-                    + " v"
-                    + show::version.string
-                } },
+                server_header,
                 { "Content-Type", { "application/json" } },
                 { "Content-Length", {
                     std::to_string( user_json.size() )
@@ -69,35 +80,68 @@ namespace stickers
         response.sputn( user_json.c_str(), user_json.size() );
     }
     
-    
-    void run_server()
+    void handle_connection( show::connection* connection )
     {
-        show::server server(
-            stickers::config()[ "server" ][ "host"    ],
-            stickers::config()[ "server" ][ "port"    ],
-            stickers::config()[ "server" ][ "timeout" ]
+        connection -> timeout(
+            stickers::config()[ "server" ][ "wait_for_connection" ]
         );
         
-        // DEVEL:
         while( true )
             try
             {
-                show::connection connection( server.serve() );
-                
-                while( true )
-                    try
-                    {
-                        stickers::handle_request( show::request( connection ) );
-                    }
-                    catch( show::client_disconnected& cd )
-                    {
-                        break;
-                    }
-                    catch( show::connection_timeout& ct )
-                    {
-                        break;
-                    }
+                handle_request( show::request( *connection ) );
+            }
+            catch( show::client_disconnected& cd )
+            {
+                break;
+            }
+            catch( show::connection_timeout& ct )
+            {
+                break;
+            }
+            catch( std::exception& e )
+            {
+                std::cerr
+                    << "uncaught exception in handle_connection(): "
+                    << e.what()
+                    << std::endl
+                ;
+            }
+    }
+}
+
+
+namespace stickers
+{
+    void run_server()
+    {
+        show::server server(
+            stickers::config()[ "server" ][ "host" ],
+            stickers::config()[ "server" ][ "port" ],
+            stickers::config()[ "server" ][ "wait_for_connection" ]
+        );
+        
+        while( true )
+        {
+            try
+            {
+                workers.push_back( std::thread(
+                    handle_connection,
+                    new show::connection( server.serve() )
+                ) );
             }
             catch( show::connection_timeout& ct ) {}
+            
+            // Clean up any finished workers
+            auto iter = workers.begin();
+            while( iter != workers.end() )
+                if( iter -> joinable() )
+                {
+                    iter -> join();
+                    workers.erase( iter++ );
+                }
+                else
+                    ++iter;
+        }
     }
 }
