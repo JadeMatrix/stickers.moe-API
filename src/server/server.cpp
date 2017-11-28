@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 #include "../common/config.hpp"
-#include "../common/formatting.hpp"
+#include "../common/logging.hpp"
 #include "../common/json.hpp"
 
 #include <show.hpp>
@@ -89,14 +89,13 @@ namespace
         std::stringstream worker_id;
         worker_id << std::this_thread::get_id();
         
-        if( stickers::log_level() >= stickers::VERBOSE )
-            ff::writeln(
-                std::cout,
-                "handling connection from ",
-                connection -> client_address,
-                " with worker ",
-                worker_id.str()
-            );
+        STICKERS_LOG(
+            VERBOSE,
+            "handling connection from ",
+            connection -> client_address,
+            " with worker ",
+            worker_id.str()
+        );
         
         connection -> timeout(
             stickers::config()[ "server" ][ "wait_for_connection" ]
@@ -109,34 +108,31 @@ namespace
             }
             catch( show::client_disconnected& cd )
             {
-                if( stickers::log_level() >= stickers::VERBOSE )
-                    ff::writeln(
-                        std::cout,
-                        "client ",
-                        connection -> client_address,
-                        " disconnected, closing connection"
-                    );
+                STICKERS_LOG(
+                    VERBOSE,
+                    "client ",
+                    connection -> client_address,
+                    " disconnected, closing connection"
+                );
                 break;
             }
             catch( show::connection_timeout& ct )
             {
-                if( stickers::log_level() >= stickers::VERBOSE )
-                    ff::writeln(
-                        std::cout,
-                        "timed out waiting on client ",
-                        connection -> client_address,
-                        ", closing connection"
-                    );
+                STICKERS_LOG(
+                    VERBOSE,
+                    "timed out waiting on client ",
+                    connection -> client_address,
+                    ", closing connection"
+                );
                 break;
             }
             catch( std::exception& e )
             {
-                if( stickers::log_level() >= stickers::ERRORS )
-                    ff::writeln(
-                        std::cerr,
-                        "uncaught exception in handle_connection(): ",
-                        e.what()
-                    );
+                STICKERS_LOG(
+                    ERRORS,
+                    "uncaught exception in handle_connection(): ",
+                    e.what()
+                );
                 break;
             }
         
@@ -147,12 +143,11 @@ namespace
             --worker_count;
         }
         
-        if( stickers::log_level() >= stickers::VERBOSE )
-            ff::writeln(
-                std::cout,
-                "cleaning up worker ",
-                worker_id.str()
-            );
+        STICKERS_LOG(
+            VERBOSE,
+            "cleaning up worker ",
+            worker_id.str()
+        );
     }
 }
 
@@ -184,18 +179,17 @@ namespace stickers
             }
             catch( show::connection_timeout& ct )
             {
-                if( stickers::log_level() >= stickers::VERBOSE )
-                    ff::writeln(
-                        std::cout,
-                        "timed out waiting for connection, looping..."
-                    );
+                STICKERS_LOG(
+                    VERBOSE,
+                    "timed out waiting for connection, looping..."
+                );
             }
             
             if( stickers::log_level() >= stickers::VERBOSE )
             {
                 std::lock_guard< std::mutex > guard( worker_count_mutex );
-                ff::writeln(
-                    std::cout,
+                STICKERS_LOG(
+                    VERBOSE,
                     "currently serving ",
                     worker_count,
                     " connections"

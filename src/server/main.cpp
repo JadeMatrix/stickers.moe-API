@@ -3,7 +3,7 @@
 
 #include "server.hpp"
 #include "../common/config.hpp"
-#include "../common/formatting.hpp"
+#include "../common/logging.hpp"
 #include "../common/json.hpp"
 
 
@@ -14,13 +14,12 @@ int main( int argc, char* argv[] )
 {
     if( argc < 2 )
     {
-        if( stickers::log_level() >= stickers::ERRORS )
-            ff::writeln(
-                std::cerr,
-                "usage: ",
-                argv[ 0 ],
-                " config.json"
-            );
+        STICKERS_LOG(
+            ERRORS,
+            "usage: ",
+            argv[ 0 ],
+            " config.json"
+        );
         return 1;
     }
     
@@ -34,12 +33,11 @@ int main( int argc, char* argv[] )
                 config_file >> config;
             else
             {
-                if( stickers::log_level() >= stickers::ERRORS )
-                    ff::writeln(
-                        std::cerr,
-                        "could not open config file ",
-                        argv[ 1 ]
-                    );
+                STICKERS_LOG(
+                    ERRORS,
+                    "could not open config file ",
+                    argv[ 1 ]
+                );
                 return 2;
             }
             
@@ -47,23 +45,21 @@ int main( int argc, char* argv[] )
         }
         
         // DEBUG:
-        if( stickers::log_level() >= stickers::DEBUG )
-            ff::writeln(
-                std::cout,
-                "config: ",
-                stickers::config().dump()
-            );
+        STICKERS_LOG(
+            DEBUG,
+            "config: ",
+            stickers::config().dump()
+        );
         
         stickers::run_server();
     }
     catch( const std::exception &e )
     {
-        if( stickers::log_level() >= stickers::ERRORS )
-            ff::writeln(
-                std::cerr,
-                "uncaught exception in main(): ",
-                e.what()
-            );
+        STICKERS_LOG(
+            ERRORS,
+            "uncaught exception in main(): ",
+            e.what()
+        );
         return -1;
     }
     
