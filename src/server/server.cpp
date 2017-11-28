@@ -1,11 +1,13 @@
 #include "server.hpp"
 
 #include "../common/config.hpp"
+#include "../common/formatting.hpp"
 #include "../common/json.hpp"
 
 #include <show.hpp>
 
 #include <list>
+#include <sstream>
 #include <thread>
 
 
@@ -24,7 +26,8 @@ namespace
         }
     };
     
-    std::list< std::thread > workers;
+    std::mutex worker_count_mutex;
+    long long  worker_count = 0;
     
     void handle_request( show::request&& request )
     {
@@ -82,6 +85,19 @@ namespace
     
     void handle_connection( show::connection* connection )
     {
+        // Really?
+        std::stringstream worker_id;
+        worker_id << std::this_thread::get_id();
+        
+        if( stickers::log_level() >= stickers::VERBOSE )
+            ff::writeln(
+                std::cout,
+                "handling connection from ",
+                connection -> client_address,
+                " with worker ",
+                worker_id.str()
+            );
+        
         connection -> timeout(
             stickers::config()[ "server" ][ "wait_for_connection" ]
         );
@@ -93,20 +109,50 @@ namespace
             }
             catch( show::client_disconnected& cd )
             {
+                if( stickers::log_level() >= stickers::VERBOSE )
+                    ff::writeln(
+                        std::cout,
+                        "client ",
+                        connection -> client_address,
+                        " disconnected, closing connection"
+                    );
                 break;
             }
             catch( show::connection_timeout& ct )
             {
+                if( stickers::log_level() >= stickers::VERBOSE )
+                    ff::writeln(
+                        std::cout,
+                        "timed out waiting on client ",
+                        connection -> client_address,
+                        ", closing connection"
+                    );
                 break;
             }
             catch( std::exception& e )
             {
-                std::cerr
-                    << "uncaught exception in handle_connection(): "
-                    << e.what()
-                    << std::endl
-                ;
+                if( stickers::log_level() >= stickers::ERRORS )
+                    ff::writeln(
+                        std::cerr,
+                        "uncaught exception in handle_connection(): ",
+                        e.what()
+                    );
+                break;
             }
+        
+        delete connection;
+        
+        {
+            std::lock_guard< std::mutex > guard( worker_count_mutex );
+            --worker_count;
+        }
+        
+        if( stickers::log_level() >= stickers::VERBOSE )
+            ff::writeln(
+                std::cout,
+                "cleaning up worker ",
+                worker_id.str()
+            );
     }
 }
 
@@ -125,23 +171,36 @@ namespace stickers
         {
             try
             {
-                workers.push_back( std::thread(
+                auto connection = new show::connection( server.serve() );
+                
+                std::lock_guard< std::mutex > guard( worker_count_mutex );
+                ++worker_count;
+                
+                std::thread worker(
                     handle_connection,
-                    new show::connection( server.serve() )
-                ) );
+                    connection
+                );
+                worker.detach();
             }
-            catch( show::connection_timeout& ct ) {}
+            catch( show::connection_timeout& ct )
+            {
+                if( stickers::log_level() >= stickers::VERBOSE )
+                    ff::writeln(
+                        std::cout,
+                        "timed out waiting for connection, looping..."
+                    );
+            }
             
-            // Clean up any finished workers
-            auto iter = workers.begin();
-            while( iter != workers.end() )
-                if( iter -> joinable() )
-                {
-                    iter -> join();
-                    workers.erase( iter++ );
-                }
-                else
-                    ++iter;
+            if( stickers::log_level() >= stickers::VERBOSE )
+            {
+                std::lock_guard< std::mutex > guard( worker_count_mutex );
+                ff::writeln(
+                    std::cout,
+                    "currently serving ",
+                    worker_count,
+                    " connections"
+                );
+            }
         }
     }
 }
