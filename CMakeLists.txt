@@ -18,6 +18,7 @@ find_library( CRYPTOPP_LIBRARY   cryptopp   )
 add_executable(
     server
     src/server/main.cpp
+    src/server/server.cpp
     src/common/config.cpp
     src/common/user.cpp
     src/common/bigid.cpp
