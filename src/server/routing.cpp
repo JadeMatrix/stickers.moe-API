@@ -21,23 +21,27 @@ namespace stickers
                 {
                     if( request.method == "GET" )
                     {
-                        handlers::get_user( request );
-                        return;
+                        error_code = handlers::get_user( request );
+                        if( error_code.code < 300 )
+                            return;
                     }
                     else if( request.method == "POST" )
                     {
-                        handlers::create_user( request );
-                        return;
+                        error_code = handlers::create_user( request );
+                        if( error_code.code < 300 )
+                            return;
                     }
                     else if( request.method == "PUT" )
                     {
-                        handlers::edit_user( request );
-                        return;
+                        error_code = handlers::edit_user( request );
+                        if( error_code.code < 300 )
+                            return;
                     }
                     else if( request.method == "DELETE" )
                     {
-                        handlers::delete_user( request );
-                        return;
+                        error_code = handlers::delete_user( request );
+                        if( error_code.code < 300 )
+                            return;
                     }
                     else
                         error_code = { 405, "Method Not Allowed" };

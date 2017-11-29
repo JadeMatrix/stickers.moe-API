@@ -8,33 +8,9 @@
 #include "../common/user.hpp"
 
 
-namespace
-{
-    void send_not_implemented( show::request& request )
-    {
-        std::string error_json = "null";
-        
-        show::response response(
-            request,
-            show::HTTP_1_1,
-            { 501, "Not Implemented" },
-            {
-                stickers::server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( error_json.size() )
-                } }
-            }
-        );
-        
-        response.sputn( error_json.c_str(), error_json.size() );
-    }
-}
-
-
 namespace stickers
 {
-    void handlers::get_user( show::request& request )
+    show::response_code handlers::get_user( show::request& request )
     {
         // TODO: get user with specified ID
         
@@ -85,21 +61,23 @@ namespace stickers
         );
         
         response.sputn( user_json.c_str(), user_json.size() );
+        
+        return { 200, "OK" };
     }
     
-    void handlers::create_user( show::request& request )
+    show::response_code handlers::create_user( show::request& request )
     {
-        send_not_implemented( request );
+        return { 500, "Not Implemented" };
     }
     
-    void handlers::edit_user( show::request& request )
+    show::response_code handlers::edit_user( show::request& request )
     {
-        send_not_implemented( request );
+        return { 500, "Not Implemented" };
     }
     
-    void handlers::delete_user( show::request& request )
+    show::response_code handlers::delete_user( show::request& request )
     {
-        send_not_implemented( request );
+        return { 500, "Not Implemented" };
     }
     
 }

@@ -10,10 +10,10 @@ namespace stickers
 {
     namespace handlers
     {
-        void    get_user( show::request& );
-        void create_user( show::request& );
-        void   edit_user( show::request& );
-        void delete_user( show::request& );
+        show::response_code    get_user( show::request& );
+        show::response_code create_user( show::request& );
+        show::response_code   edit_user( show::request& );
+        show::response_code delete_user( show::request& );
     }
 }
 
