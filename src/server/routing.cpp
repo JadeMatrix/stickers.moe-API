@@ -20,29 +20,13 @@ namespace stickers
                 if( request.path[ 0 ] == "user" )
                 {
                     if( request.method == "GET" )
-                    {
                         error_code = handlers::get_user( request );
-                        if( error_code.code < 300 )
-                            return;
-                    }
                     else if( request.method == "POST" )
-                    {
                         error_code = handlers::create_user( request );
-                        if( error_code.code < 300 )
-                            return;
-                    }
                     else if( request.method == "PUT" )
-                    {
                         error_code = handlers::edit_user( request );
-                        if( error_code.code < 300 )
-                            return;
-                    }
                     else if( request.method == "DELETE" )
-                    {
                         error_code = handlers::delete_user( request );
-                        if( error_code.code < 300 )
-                            return;
-                    }
                     else
                         error_code = { 405, "Method Not Allowed" };
                 }
@@ -51,9 +35,6 @@ namespace stickers
             }
             else
                 error_code = { 404, "Not Found" };
-            
-            if( !request.unknown_content_length )
-                while( !request.eof() ) request.sbumpc();
         }
         catch( const show::client_disconnected& cd )
         {
@@ -80,6 +61,12 @@ namespace stickers
                 "uncaught non-std::exception in route_request(show::request&)"
             );
         }
+        
+        if( !request.unknown_content_length )
+            while( !request.eof() ) request.sbumpc();
+        
+        if( error_code.code < 300 )
+            return;
         
         std::string error_json = "null";
         
