@@ -19,6 +19,7 @@ add_executable(
     server
     src/server/main.cpp
     src/server/server.cpp
+    src/server/routing.cpp
     src/common/config.cpp
     src/common/user.cpp
     src/common/bigid.cpp
