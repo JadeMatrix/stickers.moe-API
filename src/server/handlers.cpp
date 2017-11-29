@@ -1,6 +1,7 @@
 #include "handlers.hpp"
 
 #include "routing.hpp"
+#include "../common/logging.hpp"
 
 // DEVEL:
 #include "../common/config.hpp"
@@ -12,57 +13,75 @@ namespace stickers
 {
     show::response_code handlers::get_user( show::request& request )
     {
-        // TODO: get user with specified ID
+        if( request.path.size() > 2 )
+            return { 404, "Not Found" };
         
-        user_info info = load_user(
-            BIGID_MIN
-        );
-        nlj::json user = {
-            { "user_id", ( long long )( BIGID_MIN ) },
-            { "password", {
-                // { "type",   info.password.type   },
-                { "hash",   info.password.hash   },
-                { "salt",   info.password.salt   },
-                { "factor", info.password.factor },
-            } },
-            { "created", info.created },
-            { "revised", info.revised },
-            { "display_name", info.display_name },
-            { "real_name", info.real_name },
-            // { "avatar_hash", info.avatar_hash },
-            { "email", info.email }
-        };
-        switch( info.password.type )
+        stickers::bigid user_id( BIGID_MIN );
+        
+        try
         {
-        case BCRYPT:
-            user[ "password" ][ "type" ] = "bcrypt";
-        default:
-            user[ "password" ][ "type" ] = nullptr;
+            user_id = std::stoll( request.path[ 1 ] );
         }
-        if( info.real_name == "" )
-            user[ "real_name" ] = nullptr;
-        // if( info.avatar_hash == "" )
-        //     user[ "avatar_hash" ] = nullptr;
-        // user[ "user_id" ] = ( long long )( BIGID_MIN );
+        catch( const std::exception& e )
+        {
+            return { 404, "Not Found" };
+        }
         
-        std::string user_json = user.dump();
-        
-        show::response response(
-            request,
-            show::HTTP_1_1,
-            { 200, "OK" },
+        try
+        {
+            user_info info = load_user( user_id );
+            
+            nlj::json user = {
+                { "user_id", ( long long )( BIGID_MIN ) },
+                { "password", {
+                    // { "type",   info.password.type   },
+                    { "hash",   info.password.hash   },
+                    { "salt",   info.password.salt   },
+                    { "factor", info.password.factor },
+                } },
+                { "created", info.created },
+                { "revised", info.revised },
+                { "display_name", info.display_name },
+                { "real_name", info.real_name },
+                // { "avatar_hash", info.avatar_hash },
+                { "email", info.email }
+            };
+            switch( info.password.type )
             {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( user_json.size() )
-                } }
+            case BCRYPT:
+                user[ "password" ][ "type" ] = "bcrypt";
+            default:
+                user[ "password" ][ "type" ] = nullptr;
             }
-        );
-        
-        response.sputn( user_json.c_str(), user_json.size() );
-        
-        return { 200, "OK" };
+            if( info.real_name == "" )
+                user[ "real_name" ] = nullptr;
+            // if( info.avatar_hash == "" )
+            //     user[ "avatar_hash" ] = nullptr;
+            // user[ "user_id" ] = ( long long )( BIGID_MIN );
+            
+            std::string user_json = user.dump();
+            
+            show::response response(
+                request,
+                show::HTTP_1_1,
+                { 200, "OK" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( user_json.size() )
+                    } }
+                }
+            );
+            
+            response.sputn( user_json.c_str(), user_json.size() );
+            
+            return { 200, "OK" };
+        }
+        catch( const no_such_user& nsu )
+        {
+            return { 404, "Not Found" };
+        }
     }
     
     show::response_code handlers::create_user( show::request& request )
