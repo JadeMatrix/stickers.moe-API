@@ -8,6 +8,30 @@
 #include "../common/user.hpp"
 
 
+namespace
+{
+    void send_not_implemented( show::request& request )
+    {
+        std::string error_json = "null";
+        
+        show::response response(
+            request,
+            show::HTTP_1_1,
+            { 501, "Not Implemented" },
+            {
+                stickers::server_header,
+                { "Content-Type", { "application/json" } },
+                { "Content-Length", {
+                    std::to_string( error_json.size() )
+                } }
+            }
+        );
+        
+        response.sputn( error_json.c_str(), error_json.size() );
+    }
+}
+
+
 namespace stickers
 {
     void handlers::get_user( show::request& request )
@@ -65,17 +89,17 @@ namespace stickers
     
     void handlers::create_user( show::request& request )
     {
-        
+        send_not_implemented( request );
     }
     
     void handlers::edit_user( show::request& request )
     {
-        
+        send_not_implemented( request );
     }
     
     void handlers::delete_user( show::request& request )
     {
-        
+        send_not_implemented( request );
     }
     
 }

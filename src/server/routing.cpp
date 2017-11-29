@@ -24,21 +24,21 @@ namespace stickers
                         handlers::get_user( request );
                         return;
                     }
-                    // else if( request.method == "POST" )
-                    // {
-                    //     handlers::create_user( request );
-                    //     return;
-                    // }
-                    // else if( request.method == "PUT" )
-                    // {
-                    //     handlers::edit_user( request );
-                    //     return;
-                    // }
-                    // else if( request.method == "DELETE" )
-                    // {
-                    //     handlers::delete_user( request );
-                    //     return;
-                    // }
+                    else if( request.method == "POST" )
+                    {
+                        handlers::create_user( request );
+                        return;
+                    }
+                    else if( request.method == "PUT" )
+                    {
+                        handlers::edit_user( request );
+                        return;
+                    }
+                    else if( request.method == "DELETE" )
+                    {
+                        handlers::delete_user( request );
+                        return;
+                    }
                     else
                         error_code = { 405, "Method Not Allowed" };
                 }
