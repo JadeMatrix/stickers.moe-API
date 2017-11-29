@@ -50,8 +50,16 @@ int main( int argc, char* argv[] )
     {
         STICKERS_LOG(
             ERROR,
-            "uncaught exception in main(): ",
+            "uncaught std::exception in main(): ",
             e.what()
+        );
+        return -1;
+    }
+    catch( ... )
+    {
+        STICKERS_LOG(
+            ERROR,
+            "uncaught non-std::exception in main()"
         );
         return -1;
     }
