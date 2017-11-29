@@ -1,78 +1,97 @@
 #include "routing.hpp"
 
+#include "handlers.hpp"
+#include "../common/logging.hpp"
 
-// DEVEL:
-#include "../common/config.hpp"
-#include "../common/json.hpp"
-#include "../common/user.hpp"
-
-
-namespace
-{
-    const show::headers_t::value_type server_header = {
-        "Server",
-        {
-            show::version.name
-            + " v"
-            + show::version.string
-        }
-    };
-}
+#include <exception>
+#include <map>
 
 
 namespace stickers
 {
-    void route_request( show::request&& request )
+    void route_request( show::request& request )
     {
-        if( !request.unknown_content_length )
-            while( !request.eof() ) request.sbumpc();
+        show::response_code error_code{ 400, "Bad Request" };
         
-        user_info info = load_user(
-            BIGID_MIN
-        );
-        nlj::json user = {
-            { "user_id", ( long long )( BIGID_MIN ) },
-            { "password", {
-                // { "type",   info.password.type   },
-                { "hash",   info.password.hash   },
-                { "salt",   info.password.salt   },
-                { "factor", info.password.factor },
-            } },
-            { "created", info.created },
-            { "revised", info.revised },
-            { "display_name", info.display_name },
-            { "real_name", info.real_name },
-            // { "avatar_hash", info.avatar_hash },
-            { "email", info.email }
-        };
-        switch( info.password.type )
+        try
         {
-        case BCRYPT:
-            user[ "password" ][ "type" ] = "bcrypt";
-        default:
-            user[ "password" ][ "type" ] = nullptr;
+            if( request.path.size() > 0 )
+            {
+                if( request.path[ 0 ] == "user" )
+                {
+                    if( request.method == "GET" )
+                    {
+                        handlers::get_user( request );
+                        return;
+                    }
+                    // else if( request.method == "POST" )
+                    // {
+                    //     handlers::create_user( request );
+                    //     return;
+                    // }
+                    // else if( request.method == "PUT" )
+                    // {
+                    //     handlers::edit_user( request );
+                    //     return;
+                    // }
+                    // else if( request.method == "DELETE" )
+                    // {
+                    //     handlers::delete_user( request );
+                    //     return;
+                    // }
+                    else
+                        error_code = { 405, "Method Not Allowed" };
+                }
+                else
+                    error_code = { 404, "Not Found" };
+            }
+            else
+                error_code = { 404, "Not Found" };
+            
+            if( !request.unknown_content_length )
+                while( !request.eof() ) request.sbumpc();
         }
-        if( info.real_name == "" )
-            user[ "real_name" ] = nullptr;
-        // if( info.avatar_hash == "" )
-        //     user[ "avatar_hash" ] = nullptr;
-        // user[ "user_id" ] = ( long long )( BIGID_MIN );
+        catch( const show::client_disconnected& cd )
+        {
+            throw cd;
+        }
+        catch( const show::connection_timeout& ct )
+        {
+            throw ct;
+        }
+        catch( const std::exception& e )
+        {
+            error_code = { 500, "Server Error" };
+            STICKERS_LOG(
+                ERROR,
+                "uncaught std::exception in route_request(show::request&): ",
+                e.what()
+            );
+        }
+        catch( ... )
+        {
+            error_code = { 500, "Server Error" };
+            STICKERS_LOG(
+                ERROR,
+                "uncaught non-std::exception in route_request(show::request&)"
+            );
+        }
         
-        std::string user_json = user.dump();
+        std::string error_json = "null";
         
         show::response response(
             request,
-            show::HTTP_1_0,
-            { 200, "OK" },
+            show::HTTP_1_1,
+            error_code,
             {
                 server_header,
                 { "Content-Type", { "application/json" } },
                 { "Content-Length", {
-                    std::to_string( user_json.size() )
+                    std::to_string( error_json.size() )
                 } }
             }
         );
         
-        response.sputn( user_json.c_str(), user_json.size() );
+        response.sputn( error_json.c_str(), error_json.size() );
     }
 }

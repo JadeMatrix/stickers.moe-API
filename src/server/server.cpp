@@ -37,9 +37,31 @@ namespace
         while( true )
             try
             {
-                stickers::route_request( show::request( *connection ) );
+                show::request request( *connection );
+                
+                stickers::route_request( request );
+                
+                // HTTP/1.1 support
+                auto connection_header = request.headers.find(
+                    "Connection"
+                );
+                if(
+                    connection_header != request.headers.end()
+                    && connection_header -> second.size() == 1
+                )
+                {
+                    const std::string& ch_val(
+                        connection_header -> second[ 0 ]
+                    );
+                    if( ch_val == "keep-alive" )
+                        continue;
+                    else if( ch_val == "close" )
+                        break;
+                }
+                if( request.protocol<= show::HTTP_1_0 )
+                    break;
             }
-            catch( show::client_disconnected& cd )
+            catch( const show::client_disconnected& cd )
             {
                 STICKERS_LOG(
                     VERBOSE,
@@ -49,7 +71,7 @@ namespace
                 );
                 break;
             }
-            catch( show::connection_timeout& ct )
+            catch( const show::connection_timeout& ct )
             {
                 STICKERS_LOG(
                     VERBOSE,
@@ -59,7 +81,7 @@ namespace
                 );
                 break;
             }
-            catch( std::exception& e )
+            catch( const std::exception& e )
             {
                 STICKERS_LOG(
                     ERROR,
