@@ -14,7 +14,7 @@
 namespace
 {
     std::mutex worker_count_mutex;
-    long long  worker_count = 0;
+    unsigned long long  worker_count = 0;
     
     void handle_connection( show::connection* connection )
     {
@@ -143,12 +143,13 @@ namespace stickers
             if( stickers::log_level() >= stickers::VERBOSE )
             {
                 std::lock_guard< std::mutex > guard( worker_count_mutex );
-                STICKERS_LOG(
-                    VERBOSE,
-                    "currently serving ",
-                    worker_count,
-                    " connections"
-                );
+                if( worker_count > 0 )
+                    STICKERS_LOG(
+                        VERBOSE,
+                        "currently serving ",
+                        worker_count,
+                        " connections"
+                    );
             }
         }
     }
