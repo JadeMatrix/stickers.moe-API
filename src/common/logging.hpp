@@ -17,7 +17,7 @@
         auto t = std::time( nullptr ); \
         std::strftime( tb, sizeof( tb ), "%F %T%z", std::localtime( &t ) ); \
         ff::writeln( \
-            ( stickers::LEVEL == stickers::ERRORS ? std::cerr : std::cout ), \
+            ( stickers::LEVEL == stickers::ERROR ? std::cerr : std::cout ), \
             "[", #LEVEL, "]", \
             "[", tb, "]", \
             stickers::log_level() >= stickers::DEBUG ? ( \

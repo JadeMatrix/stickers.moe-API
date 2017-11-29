@@ -21,21 +21,21 @@ namespace
             level_setting == global_config.end()
             || !level_setting -> is_string()
         )
-            log_level_cache = stickers::NORMAL;
+            log_level_cache = stickers::INFO;
         else if( *level_setting == "SILENT"   )
             log_level_cache = stickers::SILENT;
-        else if( *level_setting == "ERRORS"   )
-            log_level_cache = stickers::ERRORS;
-        else if( *level_setting == "WARNINGS" )
-            log_level_cache = stickers::WARNINGS;
-        else if( *level_setting == "NORMAL"   )
-            log_level_cache = stickers::NORMAL;
+        else if( *level_setting == "ERROR"   )
+            log_level_cache = stickers::ERROR;
+        else if( *level_setting == "WARNING" )
+            log_level_cache = stickers::WARNING;
+        else if( *level_setting == "INFO"   )
+            log_level_cache = stickers::INFO;
         else if( *level_setting == "VERBOSE"  )
             log_level_cache = stickers::VERBOSE;
         else if( *level_setting == "DEBUG"    )
             log_level_cache = stickers::DEBUG;
         else
-            log_level_cache = stickers::NORMAL;
+            log_level_cache = stickers::INFO;
     }
 }
 

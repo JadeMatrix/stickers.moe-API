@@ -15,7 +15,7 @@ int main( int argc, char* argv[] )
     if( argc < 2 )
     {
         STICKERS_LOG(
-            ERRORS,
+            ERROR,
             "usage: ",
             argv[ 0 ],
             " config.json"
@@ -34,7 +34,7 @@ int main( int argc, char* argv[] )
             else
             {
                 STICKERS_LOG(
-                    ERRORS,
+                    ERROR,
                     "could not open config file ",
                     argv[ 1 ]
                 );
@@ -56,7 +56,7 @@ int main( int argc, char* argv[] )
     catch( const std::exception &e )
     {
         STICKERS_LOG(
-            ERRORS,
+            ERROR,
             "uncaught exception in main(): ",
             e.what()
         );

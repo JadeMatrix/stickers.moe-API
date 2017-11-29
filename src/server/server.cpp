@@ -129,7 +129,7 @@ namespace
             catch( std::exception& e )
             {
                 STICKERS_LOG(
-                    ERRORS,
+                    ERROR,
                     "uncaught exception in handle_connection(): ",
                     e.what()
                 );

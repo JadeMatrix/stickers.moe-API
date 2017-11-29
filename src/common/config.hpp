@@ -18,12 +18,12 @@ namespace stickers
     
     enum log_level_type
     {
-        SILENT   = 00,
-        ERRORS   = 10,
-        WARNINGS = 20,
-        NORMAL   = 30,
-        VERBOSE  = 40,
-        DEBUG    = 50
+        SILENT  = 00,
+        ERROR   = 10,
+        WARNING = 20,
+        INFO    = 30,
+        VERBOSE = 40,
+        DEBUG   = 50
     };
     
     log_level_type log_level();
