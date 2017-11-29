@@ -44,13 +44,6 @@ int main( int argc, char* argv[] )
             stickers::set_config( config );
         }
         
-        // DEBUG:
-        STICKERS_LOG(
-            DEBUG,
-            "config: ",
-            stickers::config().dump()
-        );
-        
         stickers::run_server();
     }
     catch( const std::exception &e )
