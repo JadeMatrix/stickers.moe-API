@@ -19,10 +19,10 @@ namespace stickers
             {
                 if( request.path[ 0 ] == "user" )
                 {
-                    if( request.method == "GET" )
-                        error_code = handlers::get_user( request );
-                    else if( request.method == "POST" )
+                    if( request.method == "POST" )
                         error_code = handlers::create_user( request );
+                    else if( request.method == "GET" )
+                        error_code = handlers::get_user( request );
                     else if( request.method == "PUT" )
                         error_code = handlers::edit_user( request );
                     else if( request.method == "DELETE" )
@@ -38,11 +38,11 @@ namespace stickers
         }
         catch( const show::client_disconnected& cd )
         {
-            throw cd;
+            throw;
         }
         catch( const show::connection_timeout& ct )
         {
-            throw ct;
+            throw;
         }
         catch( const std::exception& e )
         {

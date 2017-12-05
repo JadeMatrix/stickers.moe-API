@@ -134,7 +134,6 @@ namespace
     }
 }
 
-
 namespace stickers
 {
     void run_server()
@@ -160,7 +159,7 @@ namespace stickers
                 );
                 worker.detach();
             }
-            catch( show::connection_timeout& ct )
+            catch( const show::connection_timeout& ct )
             {
                 STICKERS_LOG(
                     VERBOSE,
