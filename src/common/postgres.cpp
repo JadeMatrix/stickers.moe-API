@@ -11,6 +11,7 @@ namespace stickers
         {
             const nlj::json& pg_config = config()[ "database" ];
             
+            // TODO: Make all of these optional
             return connect(
                 pg_config[ "host"   ].get< std::string >(),
                 pg_config[ "port"   ].get< int         >(),
@@ -28,13 +29,13 @@ namespace stickers
             const std::string& dbname
         )
         {
-            return std::unique_ptr< pqxx::connection >(
+            std::unique_ptr< pqxx::connection > connection(
                 new pqxx::connection(
-                        "host="    + host
+                        "host="    + ( host   == "" ? "''" : host   )
                     + " port="     + std::to_string( port )
-                    + " user="     + user
-                    + " password=" + pass
-                    + " dbname="   + dbname
+                    + " user="     + ( user   == "" ? "''" : user   )
+                    + " password=" + ( pass   == "" ? "''" : pass   )
+                    + " dbname="   + ( dbname == "" ? "''" : dbname )
                 )
             );
         }
