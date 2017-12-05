@@ -6,7 +6,7 @@
 #include <string>
 
 #include "bigid.hpp"
-#include "datetime.hpp"
+#include "timestamp.hpp"
 #include "exception.hpp"
 #include "hashing.hpp"
 #include "postgres.hpp"

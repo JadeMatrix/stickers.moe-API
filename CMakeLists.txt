@@ -23,7 +23,7 @@ add_executable(
     src/server/routing.cpp
     src/server/handlers.cpp
     src/common/config.cpp
-    src/common/datetime.cpp
+    src/common/timestamp.cpp
     src/common/user.cpp
     src/common/bigid.cpp
     src/common/postgres.cpp
