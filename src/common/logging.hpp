@@ -4,22 +4,21 @@
 
 
 #include "config.hpp"
+#include "datetime.hpp"
 #include "formatting.hpp"
 
 #include <ctime>
 #include <iostream>
+#include <sstream>
 
 
 #define STICKERS_LOG( LEVEL, ... ) \
     if( stickers::log_level() >= stickers::LEVEL ) \
     { \
-        char tb[ 256 ]; \
-        auto t = std::time( nullptr ); \
-        std::strftime( tb, sizeof( tb ), "%F %T%z", std::localtime( &t ) ); \
         ff::writeln( \
             ( stickers::LEVEL == stickers::ERROR ? std::cerr : std::cout ), \
             "[", #LEVEL, "]", \
-            "[", tb, "]", \
+            "[", stickers::iso8601_str( std::chrono::system_clock::now() ), "]", \
             stickers::log_level() >= stickers::DEBUG ? ( \
                 std::string( "[" ) \
                 + __FILE__ \

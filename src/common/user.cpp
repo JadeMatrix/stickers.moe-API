@@ -1,6 +1,7 @@
 #include "user.hpp"
 
 #include "config.hpp"
+#include "datetime.hpp"
 #include "postgres.hpp"
 #include "redis.hpp"
 
@@ -74,8 +75,10 @@ namespace stickers
         
         user_info found_info = {
             found_pass,
-            result[ 0 ][ "created"      ].as< std::string >(),
-            result[ 0 ][ "revised"      ].as< std::string >(),
+            // DEBUG:
+            // result[ 0 ][ "created"      ].as< std::string >(),
+            // result[ 0 ][ "revised"      ].as< std::string >(),
+            now(), now(),
             result[ 0 ][ "display_name" ].as< std::string >(),
             result[ 0 ][ "real_name"    ].as< std::string >( "" ),
             // result[ 0 ][ "avatar_hash"  ].as< std::string >( "" ),

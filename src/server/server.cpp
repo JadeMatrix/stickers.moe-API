@@ -2,6 +2,7 @@
 
 #include "routing.hpp"
 #include "../common/config.hpp"
+#include "../common/datetime.hpp"
 #include "../common/logging.hpp"
 
 #include <show.hpp>
@@ -9,6 +10,31 @@
 #include <list>
 #include <sstream>
 #include <thread>
+
+
+// Request global time handling ------------------------------------------------
+
+
+namespace
+{
+    thread_local stickers::datetime_type request_time;
+    
+    void set_request_time_to_now()
+    {
+        request_time = std::chrono::system_clock::now();
+    }
+}
+
+namespace stickers
+{
+    const datetime_type& now()
+    {
+        return request_time;
+    }
+}
+
+
+// Connection workers ----------------------------------------------------------
 
 
 namespace
@@ -38,6 +64,8 @@ namespace
             try
             {
                 show::request request( *connection );
+                
+                set_request_time_to_now();
                 
                 stickers::route_request( request );
                 
