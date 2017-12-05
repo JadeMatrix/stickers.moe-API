@@ -75,10 +75,8 @@ namespace stickers
         
         user_info found_info = {
             found_pass,
-            // DEBUG:
-            // result[ 0 ][ "created"      ].as< std::string >(),
-            // result[ 0 ][ "revised"      ].as< std::string >(),
-            now(), now(),
+            result[ 0 ][ "created"      ].as< timestamp   >(),
+            result[ 0 ][ "revised"      ].as< timestamp   >(),
             result[ 0 ][ "display_name" ].as< std::string >(),
             result[ 0 ][ "real_name"    ].as< std::string >( "" ),
             // result[ 0 ][ "avatar_hash"  ].as< std::string >( "" ),

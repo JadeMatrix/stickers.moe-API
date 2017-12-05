@@ -18,7 +18,7 @@
         ff::writeln( \
             ( stickers::LEVEL == stickers::ERROR ? std::cerr : std::cout ), \
             "[", #LEVEL, "]", \
-            "[", stickers::iso8601_str( std::chrono::system_clock::now() ), "]", \
+            "[", stickers::to_iso8601_str( stickers::current_timestamp() ), "]", \
             stickers::log_level() >= stickers::DEBUG ? ( \
                 std::string( "[" ) \
                 + __FILE__ \

@@ -6,14 +6,27 @@
 
 namespace stickers
 {
-    std::string iso8601_str( const datetime_type& dt )
+    timestamp current_timestamp()
     {
-        std::stringstream dt_str;
-        
-        // Localized timestamp w/ timezone offset
-        std::time_t local_now_tt = std::chrono::system_clock::to_time_t( dt );
-        dt_str << std::put_time( std::localtime( &local_now_tt ), "%F %T%z" );
-        
-        return dt_str.str();
+        return std::chrono::system_clock::now();
+    }
+    
+    timestamp from_iso8601_str( const std::string& s )
+    {
+        timestamp ts;
+        if( !from_iso8601_str( s, ts ) )
+            throw std::runtime_error(
+                "failed to parse "
+                + s
+                + " as an ISO 8601 timestamp"
+            );
+        return ts;
+    }
+    
+    bool from_iso8601_str( const std::string& s, timestamp& ts )
+    {
+        std::istringstream stream{ s };
+        stream >> date::parse( "%F %T%z", ts );
+        return !stream.fail();
     }
 }

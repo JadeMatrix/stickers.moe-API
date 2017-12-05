@@ -17,17 +17,17 @@
 
 namespace
 {
-    thread_local stickers::datetime_type request_time;
+    thread_local stickers::timestamp request_time;
     
     void set_request_time_to_now()
     {
-        request_time = std::chrono::system_clock::now();
+        request_time = stickers::current_timestamp();
     }
 }
 
 namespace stickers
 {
-    const datetime_type& now()
+    const timestamp& now()
     {
         return request_time;
     }

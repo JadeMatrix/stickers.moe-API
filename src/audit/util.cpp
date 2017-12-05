@@ -69,7 +69,7 @@ namespace
             else
                 message
                     << "\""
-                    << stickers::iso8601_str( *fields.when )
+                    << stickers::to_iso8601_str( *fields.when )
                     << "\""
                 ;
             message << ";";

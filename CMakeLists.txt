@@ -14,6 +14,7 @@ find_library( PQXX_LIBRARY       pqxx       )
 find_library( REDOX_LIBRARY      redox      )
 find_library( FASTFORMAT_LIBRARY FastFormat )
 find_library( CRYPTOPP_LIBRARY   cryptopp   )
+find_library( TZ_LIBRARY         tz         )
 
 add_executable(
     server
@@ -34,6 +35,7 @@ target_link_libraries(
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
     ${CRYPTOPP_LIBRARY}
+    ${TZ_LIBRARY}
 )
 
 add_executable(
@@ -46,4 +48,5 @@ target_link_libraries(
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
     ${CRYPTOPP_LIBRARY}
+    ${TZ_LIBRARY}
 )
