@@ -11,16 +11,10 @@ namespace stickers
 {
     user_info load_user( const bigid& id )
     {
-        const nlj::json& pg_config = config()[ "database" ];
-        pqxx::connection connection(
-               "user="   + pg_config[ "user"   ].get< std::string >()
-            + " host="   + pg_config[ "host"   ].get< std::string >()
-            + " port="   + std::to_string( pg_config[ "port" ].get< int >() )
-            + " dbname=" + pg_config[ "dbname" ].get< std::string >()
-        );
-        pqxx::work transaction( connection );
+        auto connection = postgres::connect();
+        pqxx::work transaction( *connection );
         
-        connection.prepare(
+        connection -> prepare(
             "load_user",
             PSQL(
                 SELECT

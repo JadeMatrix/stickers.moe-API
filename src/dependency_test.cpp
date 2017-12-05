@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "common/formatting.hpp"
@@ -11,6 +12,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+std::unique_ptr< pqxx::connection > connect( const std::string& dbname )
+{
+    return std::unique_ptr< pqxx::connection >( new pqxx::connection(
+        "user=postgres dbname=" + dbname
+    ) );
+}
+
+
 int main( int argc, char* argv[] )
 {
     if( argc < 2 )
@@ -21,17 +30,15 @@ int main( int argc, char* argv[] )
     
     try
     {
-        pqxx::connection connection(
-            "user=postgres dbname=" + std::string( argv[ 1 ] )
-        );
-        pqxx::work transaction( connection );
+        auto connection = connect( std::string( argv[ 1 ] ) );
+        pqxx::work transaction( *connection );
         
         nlj::json test_json = {
             { "foo", true },
             { "bar", { 1234123, "Hello World", true, 3.14 } }
         };
         
-        connection.prepare(
+        connection -> prepare(
             "test_query",
             PSQL(
                 SELECT $1::JSONB->'bar' AS test_json;
