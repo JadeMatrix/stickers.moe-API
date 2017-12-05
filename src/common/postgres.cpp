@@ -1,6 +1,7 @@
 #include "postgres.hpp"
 
 #include "config.hpp"
+#include "logging.hpp"
 
 
 namespace stickers
@@ -38,6 +39,21 @@ namespace stickers
                     + " dbname="   + ( dbname == "" ? "''" : dbname )
                 )
             );
+            
+            STICKERS_LOG(
+                DEBUG,
+                "created PostgreSQL connection {host=",
+                connection -> hostname(),
+                " port=",
+                connection -> port(),
+                " user=",
+                connection -> username(),
+                " dbname=",
+                connection -> dbname(),
+                "}"
+            );
+            
+            return connection;
         }
     }
 }
