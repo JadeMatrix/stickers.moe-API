@@ -64,25 +64,56 @@ namespace stickers
 }
 
 
-// Template specialization of `pqxx::field::to<>(&)` for
-// `stickers::password_type`, which also allows use of `pqxx::field::as<>(&)`
-template<> inline bool pqxx::field::to< stickers::password_type >(
-    stickers::password_type& pt
-) const
+// Template specialization of `pqxx::string_traits<>(&)` for
+// `stickers::password_type`, which allows use of `pqxx::field::to<>(&)` and
+// `pqxx::field::as<>(&)`
+namespace pqxx
 {
-    if ( is_null() )
-        return false;
-    else
+    template<> struct string_traits< stickers::password_type >
     {
-        std::string s = as< std::string >();
-        if( s == "bcrypt" )
-            pt = stickers::BCRYPT;
-        else if( s == "invalid" )
-            pt = stickers::INVALID;
-        else
-            return false;
-        return true;
-    }
+        using subject_type = stickers::password_type;
+        
+        static constexpr const char* name() noexcept {
+            return "stickers::password_type";
+        }
+        
+        static constexpr bool has_null() noexcept { return false; }
+        
+        static bool is_null( const stickers::password_type& ) { return false; }
+        
+        [[noreturn]] static stickers::password_type null()
+        {
+            internal::throw_null_conversion( name() );
+        }
+        
+        static void from_string( const char str[], stickers::password_type& pt )
+        {
+            std::string s( str );
+            if( s == "bcrypt" )
+                pt = stickers::BCRYPT;
+            else if( s == "invalid" )
+                pt = stickers::INVALID;
+            else
+                throw argument_error(
+                    "Failed conversion to "
+                    + std::string( name() )
+                    + ": '"
+                    + std::string( str )
+                    + "'"
+                );
+        }
+        
+        static std::string to_string( stickers::password_type pt )
+        {
+            switch( pt )
+            {
+            case stickers::BCRYPT:
+                return "bcrypt";
+            default:
+                return "invalid";
+            }
+        }
+    };
 }
 
 
