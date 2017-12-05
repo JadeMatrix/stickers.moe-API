@@ -31,13 +31,13 @@ namespace stickers
     
     struct user_info
     {
-        password    password;
-        datetime    created;
-        datetime    revised;
-        std::string display_name;
-        std::string real_name;
-        // sha256      avatar_hash;
-        std::string email;
+        password         password;
+        datetime_type    created;
+        datetime_type    revised;
+        std::string      display_name;
+        std::string      real_name;
+        // sha256           avatar_hash;
+        std::string      email;
     };
     
     struct user

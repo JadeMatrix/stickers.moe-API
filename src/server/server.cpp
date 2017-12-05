@@ -58,7 +58,7 @@ namespace
                     else if( ch_val == "close" )
                         break;
                 }
-                if( request.protocol<= show::HTTP_1_0 )
+                if( request.protocol <= show::HTTP_1_0 )
                     break;
             }
             catch( const show::client_disconnected& cd )

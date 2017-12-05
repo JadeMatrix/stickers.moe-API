@@ -9,8 +9,16 @@
 #include "../common/user.hpp"
 
 
+// TODO: move to ../api/
+
+
 namespace stickers
 {
+    show::response_code handlers::create_user( show::request& request )
+    {
+        return { 500, "Not Implemented" };
+    }
+    
     show::response_code handlers::get_user( show::request& request )
     {
         if( request.path.size() > 2 )
@@ -84,11 +92,6 @@ namespace stickers
         }
     }
     
-    show::response_code handlers::create_user( show::request& request )
-    {
-        return { 500, "Not Implemented" };
-    }
-    
     show::response_code handlers::edit_user( show::request& request )
     {
         return { 500, "Not Implemented" };
@@ -98,5 +101,4 @@ namespace stickers
     {
         return { 500, "Not Implemented" };
     }
-    
 }
