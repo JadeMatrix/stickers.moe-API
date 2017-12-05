@@ -46,32 +46,19 @@ namespace stickers
         user_info info;
     };
     
-    /*
-    class user
-    {
-    public:
-        struct info
-        {
-            // ...
-        };
-        // ...
-    protected:
-        bigid _id;
-        info  _info;
-    };
-    */
-    
-    user_info load_user( const bigid&     );
-    // void      save_user( const user&      );
-    // void    delete_user( const bigid&     );
-    // bigid   create_user( const user_info& );
+    bigid     create_user( const user_info&               );
+    bigid     create_user( const user_info&, const bigid& );
+    user_info   load_user( const bigid&                   );
+    void        save_user( const user&     , const bigid& );
+    void      delete_user( const bigid&    , const bigid& );
     
     class no_such_user : public exception
     {
     protected:
         std::string message;
     public:
-        no_such_user( const bigid& );
+        // no_such_user( const bigid& );
+        no_such_user( const bigid&, const std::string& );
         virtual const char* what() const noexcept;
     };
 }

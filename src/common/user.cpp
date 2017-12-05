@@ -1,7 +1,20 @@
+#include "user.hpp"
+
 #include "config.hpp"
 #include "postgres.hpp"
 #include "redis.hpp"
-#include "user.hpp"
+
+
+namespace
+{
+    void write_user_details(
+        const stickers::user_info& info,
+        bool generate_id = true
+    )
+    {
+        
+    }
+}
 
 
 // User management -------------------------------------------------------------
@@ -9,6 +22,16 @@
 
 namespace stickers
 {
+    bigid create_user( const user_info& info )
+    {
+        
+    }
+    
+    bigid create_user( const user_info& info, const bigid& blame )
+    {
+        
+    }
+    
     user_info load_user( const bigid& id )
     {
         auto connection = postgres::connect();
@@ -40,7 +63,7 @@ namespace stickers
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user( id );
+            throw no_such_user( id, "loading" );
         
         password found_pass = {
             result[ 0 ][ "password_type" ].as< password_type >( UNKNOWN ),
@@ -62,20 +85,15 @@ namespace stickers
         return found_info;
     }
     
-    // void save_user( const user& u )
-    // {
+    void save_user( const user& u, const bigid& blame )
+    {
         
-    // }
+    }
     
-    // void delete_user( const bigid& id )
-    // {
+    void delete_user( const bigid& id, const bigid& blame )
+    {
         
-    // }
-    
-    // bigid create_user( const user_info& info )
-    // {
-        
-    // }
+    }
 }
 
 
@@ -84,8 +102,14 @@ namespace stickers
 
 namespace stickers
 {
-    no_such_user::no_such_user( const bigid& id ) :
-        message( "no such user with ID " + ( std::string )id )
+    no_such_user::no_such_user( const bigid& id, const std::string& purpose ) :
+        message(
+            "no such user with ID "
+            + ( std::string )id
+            + " ("
+            + purpose
+            + ")"
+        )
     {}
     
     const char* no_such_user::what() const noexcept
