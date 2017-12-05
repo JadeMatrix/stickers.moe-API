@@ -59,7 +59,7 @@ namespace stickers
             )
         );
         pqxx::result result = transaction.prepared( "load_user" )(
-            std::to_string( ( long long )id )
+            id
         ).exec();
         transaction.commit();
         

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "exception.hpp"
+#include "postgres.hpp"
 
 
 namespace stickers
@@ -48,6 +49,62 @@ namespace stickers
         // );
         // virtual const char* what() const noexcept;
         using std::out_of_range::what;
+    };
+}
+
+
+// Template specialization of `pqxx::string_traits<>(&)` for `stickers::bigid`,
+// which allows use of `pqxx::field::to<>(&)` and `pqxx::field::as<>(&)`
+namespace pqxx
+{
+    template<> struct string_traits< stickers::bigid >
+    {
+        using subject_type = stickers::bigid;
+        
+        static constexpr const char* name() noexcept {
+            return "stickers::bigid";
+        }
+        
+        static constexpr bool has_null() noexcept { return false; }
+        
+        static bool is_null( const stickers::bigid& ) { return false; }
+        
+        [[noreturn]] static stickers::bigid null()
+        {
+            internal::throw_null_conversion( name() );
+        }
+        
+        static void from_string( const char str[], stickers::bigid& id )
+        {
+            bool conversion_error = false;
+            try
+            {
+                long long llid;
+                string_traits< long long >::from_string( str, llid );
+                id = llid;
+            }
+            catch( const argument_error& e )
+            {
+                conversion_error = true;
+            }
+            catch( const stickers::bigid_out_of_range& e )
+            {
+                conversion_error = true;
+            }
+            if( conversion_error )
+                throw argument_error(
+                    "Failed conversion to "
+                    + std::string( name() )
+                    + ": '"
+                    + std::string( str )
+                    + "'"
+                );
+        }
+        
+        static std::string to_string( const stickers::bigid& id )
+        {
+            return string_traits< long long >::to_string( id );
+        }
     };
 }
 
