@@ -41,7 +41,11 @@ namespace stickers
             user_info info = load_user( user_id );
             
             nlj::json user = {
-                { "user_id", ( long long )( BIGID_MIN ) },
+                { "user_id", user_id },
+                // {
+                //     "user_id",
+                //     show::base64_encode( std::string( ( char* )( &user_id_ll ), sizeof( user_id_ll ) ) )
+                // },
                 { "password", {
                     // { "type",   info.password.type   },
                     { "hash",   info.password.hash   },
