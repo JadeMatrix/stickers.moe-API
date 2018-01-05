@@ -3,6 +3,7 @@
 #include "handlers.hpp"
 #include "server.hpp"
 #include "../common/logging.hpp"
+#include "../common/json.hpp"
 
 #include <exception>
 #include <map>
@@ -12,7 +13,7 @@ namespace stickers
 {
     void route_request( show::request& request )
     {
-        show::response_code error_code{ 400, "Bad Request" };
+        handlers::handler_rt error_info{ { 400, "Bad Request" }, "" };
         
         try
         {
@@ -21,21 +22,21 @@ namespace stickers
                 if( request.path()[ 0 ] == "user" )
                 {
                     if( request.method() == "POST" )
-                        error_code = handlers::create_user( request );
+                        error_info = handlers::create_user( request );
                     else if( request.method() == "GET" )
-                        error_code = handlers::get_user( request );
+                        error_info = handlers::get_user( request );
                     else if( request.method() == "PUT" )
-                        error_code = handlers::edit_user( request );
+                        error_info = handlers::edit_user( request );
                     else if( request.method() == "DELETE" )
-                        error_code = handlers::delete_user( request );
+                        error_info = handlers::delete_user( request );
                     else
-                        error_code = { 405, "Method Not Allowed" };
+                        error_info = { { 405, "Method Not Allowed" }, "" };
                 }
                 else
-                    error_code = { 404, "Not Found" };
+                    error_info = { { 404, "Not Found" }, "" };
             }
             else
-                error_code = { 404, "Not Found" };
+                error_info = { { 404, "Not Found" }, "need an API path" };
         }
         catch( const show::client_disconnected& cd )
         {
@@ -47,7 +48,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            error_code = { 500, "Server Error" };
+            error_info = { { 500, "Server Error" }, "please try again later" };
             STICKERS_LOG(
                 ERROR,
                 "uncaught std::exception in route_request(show::request&): ",
@@ -56,7 +57,7 @@ namespace stickers
         }
         catch( ... )
         {
-            error_code = { 500, "Server Error" };
+            error_info = { { 500, "Server Error" }, "please try again later" };
             STICKERS_LOG(
                 ERROR,
                 "uncaught non-std::exception in route_request(show::request&)"
@@ -66,15 +67,17 @@ namespace stickers
         if( !request.unknown_content_length() )
             while( !request.eof() ) request.sbumpc();
         
-        if( error_code.code < 300 )
+        if( error_info.response_code.code < 300 )
             return;
         
-        std::string error_json = "null";
+        nlj::json error_object;
+        error_object[ "message" ] = error_info.message;
+        std::string error_json = error_object.dump();
         
         show::response response(
             request.connection(),
             show::HTTP_1_1,
-            error_code,
+            error_info.response_code,
             {
                 server_header,
                 { "Content-Type", { "application/json" } },

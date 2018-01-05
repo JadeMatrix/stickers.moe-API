@@ -15,15 +15,15 @@
 
 namespace stickers
 {
-    show::response_code handlers::create_user( show::request& request )
+    handlers::handler_rt handlers::create_user( show::request& request )
     {
-        return { 500, "Not Implemented" };
+        return { { 500, "Not Implemented" }, "Not implemented" };
     }
     
-    show::response_code handlers::get_user( show::request& request )
+    handlers::handler_rt handlers::get_user( show::request& request )
     {
         if( request.path().size() > 2 )
-            return { 404, "Not Found" };
+            return { { 404, "Not Found" }, "need a user ID" };
         
         stickers::bigid user_id( BIGID_MIN );
         
@@ -33,7 +33,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            return { 404, "Not Found" };
+            return { { 404, "Not Found" }, "need a user ID" };
         }
         
         try
@@ -85,21 +85,21 @@ namespace stickers
             
             response.sputn( user_json.c_str(), user_json.size() );
             
-            return { 200, "OK" };
+            return { { 000, "" }, "" };
         }
         catch( const no_such_user& nsu )
         {
-            return { 404, "Not Found" };
+            return { { 404, "Not Found" }, "no such user" };
         }
     }
     
-    show::response_code handlers::edit_user( show::request& request )
+    handlers::handler_rt handlers::edit_user( show::request& request )
     {
-        return { 500, "Not Implemented" };
+        return { { 500, "Not Implemented" }, "Not implemented" };
     }
     
-    show::response_code handlers::delete_user( show::request& request )
+    handlers::handler_rt handlers::delete_user( show::request& request )
     {
-        return { 500, "Not Implemented" };
+        return { { 500, "Not Implemented" }, "Not implemented" };
     }
 }

@@ -10,10 +10,16 @@ namespace stickers
 {
     namespace handlers
     {
-        show::response_code create_user( show::request& );
-        show::response_code    get_user( show::request& );
-        show::response_code   edit_user( show::request& );
-        show::response_code delete_user( show::request& );
+        struct handler_rt
+        {
+            show::response_code response_code;
+            std::string         message;
+        };
+        
+        handler_rt create_user( show::request& );
+        handler_rt    get_user( show::request& );
+        handler_rt   edit_user( show::request& );
+        handler_rt delete_user( show::request& );
     }
 }
 
