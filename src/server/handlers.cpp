@@ -100,6 +100,61 @@ namespace stickers
     
     handlers::handler_rt handlers::delete_user( show::request& request )
     {
-        return { { 500, "Not Implemented" }, "Not implemented" };
+        if( request.path().size() > 2 )
+            return { { 404, "Not Found" }, "need a user ID" };
+        
+        stickers::bigid user_id( BIGID_MIN );
+        
+        try
+        {
+            user_id = std::stoll( request.path()[ 1 ] );
+        }
+        catch( const std::exception& e )
+        {
+            return { { 404, "Not Found" }, "need a user ID" };
+        }
+        
+        try
+        {
+            // DEVEL:
+            stickers::bigid deleter_user_id( BIGID_MIN );
+            
+            audit::blame delete_blame{
+                // // DEVEL:
+                // &deleter_user_id,
+                // "delete user",
+                // &now(),
+                // &request.client_address()
+                nullptr,nullptr,nullptr,nullptr
+            };
+            
+            delete_user(
+                user_id,
+                delete_blame
+            );
+            
+            std::string null_json = "null";
+            
+            show::response response(
+                request.connection(),
+                show::HTTP_1_1,
+                { 200, "OK" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( null_json.size() )
+                    } }
+                }
+            );
+            
+            response.sputn( null_json.c_str(), null_json.size() );
+            
+            return { { 000, "" }, "" };
+        }
+        catch( const no_such_user& nsu )
+        {
+            return { { 404, "Not Found" }, "no such user" };
+        }
     }
 }
