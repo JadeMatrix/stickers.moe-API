@@ -27,7 +27,7 @@ add_executable(
     src/common/user.cpp
     src/common/bigid.cpp
     src/common/postgres.cpp
-    src/audit/util.cpp
+    src/audit/blame.cpp
 )
 target_link_libraries(
     server

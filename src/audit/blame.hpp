@@ -1,6 +1,6 @@
 #pragma once
-#ifndef STICKERS_MOE_AUDIT_UTIL_HPP
-#define STICKERS_MOE_AUDIT_UTIL_HPP
+#ifndef STICKERS_MOE_AUDIT_BLAME_HPP
+#define STICKERS_MOE_AUDIT_BLAME_HPP
 
 
 #include <stdexcept>
@@ -17,10 +17,10 @@ namespace stickers
     {
         struct blame
         {
-            bigid      * who;       // User ID
-            std::string* what;      // High-level operation description
-            timestamp  * when;      // Request timestamp
-            std::string* where;     // IP address
+            const bigid      * who;     // User ID
+            const std::string* what;    // High-level operation description
+            const timestamp  * when;    // Request timestamp
+            const std::string* where;   // IP address
         };
         
         enum blame_field
