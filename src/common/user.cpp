@@ -58,9 +58,7 @@ namespace stickers
                 ;
             )
         );
-        pqxx::result result = transaction.prepared( "load_user" )(
-            id
-        ).exec();
+        pqxx::result result = transaction.exec_prepared( "load_user", id );
         transaction.commit();
         
         if( result.size() < 1 )

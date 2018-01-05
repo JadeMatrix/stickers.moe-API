@@ -45,9 +45,10 @@ int main( int argc, char* argv[] )
             )
         );
         
-        pqxx::result result = transaction.prepared( "test_query" )(
+        pqxx::result result = transaction.exec_prepared(
+            "test_query",
             test_json.dump()
-        ).exec();
+        );
         
         transaction.commit();
         
