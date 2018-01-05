@@ -10,6 +10,7 @@
 #include "exception.hpp"
 #include "hashing.hpp"
 #include "postgres.hpp"
+#include "../audit/blame.hpp"
 
 
 namespace stickers
@@ -46,11 +47,11 @@ namespace stickers
         user_info info;
     };
     
-    bigid     create_user( const user_info&               );
-    bigid     create_user( const user_info&, const bigid& );
-    user_info   load_user( const bigid&                   );
-    void        save_user( const user&     , const bigid& );
-    void      delete_user( const bigid&    , const bigid& );
+    // bigid     create_user( const user_info&                      );
+    bigid     create_user( const user_info&, const audit::blame& );
+    user_info   load_user( const bigid&                          );
+    void        save_user( const user&     , const audit::blame& );
+    void      delete_user( const bigid&    , const audit::blame& );
     
     class no_such_user : public exception
     {

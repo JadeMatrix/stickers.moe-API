@@ -8,8 +8,9 @@
 
 namespace
 {
-    void write_user_details(
-        const stickers::user_info& info,
+    stickers::bigid write_user_details(
+        const stickers::user& user,
+        const stickers::audit::blame& blame,
         bool generate_id = true
     )
     {
@@ -23,12 +24,12 @@ namespace
 
 namespace stickers
 {
-    bigid create_user( const user_info& info )
-    {
+    // bigid create_user( const user_info& info )
+    // {
         
-    }
+    // }
     
-    bigid create_user( const user_info& info, const bigid& blame )
+    bigid create_user( const user_info& info, const audit::blame& blame )
     {
         
     }
@@ -84,12 +85,12 @@ namespace stickers
         return found_info;
     }
     
-    void save_user( const user& u, const bigid& blame )
+    void save_user( const user& u, const audit::blame& blame )
     {
         
     }
     
-    void delete_user( const bigid& id, const bigid& blame )
+    void delete_user( const bigid& id, const audit::blame& blame )
     {
         
     }
