@@ -1,6 +1,7 @@
 #include "handlers.hpp"
 
 #include "routing.hpp"
+#include "server.hpp"
 #include "../common/logging.hpp"
 
 // DEVEL:
@@ -21,14 +22,14 @@ namespace stickers
     
     show::response_code handlers::get_user( show::request& request )
     {
-        if( request.path.size() > 2 )
+        if( request.path().size() > 2 )
             return { 404, "Not Found" };
         
         stickers::bigid user_id( BIGID_MIN );
         
         try
         {
-            user_id = std::stoll( request.path[ 1 ] );
+            user_id = std::stoll( request.path()[ 1 ] );
         }
         catch( const std::exception& e )
         {
@@ -70,7 +71,7 @@ namespace stickers
             std::string user_json = user.dump();
             
             show::response response(
-                request,
+                request.connection(),
                 show::HTTP_1_1,
                 { 200, "OK" },
                 {

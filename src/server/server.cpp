@@ -51,7 +51,7 @@ namespace
         STICKERS_LOG(
             VERBOSE,
             "handling connection from ",
-            connection -> client_address,
+            connection -> client_address(),
             " with worker ",
             worker_id.str()
         );
@@ -70,11 +70,11 @@ namespace
                 stickers::route_request( request );
                 
                 // HTTP/1.1 support
-                auto connection_header = request.headers.find(
+                auto connection_header = request.headers().find(
                     "Connection"
                 );
                 if(
-                    connection_header != request.headers.end()
+                    connection_header != request.headers().end()
                     && connection_header -> second.size() == 1
                 )
                 {
@@ -86,26 +86,37 @@ namespace
                     else if( ch_val == "close" )
                         break;
                 }
-                if( request.protocol <= show::HTTP_1_0 )
+                if( request.protocol() <= show::HTTP_1_0 )
                     break;
             }
-            catch( const show::client_disconnected& cd )
+            catch( const show::request_parse_error& rpe )
             {
                 STICKERS_LOG(
-                    VERBOSE,
+                    INFO,
                     "client ",
-                    connection -> client_address,
-                    " disconnected, closing connection"
+                    connection -> client_address(),
+                    " sent a malformed request"
                 );
+                
+                show::response response(
+                    *connection,
+                    show::HTTP_1_1,
+                    { 400, "Bad Request" },
+                    {
+                        stickers::server_header,
+                        { "Content-Length", { "0" } }
+                    }
+                );
+                
                 break;
             }
-            catch( const show::connection_timeout& ct )
+            catch( const show::connection_interrupted& ci )
             {
                 STICKERS_LOG(
                     VERBOSE,
-                    "timed out waiting on client ",
-                    connection -> client_address,
-                    ", closing connection"
+                    "connection to client ",
+                    connection -> client_address(),
+                    " interrupted (client disconnected or timed out), closing connection"
                 );
                 break;
             }

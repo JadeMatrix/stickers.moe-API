@@ -1,6 +1,7 @@
 #include "routing.hpp"
 
 #include "handlers.hpp"
+#include "server.hpp"
 #include "../common/logging.hpp"
 
 #include <exception>
@@ -15,17 +16,17 @@ namespace stickers
         
         try
         {
-            if( request.path.size() > 0 )
+            if( request.path().size() > 0 )
             {
-                if( request.path[ 0 ] == "user" )
+                if( request.path()[ 0 ] == "user" )
                 {
-                    if( request.method == "POST" )
+                    if( request.method() == "POST" )
                         error_code = handlers::create_user( request );
-                    else if( request.method == "GET" )
+                    else if( request.method() == "GET" )
                         error_code = handlers::get_user( request );
-                    else if( request.method == "PUT" )
+                    else if( request.method() == "PUT" )
                         error_code = handlers::edit_user( request );
-                    else if( request.method == "DELETE" )
+                    else if( request.method() == "DELETE" )
                         error_code = handlers::delete_user( request );
                     else
                         error_code = { 405, "Method Not Allowed" };
@@ -62,7 +63,7 @@ namespace stickers
             );
         }
         
-        if( !request.unknown_content_length )
+        if( !request.unknown_content_length() )
             while( !request.eof() ) request.sbumpc();
         
         if( error_code.code < 300 )
@@ -71,7 +72,7 @@ namespace stickers
         std::string error_json = "null";
         
         show::response response(
-            request,
+            request.connection(),
             show::HTTP_1_1,
             error_code,
             {
