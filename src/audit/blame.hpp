@@ -17,28 +17,10 @@ namespace stickers
     {
         struct blame
         {
-            const bigid      * who;     // User ID
-            const std::string* what;    // High-level operation description
-            const timestamp  * when;    // Request timestamp
-            const std::string* where;   // IP address
-        };
-        
-        enum blame_field
-        {
-            WHO,
-            WHAT,
-            WHEN,
-            WHERE
-        };
-        
-        class missing_blame : public std::invalid_argument
-        {
-        public:
-            missing_blame(
-                blame_field        field,
-                const std::string& operation,
-                const blame      & fields
-            );
+            const bigid       who;      // User ID
+            const std::string what;     // High-level operation description
+            const timestamp   when;     // Request timestamp
+            const std::string where;    // IP address
         };
     }
 }

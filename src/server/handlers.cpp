@@ -120,21 +120,15 @@ namespace stickers
         
         try
         {
-            // DEVEL:
-            stickers::bigid deleter_user_id( BIGID_MIN );
-            
-            audit::blame delete_blame{
-                // // DEVEL:
-                // &deleter_user_id,
-                // "delete user",
-                // &now(),
-                // &request.client_address()
-                nullptr,nullptr,nullptr,nullptr
-            };
-            
             delete_user(
                 user_id,
-                delete_blame
+                {
+                    // DEVEL:
+                    BIGID_MIN,
+                    "delete user handler",
+                    now(),
+                    request.client_address()
+                }
             );
             
             std::string null_json = "null";
