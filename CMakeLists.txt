@@ -1,22 +1,22 @@
-cmake_minimum_required( VERSION 3.6 )
+CMAKE_MINIMUM_REQUIRED( VERSION 3.6 )
 
-set( CMAKE_CXX_STANDARD          11 )
-set( CMAKE_CXX_STANDARD_REQUIRED ON )
+SET( CMAKE_CXX_STANDARD          11 )
+SET( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 
-project(
+PROJECT(
     "stickers.moe API"
     CXX
 )
 
 
-find_library( PQXX_LIBRARY       pqxx       )
-find_library( REDOX_LIBRARY      redox      )
-find_library( FASTFORMAT_LIBRARY FastFormat )
-find_library( CRYPTOPP_LIBRARY   cryptopp   )
-find_library( TZ_LIBRARY         tz         )
+FIND_LIBRARY( PQXX_LIBRARY       pqxx       )
+FIND_LIBRARY( REDOX_LIBRARY      redox      )
+FIND_LIBRARY( FASTFORMAT_LIBRARY FastFormat )
+FIND_LIBRARY( CRYPTOPP_LIBRARY   cryptopp   )
+FIND_LIBRARY( TZ_LIBRARY         tz         )
 
-add_executable(
+ADD_EXECUTABLE(
     server
     src/server/main.cpp
     src/server/server.cpp
@@ -28,7 +28,7 @@ add_executable(
     src/common/bigid.cpp
     src/common/postgres.cpp
 )
-target_link_libraries(
+TARGET_LINK_LIBRARIES(
     server
     ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
@@ -37,11 +37,11 @@ target_link_libraries(
     ${TZ_LIBRARY}
 )
 
-add_executable(
+ADD_EXECUTABLE(
     dependency_test
     src/dependency_test.cpp
 )
-target_link_libraries(
+TARGET_LINK_LIBRARIES(
     dependency_test
     ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
