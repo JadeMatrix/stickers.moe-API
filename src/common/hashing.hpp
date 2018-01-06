@@ -11,6 +11,7 @@
 
 namespace stickers
 {
+    using sha256 = std::string;
     // class sha256
     // {
     // protected:

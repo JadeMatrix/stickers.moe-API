@@ -78,7 +78,7 @@ namespace stickers
             result[ 0 ][ "revised"      ].as< timestamp   >(),
             result[ 0 ][ "display_name" ].as< std::string >(),
             result[ 0 ][ "real_name"    ].as< std::string >( "" ),
-            // result[ 0 ][ "avatar_hash"  ].as< std::string >( "" ),
+            result[ 0 ][ "avatar_hash"  ].as< std::string >( "" ),
             result[ 0 ][ "email"        ].as< std::string >(),
         };
         

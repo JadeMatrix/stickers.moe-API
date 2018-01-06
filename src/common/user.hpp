@@ -37,7 +37,7 @@ namespace stickers
         timestamp   revised;
         std::string display_name;
         std::string real_name;
-        // sha256      avatar_hash;
+        sha256      avatar_hash;
         std::string email;
     };
     
