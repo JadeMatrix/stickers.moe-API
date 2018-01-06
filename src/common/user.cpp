@@ -92,7 +92,31 @@ namespace stickers
     
     void delete_user( const bigid& id, const audit::blame& blame )
     {
+        auto connection = postgres::connect();
+        pqxx::work transaction( *connection );
         
+        connection -> prepare(
+            "delete_user",
+            PSQL(
+                INSERT INTO users.user_deletions (
+                    user_id,
+                    deleted,
+                    deleted_by,
+                    deleted_from
+                ) VALUES ( $1, $2, $3, $4 )
+                ;
+            )
+        );
+        
+        pqxx::result result = transaction.exec_prepared(
+            "delete_user",
+            id,
+            blame.when,
+            blame.who,
+            blame.where
+        );
+        
+        transaction.commit();
     }
 }
 
