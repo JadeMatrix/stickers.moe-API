@@ -11,6 +11,8 @@
 #include <sstream>
 #include <thread>
 
+#line __LINE__ "server/server.cpp"
+
 
 // Request global time handling ------------------------------------------------
 

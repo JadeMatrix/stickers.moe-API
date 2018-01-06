@@ -3,6 +3,8 @@
 #include "config.hpp"
 #include "logging.hpp"
 
+#line __LINE__ "common/postgres.cpp"
+
 
 namespace stickers
 {

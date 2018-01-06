@@ -9,6 +9,8 @@
 #include "../common/json.hpp"
 #include "../common/user.hpp"
 
+#line __LINE__ "server/handlers.cpp"
+
 
 // TODO: move to ../api/
 

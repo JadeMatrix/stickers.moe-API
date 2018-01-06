@@ -5,6 +5,8 @@
 #include "postgres.hpp"
 #include "redis.hpp"
 
+#line __LINE__ "common/user.cpp"
+
 
 namespace
 {

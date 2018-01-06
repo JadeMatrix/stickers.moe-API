@@ -8,6 +8,8 @@
 #include <exception>
 #include <map>
 
+#line __LINE__ "server/routing.cpp"
+
 
 namespace stickers
 {

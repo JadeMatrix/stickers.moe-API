@@ -6,6 +6,8 @@
 #include "../common/logging.hpp"
 #include "../common/json.hpp"
 
+#line __LINE__ "server/main.cpp"
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

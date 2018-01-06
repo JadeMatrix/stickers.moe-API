@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <sstream>
 
+#line __LINE__ "common/timestamp.cpp"
+
 
 namespace stickers
 {

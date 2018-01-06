@@ -2,6 +2,8 @@
 
 #include <thread>
 
+#line __LINE__ "common/config.cpp"
+
 
 namespace
 {
