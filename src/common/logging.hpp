@@ -9,6 +9,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <map>
 #include <sstream>
 
 
@@ -21,6 +22,15 @@ namespace stickers
         Args... args
     )
     {
+        static const std::map< log_level_type, std::string > level_strings{
+            { SILENT , "SILENT"  },
+            { ERROR  , "ERROR"   },
+            { WARNING, "WARNING" },
+            { INFO   , "INFO"    },
+            { VERBOSE, "VERBOSE" },
+            { DEBUG  , "DEBUG"   }
+        };
+        
         if( stickers::log_level() >= level )
         {
             auto t = std::time( nullptr );
@@ -32,7 +42,7 @@ namespace stickers
             
             ff::writeln(
                 ( level == stickers::ERROR ? std::cerr : std::cout ),
-                "[", ( long )level, "]",
+                "[", level_strings.at( level ), "]",
                 "[", time_string.str(), "]",
                 stickers::log_level() >= stickers::DEBUG ? (
                     std::string( "[" )
