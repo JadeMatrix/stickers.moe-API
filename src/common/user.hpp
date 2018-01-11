@@ -47,11 +47,12 @@ namespace stickers
         user_info info;
     };
     
-    // bigid     create_user( const user_info&                      );
-    bigid     create_user( const user_info&, const audit::blame& );
+    user      create_user( const user_info&, const audit::blame&, bool signup = true );
     user_info   load_user( const bigid&                          );
-    void        save_user( const user&     , const audit::blame& );
+    user_info   save_user( const user&     , const audit::blame& );
     void      delete_user( const bigid&    , const audit::blame& );
+    
+    void send_validation_email( const bigid& );
     
     class no_such_user : public exception
     {
