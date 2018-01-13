@@ -1,9 +1,9 @@
 #include "user.hpp"
 
-#include "config.hpp"
-#include "timestamp.hpp"
-#include "postgres.hpp"
-#include "redis.hpp"
+#include "../common/config.hpp"
+#include "../common/timestamp.hpp"
+#include "../common/postgres.hpp"
+#include "../common/redis.hpp"
 #include "../common/logging.hpp"
 
 #line __LINE__ "common/user.cpp"

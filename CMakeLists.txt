@@ -24,9 +24,9 @@ ADD_EXECUTABLE(
     src/handlers/user.cpp
     src/common/config.cpp
     src/common/timestamp.cpp
-    src/common/user.cpp
     src/common/bigid.cpp
     src/common/postgres.cpp
+    src/api/user.cpp
 )
 TARGET_LINK_LIBRARIES(
     server

@@ -1,5 +1,6 @@
 #include "handlers.hpp"
 
+#include "../api/user.hpp"
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
 #include "../server/server.hpp"
@@ -7,7 +8,6 @@
 // DEVEL:
 #include "../common/config.hpp"
 #include "../common/json.hpp"
-#include "../common/user.hpp"
 
 #line __LINE__ "server/handlers.cpp"
 

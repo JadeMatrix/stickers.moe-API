@@ -5,12 +5,12 @@
 
 #include <string>
 
-#include "bigid.hpp"
-#include "timestamp.hpp"
-#include "exception.hpp"
-#include "hashing.hpp"
-#include "postgres.hpp"
 #include "../audit/blame.hpp"
+#include "../common/bigid.hpp"
+#include "../common/timestamp.hpp"
+#include "../common/exception.hpp"
+#include "../common/hashing.hpp"
+#include "../common/postgres.hpp"
 
 
 namespace stickers
