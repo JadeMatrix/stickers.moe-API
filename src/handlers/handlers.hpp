@@ -3,23 +3,17 @@
 #define STICKERS_MOE_HANDLERS_HANDLERS_HPP
 
 
-#include <show.hpp>
+#include "../common/handler.hpp"
 
 
 namespace stickers
 {
     namespace handlers
     {
-        struct handler_rt
-        {
-            show::response_code response_code;
-            std::string         message;
-        };
-        
-        handler_rt create_user( show::request& );
-        handler_rt    get_user( show::request& );
-        handler_rt   edit_user( show::request& );
-        handler_rt delete_user( show::request& );
+        void create_user( show::request& );
+        void    get_user( show::request& );
+        void   edit_user( show::request& );
+        void delete_user( show::request& );
     }
 }
 

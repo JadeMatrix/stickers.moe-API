@@ -33,12 +33,12 @@ namespace
 
 namespace stickers
 {
-    handlers::handler_rt handlers::create_user( show::request& request )
+    void handlers::create_user( show::request& request )
     {
-        // return { { 500, "Not Implemented" }, "Not implemented" };
+        // throw handler_exit( { 500, "Not Implemented" }, "Not implemented" );
         
         if( request.path().size() > 1 )
-            return { { 404, "Not Found" }, "" };
+            throw handler_exit( { 404, "Not Found" }, "" );
         
         std::istream request_stream( &request );
         nlj::json details_json;
@@ -113,14 +113,12 @@ namespace stickers
         );
         
         response.sputn( user_json.c_str(), user_json.size() );
-        
-        return { { 000, "" }, "" };
     }
     
-    handlers::handler_rt handlers::get_user( show::request& request )
+    void handlers::get_user( show::request& request )
     {
         if( request.path().size() < 2 )
-            return { { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
         
         stickers::bigid user_id( BIGID_MIN );
         
@@ -130,7 +128,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            return { { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
         }
         
         try
@@ -187,24 +185,22 @@ namespace stickers
             );
             
             response.sputn( user_json.c_str(), user_json.size() );
-            
-            return { { 000, "" }, "" };
         }
         catch( const no_such_user& nsu )
         {
-            return { { 404, "Not Found" }, "no such user" };
+            throw handler_exit( { 404, "Not Found" }, "no such user" );
         }
     }
     
-    handlers::handler_rt handlers::edit_user( show::request& request )
+    void handlers::edit_user( show::request& request )
     {
-        return { { 500, "Not Implemented" }, "Not implemented" };
+        throw handler_exit( { 500, "Not Implemented" }, "Not implemented" );
     }
     
-    handlers::handler_rt handlers::delete_user( show::request& request )
+    void handlers::delete_user( show::request& request )
     {
         if( request.path().size() > 2 )
-            return { { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
         
         stickers::bigid user_id( BIGID_MIN );
         
@@ -214,7 +210,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            return { { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
         }
         
         try
@@ -246,12 +242,10 @@ namespace stickers
             );
             
             response.sputn( null_json.c_str(), null_json.size() );
-            
-            return { { 000, "" }, "" };
         }
         catch( const no_such_user& nsu )
         {
-            return { { 404, "Not Found" }, "no such user" };
+            throw handler_exit( { 404, "Not Found" }, "no such user" );
         }
     }
 }

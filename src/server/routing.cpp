@@ -1,9 +1,10 @@
 #include "routing.hpp"
 
 #include "server.hpp"
-#include "../handlers/handlers.hpp"
+#include "../common/config.hpp"
 #include "../common/logging.hpp"
 #include "../common/json.hpp"
+#include "../handlers/handlers.hpp"
 
 #include <exception>
 #include <map>
@@ -15,7 +16,9 @@ namespace stickers
 {
     void route_request( show::request& request )
     {
-        handlers::handler_rt error_info{ { 400, "Bad Request" }, "" };
+        bool handler_finished = false;
+        show::response_code error_code    = { 400, "Bad Request" };
+        std::string         error_message = "";
         
         try
         {
@@ -24,33 +27,37 @@ namespace stickers
                 if( request.path()[ 0 ] == "user" )
                 {
                     if( request.method() == "POST" )
-                        error_info = handlers::create_user( request );
+                        handlers::create_user( request );
                     else if( request.method() == "GET" )
-                        error_info = handlers::get_user( request );
+                        handlers::get_user( request );
                     else if( request.method() == "PUT" )
-                        error_info = handlers::edit_user( request );
+                        handlers::edit_user( request );
                     else if( request.method() == "DELETE" )
-                        error_info = handlers::delete_user( request );
+                        handlers::delete_user( request );
                     else
-                        error_info = { { 405, "Method Not Allowed" }, "" };
+                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
                 }
                 else
-                    error_info = { { 404, "Not Found" }, "" };
+                    throw handler_exit( { 404, "Not Found" }, "" );
             }
             else
-                error_info = { { 404, "Not Found" }, "need an API path" };
+                throw handler_exit( { 404, "Not Found" }, "need an API path" );
+            
+            handler_finished = true;
         }
-        catch( const show::client_disconnected& cd )
+        catch( const show::connection_interrupted& ci )
         {
             throw;
         }
-        catch( const show::connection_timeout& ct )
+        catch( const handler_exit& he )
         {
-            throw;
+            error_code    = he.response_code;
+            error_message = he.message;
         }
         catch( const std::exception& e )
         {
-            error_info = { { 500, "Server Error" }, "please try again later" };
+            error_code    = { 500, "Server Error" };
+            error_message = "please try again later";
             STICKERS_LOG(
                 ERROR,
                 "uncaught std::exception in route_request(show::request&): ",
@@ -59,7 +66,8 @@ namespace stickers
         }
         catch( ... )
         {
-            error_info = { { 500, "Server Error" }, "please try again later" };
+            error_code    = { 500, "Server Error" };
+            error_message = "please try again later";
             STICKERS_LOG(
                 ERROR,
                 "uncaught non-std::exception in route_request(show::request&)"
@@ -69,17 +77,19 @@ namespace stickers
         if( !request.unknown_content_length() )
             while( !request.eof() ) request.sbumpc();
         
-        if( error_info.response_code.code < 300 )
+        if( handler_finished )
             return;
         
-        nlj::json error_object;
-        error_object[ "message" ] = error_info.message;
+        nlj::json error_object = {
+            { "message", error_message              },
+            { "contact", config()[ "server" ][ "admin" ] }
+        };
         std::string error_json = error_object.dump();
         
         show::response response(
             request.connection(),
             show::HTTP_1_1,
-            error_info.response_code,
+            error_code,
             {
                 server_header,
                 { "Content-Type", { "application/json" } },
