@@ -1,6 +1,6 @@
 #pragma once
-#ifndef STICKERS_MOE_COMMON_USER_HPP
-#define STICKERS_MOE_COMMON_USER_HPP
+#ifndef STICKERS_MOE_API_USER_HPP
+#define STICKERS_MOE_API_USER_HPP
 
 
 #include <string>
