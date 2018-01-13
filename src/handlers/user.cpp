@@ -1,8 +1,8 @@
 #include "handlers.hpp"
 
-#include "routing.hpp"
-#include "server.hpp"
 #include "../common/logging.hpp"
+#include "../server/routing.hpp"
+#include "../server/server.hpp"
 
 // DEVEL:
 #include "../common/config.hpp"

@@ -21,7 +21,7 @@ ADD_EXECUTABLE(
     src/server/main.cpp
     src/server/server.cpp
     src/server/routing.cpp
-    src/server/handlers.cpp
+    src/handlers/user.cpp
     src/common/config.cpp
     src/common/timestamp.cpp
     src/common/user.cpp

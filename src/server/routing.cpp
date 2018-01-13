@@ -1,7 +1,7 @@
 #include "routing.hpp"
 
-#include "handlers.hpp"
 #include "server.hpp"
+#include "../handlers/handlers.hpp"
 #include "../common/logging.hpp"
 #include "../common/json.hpp"
 
