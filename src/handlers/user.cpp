@@ -159,8 +159,10 @@ namespace stickers
             {
             case BCRYPT:
                 user[ "password" ][ "type" ] = "bcrypt";
+                break;
             default:
                 user[ "password" ][ "type" ] = nullptr;
+                break;
             }
             
             if( info.real_name )
