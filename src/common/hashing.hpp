@@ -46,8 +46,59 @@ namespace stickers
         
         static sha256 make_from_hex_string( const std::string& );
         
-        bool     operator==( const sha256     & ) const;
-        bool     operator!=( const sha256     & ) const;
+        bool operator==( const sha256& ) const;
+        bool operator!=( const sha256& ) const;
+    };
+    
+    class scrypt
+    {
+    protected:
+        scrypt();
+        
+        std::string   salt;
+        std::string   digest;
+        unsigned char _factor;
+        unsigned char _block_size;
+        unsigned char _parallelization;
+        
+    public:
+        scrypt( const scrypt& );
+        
+        std::string   raw_digest     () const;
+        std::string   hex_digest     () const;
+        std::string   raw_salt       () const;
+        std::string   hex_salt       () const;
+        unsigned char factor         () const;
+        unsigned char block_size     () const;
+        unsigned char parallelization() const;
+        
+        // Defaults from libscrypt v1.21
+        static const unsigned char default_factor          = 14;
+        static const unsigned char default_block_size      =  8;
+        static const unsigned char default_parallelization = 16;
+        static const unsigned char default_digest_size     = 64;
+        
+        static scrypt make(
+            const char*   input,
+            size_t        input_len,
+            const char*   salt,
+            size_t        salt_len,
+            unsigned char factor          = default_factor,
+            unsigned char block_size      = default_block_size,
+            unsigned char parallelization = default_parallelization,
+            size_t        digest_size     = default_digest_size
+        );
+        static scrypt make(
+            const std::string& input,
+            const std::string& salt,
+            unsigned char      factor          = default_factor,
+            unsigned char      block_size      = default_block_size,
+            unsigned char      parallelization = default_parallelization,
+            size_t             digest_size     = default_digest_size
+        );
+        
+        bool operator==( const scrypt& ) const;
+        bool operator!=( const scrypt& ) const;
     };
 }
 
