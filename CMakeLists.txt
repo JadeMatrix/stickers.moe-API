@@ -1,6 +1,9 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.6 )
 
-SET( CMAKE_CXX_STANDARD          11 )
+SET( CMAKE_C_COMPILER   /usr/local/Cellar/llvm/5.0.1/bin/clang   )
+SET( CMAKE_CXX_COMPILER /usr/local/Cellar/llvm/5.0.1/bin/clang++ )
+
+SET( CMAKE_CXX_STANDARD          17 )
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 
@@ -15,6 +18,7 @@ FIND_LIBRARY( REDOX_LIBRARY      redox      )
 FIND_LIBRARY( FASTFORMAT_LIBRARY FastFormat )
 FIND_LIBRARY( CRYPTOPP_LIBRARY   cryptopp   )
 FIND_LIBRARY( TZ_LIBRARY         tz         )
+FIND_LIBRARY( CURL_LIBRARY       curl       )
 
 ADD_EXECUTABLE(
     server
@@ -30,11 +34,13 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     server
+    "-L/usr/local/Cellar/llvm/5.0.1/lib"
     ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
     ${CRYPTOPP_LIBRARY}
     ${TZ_LIBRARY}
+    ${CURL_LIBRARY}
 )
 
 ADD_EXECUTABLE(
@@ -48,4 +54,5 @@ TARGET_LINK_LIBRARIES(
     ${FASTFORMAT_LIBRARY}
     ${CRYPTOPP_LIBRARY}
     ${TZ_LIBRARY}
+    ${CURL_LIBRARY}
 )

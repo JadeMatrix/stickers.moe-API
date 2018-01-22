@@ -10,7 +10,12 @@
 // #include <fastformat/shims/conversion/filter_type/void_pointers.hpp>
 // #include <fastformat/sinks/ostream.hpp>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
+#define __clang_major__ 9
 #include <fastformat/ff.hpp>
+#define __clang_major__ 5
+#pragma clang diagnostic pop
 
 #ifdef FASTFORMAT_NO_FILTER_TYPE_CONVERSION_SHIM_SUPPORT
 #error Cannot compile this file with a compiler that does not support the filter_type mechanism (FastFormat)

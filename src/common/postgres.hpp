@@ -3,6 +3,7 @@
 #define STICKERS_MOE_COMMON_POSTGRES_HPP
 
 
+#define PQXX_HAVE_OPTIONAL
 #include <pqxx/pqxx>
 
 #include <memory>
