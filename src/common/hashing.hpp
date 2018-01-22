@@ -6,8 +6,12 @@
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
 
+#include <cctype>
 #include <exception>
 #include <string>
+#include <sstream>
+
+#include "postgres.hpp"
 
 
 namespace stickers
@@ -19,6 +23,10 @@ namespace stickers
     
     class sha256
     {
+        // So libpqxx can use sha256's protected default constructor
+        friend sha256 pqxx::field::as< sha256 >() const;
+        friend sha256 pqxx::field::as< sha256 >( const sha256& ) const;
+        
     protected:
         sha256();
         
@@ -40,6 +48,65 @@ namespace stickers
         
         bool     operator==( const sha256     & ) const;
         bool     operator!=( const sha256     & ) const;
+    };
+}
+
+
+// Template specialization of `pqxx::string_traits<>(&)` for `stickers::sha256`,
+// which allows use of `pqxx::field::to<>(&)` and `pqxx::field::as<>(&)`
+namespace pqxx
+{
+    template<> struct string_traits< stickers::sha256 >
+    {
+        using subject_type = stickers::sha256;
+        
+        static constexpr const char* name() noexcept {
+            return "stickers::sha256";
+        }
+        
+        static constexpr bool has_null() noexcept { return false; }
+        
+        static bool is_null( const stickers::sha256& ) { return false; }
+        
+        [[noreturn]] static stickers::sha256 null()
+        {
+            internal::throw_null_conversion( name() );
+        }
+        
+        static void from_string( const char str[], stickers::sha256& h )
+        {
+            try
+            {
+                h = stickers::sha256( str, strlen( str ) );
+            }
+            catch( const stickers::hash_error& he )
+            {
+                throw argument_error(
+                    "Failed conversion to "
+                    + std::string( name() )
+                    + ": '"
+                    + std::string( str )
+                    + "'"
+                );
+            }
+        }
+        
+        static std::string to_string( const stickers::sha256& h )
+        {
+            std::string        encoded = h.raw_digest();
+            std::ostringstream decoded;
+            decoded << std::hex;
+            
+            for( auto iter = encoded.begin(); iter != encoded.end(); ++iter )
+                if( std::isprint( *iter ) )
+                    decoded << *iter;
+                else
+                {
+                    decoded << "\\x" << ( unsigned int )*iter;
+                }
+            
+            return decoded.str();
+        }
     };
 }
 
