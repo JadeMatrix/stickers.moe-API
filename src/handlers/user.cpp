@@ -19,13 +19,14 @@ namespace
 {
     std::string image_hash_to_image( stickers::sha256 hash )
     {
+        std::string hash_hex = hash.hex_digest();
         return (
               "/images/"
-            + hash.substr( 0, 2 )
+            + hash_hex.substr( 0, 2 )
             + "/"
-            + hash.substr( 2, 2 )
+            + hash_hex.substr( 2, 2 )
             + "/"
-            + hash
+            + hash_hex
         );
     }
 }
@@ -54,8 +55,6 @@ namespace stickers
         
         details.created      = now();
         details.display_name = details_json[ "display_name" ];
-        // details.real_name    = details_json[ "real_name"    ];
-        details.avatar_hash  = details_json[ "avatar_hash"  ];
         details.email        = details_json[ "email"        ];
         
         user created_user = create_user(
@@ -78,7 +77,6 @@ namespace stickers
             { "created", to_iso8601_str( created_user.info.created ) },
             { "revised", to_iso8601_str( created_user.info.revised ) },
             { "display_name", created_user.info.display_name },
-            { "real_name", created_user.info.real_name },
             { "email", created_user.info.email }
         };
         switch( created_user.info.password.type )
@@ -89,13 +87,17 @@ namespace stickers
             details_json[ "password" ][ "type" ] = nullptr;
         }
         
-        if( created_user.info.real_name == "" )
+        if( created_user.info.real_name )
+            details_json[ "real_name" ] = *created_user.info.real_name;
+        else
             details_json[ "real_name" ] = nullptr;
         
-        if( created_user.info.avatar_hash == "" )
-            details_json[ "avatar" ] = nullptr;
+        if( created_user.info.avatar_hash )
+            details_json[ "avatar" ] = image_hash_to_image(
+                *created_user.info.avatar_hash
+            );
         else
-            details_json[ "avatar" ] = image_hash_to_image( created_user.info.avatar_hash );
+            details_json[ "avatar" ] = nullptr;
         
         std::string user_json = details_json.dump();
         
@@ -150,9 +152,9 @@ namespace stickers
                 { "created", to_iso8601_str( info.created ) },
                 { "revised", to_iso8601_str( info.revised ) },
                 { "display_name", info.display_name },
-                { "real_name", info.real_name },
                 { "email", info.email }
             };
+            
             switch( info.password.type )
             {
             case BCRYPT:
@@ -161,13 +163,15 @@ namespace stickers
                 user[ "password" ][ "type" ] = nullptr;
             }
             
-            if( info.real_name == "" )
+            if( info.real_name )
+                user[ "real_name" ] = *info.real_name;
+            else
                 user[ "real_name" ] = nullptr;
             
-            if( info.avatar_hash == "" )
-                user[ "avatar" ] = nullptr;
+            if( info.avatar_hash )
+                user[ "avatar" ] = image_hash_to_image( *info.avatar_hash );
             else
-                user[ "avatar" ] = image_hash_to_image( info.avatar_hash );
+                user[ "avatar" ] = nullptr;
             
             std::string user_json = user.dump();
             

@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <optional>
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
@@ -32,13 +33,13 @@ namespace stickers
     
     struct user_info
     {
-        password    password;
-        timestamp   created;
-        timestamp   revised;
-        std::string display_name;
-        std::string real_name;
-        sha256      avatar_hash;
-        std::string email;
+        password                     password;
+        timestamp                    created;
+        timestamp                    revised;
+        std::string                  display_name;
+        std::optional< std::string > real_name;
+        std::optional< sha256      > avatar_hash;
+        std::string                  email;
     };
     
     struct user

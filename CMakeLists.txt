@@ -30,6 +30,7 @@ ADD_EXECUTABLE(
     src/common/timestamp.cpp
     src/common/bigid.cpp
     src/common/postgres.cpp
+    src/common/hashing.cpp
     src/api/user.cpp
 )
 TARGET_LINK_LIBRARIES(

@@ -78,24 +78,21 @@ namespace
             );
         }
         
-        connection -> prepare(
-            "add_user_revision",
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winvalid-pp-token"
-            PSQL(
-                INSERT INTO users.user_revisions
-                VALUES
-                    (
-                        $1, $2, $3, $4, $5,
-                        CASE WHEN $6 = '' THEN NULL ELSE $6 END,
-                        CASE WHEN $7 = '' THEN NULL ELSE $7::util.raw_sha256 END
-                    )
-                ;
+        std::string add_user_revision = PSQL(
+            INSERT INTO users.user_revisions (
+                user_id,
+                revised,
+                revised_by,
+                revised_from,
+                display_name,
+                real_name,
+                avatar_hash
             )
-#pragma clang diagnostic pop
+            VALUES ( $1, $2, $3, $4, $5, $6, $7 )
+            ;
         );
-        transaction.exec_prepared(
-            "add_user_revision",
+        transaction.exec_params(
+            add_user_revision,
             user.id,
             blame.when,
             ( signup ? user.id : blame.who ),
@@ -194,21 +191,19 @@ namespace stickers
         if( result.size() < 1 )
             throw no_such_user( id, "loading" );
         
-        password found_pass = {
-            result[ 0 ][ "password_type" ].as< password_type >( UNKNOWN ),
-            pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
-            pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
-            result[ 0 ][ "password_factor" ].as< int >()
-        };
-        
         user_info found_info = {
-            found_pass,
-            result[ 0 ][ "created"      ].as< timestamp   >(),
-            result[ 0 ][ "revised"      ].as< timestamp   >(),
-            result[ 0 ][ "display_name" ].as< std::string >(),
-            result[ 0 ][ "real_name"    ].as< std::string >( "" ),
-            result[ 0 ][ "avatar_hash"  ].as< std::string >( "" ),
-            result[ 0 ][ "email"        ].as< std::string >(),
+            {
+                result[ 0 ][ "password_type" ].as< password_type >( UNKNOWN ),
+                pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
+                pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
+                result[ 0 ][ "password_factor" ].as< int >()
+            },
+            result[ 0 ][ "created"      ].as<  timestamp   >(),
+            result[ 0 ][ "revised"      ].as<  timestamp   >(),
+            result[ 0 ][ "display_name" ].as<  std::string >(),
+            result[ 0 ][ "real_name"    ].get< std::string >(),
+            result[ 0 ][ "avatar_hash"  ].get< sha256      >(),
+            result[ 0 ][ "email"        ].as<  std::string >(),
         };
         
         return found_info;
