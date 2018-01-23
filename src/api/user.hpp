@@ -10,7 +10,6 @@
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
 #include "../common/timestamp.hpp"
-#include "../common/exception.hpp"
 #include "../common/hashing.hpp"
 #include "../common/postgres.hpp"
 
@@ -106,14 +105,11 @@ namespace stickers
     
     void send_validation_email( const bigid& );
     
-    class no_such_user : public exception
+    class no_such_user : public std::runtime_error
     {
-    protected:
-        std::string message;
     public:
         // no_such_user( const bigid& );
         no_such_user( const bigid&, const std::string& );
-        virtual const char* what() const noexcept;
     };
 }
 

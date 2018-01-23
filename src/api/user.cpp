@@ -478,7 +478,7 @@ namespace stickers
 namespace stickers
 {
     no_such_user::no_such_user( const bigid& id, const std::string& purpose ) :
-        message(
+        std::runtime_error(
             "no such user with ID "
             + ( std::string )id
             + " ("
@@ -486,9 +486,4 @@ namespace stickers
             + ")"
         )
     {}
-    
-    const char* no_such_user::what() const noexcept
-    {
-        return message.c_str();
-    }
 }

@@ -3,9 +3,9 @@
 #define STICKERS_MOE_COMMON_BIGID_HPP
 
 
+#include <exception>
 #include <string>
 
-#include "exception.hpp"
 #include "postgres.hpp"
 
 
@@ -39,7 +39,7 @@ namespace stickers
     const bigid BIGID_MIN( _BIGID_MIN );
     const bigid BIGID_MAX( _BIGID_MAX );
     
-    class bigid_out_of_range : public exception, public std::out_of_range
+    class bigid_out_of_range : public std::out_of_range
     {
     public:
         bigid_out_of_range( long long value ) noexcept;
