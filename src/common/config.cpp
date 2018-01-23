@@ -51,7 +51,7 @@ namespace stickers
         return global_config;
     }
     
-    void  set_config( const nlj::json& o )
+    void set_config( const nlj::json& o )
     {
         std::lock_guard< std::mutex > guard( config_mutex );
         if( global_config == nullptr )
@@ -59,7 +59,7 @@ namespace stickers
         set_log_level();
     }
     
-    void  set_config( const std::string& s )
+    void set_config( const std::string& s )
     {
         std::lock_guard< std::mutex > guard( config_mutex );
         if( global_config == nullptr )
