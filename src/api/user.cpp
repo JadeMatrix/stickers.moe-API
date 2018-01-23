@@ -1,12 +1,12 @@
 #include "user.hpp"
 
+#include <fstream>
+
 #include "../common/config.hpp"
 #include "../common/timestamp.hpp"
 #include "../common/postgres.hpp"
 #include "../common/redis.hpp"
 #include "../common/logging.hpp"
-
-#include <fstream>
 
 #line __LINE__ "common/user.cpp"
 
