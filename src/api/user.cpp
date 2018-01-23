@@ -26,8 +26,7 @@ namespace
         
         if( generate_id )
         {
-            connection -> prepare(
-                "create_user_core",
+            pqxx::result result = transaction.exec_params(
                 PSQL(
                     INSERT INTO users.user_core (
                         user_id,
@@ -43,10 +42,7 @@ namespace
                     )
                     RETURNING user_id
                     ;
-                )
-            );
-            pqxx::result result = transaction.exec_prepared(
-                "create_user_core",
+                ),
                 blame.when,
                 user.info.password.type(),
                 pqxx::binarystring( user.info.password.hash() ),
@@ -57,8 +53,7 @@ namespace
         }
         else
         {
-            connection -> prepare(
-                "get_current_user_email",
+            pqxx::result result = transaction.exec_params(
                 PSQL(
                     SELECT email
                     FROM users.user_emails
@@ -66,10 +61,7 @@ namespace
                         user_id = $1
                         AND current
                     ;
-                )
-            );
-            pqxx::result result = transaction.exec_prepared(
-                "get_current_user_email",
+                ),
                 user.id
             );
             if( result.size() >= 1 )
@@ -104,16 +96,12 @@ namespace
         if( user.info.email != current_email )
         {
             // TODO: figure out a way to have an "invalid" signup email
-            connection -> prepare(
-                "add_user_email_revision",
+            transaction.exec_params(
                 PSQL(
                     INSERT INTO users.user_emails
                     VALUES ( $1, $2, $3, $4, $5, $6 )
                     ;
-                )
-            );
-            transaction.exec_prepared(
-                "add_user_email_revision",
+                ),
                 user.id,
                 user.info.email,
                 signup,
@@ -373,8 +361,7 @@ namespace stickers
         auto connection = postgres::connect();
         pqxx::work transaction( *connection );
         
-        connection -> prepare(
-            "load_user",
+        pqxx::result result = transaction.exec_params(
             PSQL(
                 SELECT
                     user_id,
@@ -391,9 +378,9 @@ namespace stickers
                 FROM users.users
                 WHERE user_id = $1
                 ;
-            )
+            ),
+            id
         );
-        pqxx::result result = transaction.exec_prepared( "load_user", id );
         transaction.commit();
         
         if( result.size() < 1 )
@@ -459,8 +446,7 @@ namespace stickers
         auto connection = postgres::connect();
         pqxx::work transaction( *connection );
         
-        connection -> prepare(
-            "delete_user",
+        pqxx::result result = transaction.exec_params(
             PSQL(
                 INSERT INTO users.user_deletions (
                     user_id,
@@ -469,11 +455,7 @@ namespace stickers
                     deleted_from
                 ) VALUES ( $1, $2, $3, $4 )
                 ;
-            )
-        );
-        
-        pqxx::result result = transaction.exec_prepared(
-            "delete_user",
+            ),
             id,
             blame.when,
             blame.who,
