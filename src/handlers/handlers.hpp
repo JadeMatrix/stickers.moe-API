@@ -3,7 +3,7 @@
 #define STICKERS_MOE_HANDLERS_HANDLERS_HPP
 
 
-#include "../common/handler.hpp"
+#include "../server/handler.hpp"
 
 
 namespace stickers
