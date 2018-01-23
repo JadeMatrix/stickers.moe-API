@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <thread>
 
 
 namespace stickers
@@ -40,10 +41,14 @@ namespace stickers
                 "%F %T%z"
             );
             
+            std::stringstream thread_id_string;
+            thread_id_string << std::this_thread::get_id();
+            
             ff::writeln(
                 ( level == stickers::ERROR ? std::cerr : std::cout ),
                 "[", level_strings.at( level ), "]",
                 "[", time_string.str(), "]",
+                "[thread ", thread_id_string.str(), "]",
                 stickers::log_level() >= stickers::DEBUG ? (
                     std::string( "[" )
                     + file_name
