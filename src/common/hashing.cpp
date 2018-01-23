@@ -167,6 +167,20 @@ namespace stickers
         _parallelization( o._parallelization )
     {}
     
+    scrypt::scrypt(
+        const std::string& digest,
+        const std::string& salt,
+        unsigned char      factor,
+        unsigned char      block_size,
+        unsigned char      parallelization
+    ) :
+        digest(           digest          ),
+        salt(             salt            ),
+        _factor(          factor          ),
+        _block_size(      block_size      ),
+        _parallelization( parallelization )
+    {}
+    
     std::string scrypt::raw_digest() const
     {
         return digest;
@@ -272,6 +286,31 @@ namespace stickers
             parallelization,
             digest_size
         );
+    }
+    
+    unsigned int scrypt::make_libscrypt_mcf_factor(
+        unsigned char factor,
+        unsigned char block_size,
+        unsigned char parallelization
+    )
+    {
+        return (
+              ( ( unsigned int )factor          << 16 )
+            | ( ( unsigned int )block_size      <<  8 )
+            | ( ( unsigned int )parallelization <<  0 )
+        );
+    }
+    
+    void scrypt::split_libscrypt_mcf_factor(
+        unsigned int   combined,
+        unsigned char& factor,
+        unsigned char& block_size,
+        unsigned char& parallelization
+    )
+    {
+        factor          = combined >> 16;
+        block_size      = combined >>  8;
+        parallelization = combined >>  0;
     }
     
     bool scrypt::operator==( const scrypt& o ) const

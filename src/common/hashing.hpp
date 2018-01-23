@@ -55,14 +55,21 @@ namespace stickers
     protected:
         scrypt();
         
-        std::string   salt;
         std::string   digest;
+        std::string   salt;
         unsigned char _factor;
         unsigned char _block_size;
         unsigned char _parallelization;
         
     public:
         scrypt( const scrypt& );
+        scrypt( // Load from database fields
+            const std::string& digest,
+            const std::string& salt,
+            unsigned char      factor,
+            unsigned char      block_size,
+            unsigned char      parallelization
+        );
         
         std::string   raw_digest     () const;
         std::string   hex_digest     () const;
@@ -73,6 +80,7 @@ namespace stickers
         unsigned char parallelization() const;
         
         // Defaults from libscrypt v1.21
+        static const unsigned char default_salt_size       = 16;
         static const unsigned char default_factor          = 14;
         static const unsigned char default_block_size      =  8;
         static const unsigned char default_parallelization = 16;
@@ -95,6 +103,18 @@ namespace stickers
             unsigned char      block_size      = default_block_size,
             unsigned char      parallelization = default_parallelization,
             size_t             digest_size     = default_digest_size
+        );
+        
+        static unsigned int make_libscrypt_mcf_factor(
+            unsigned char factor          = default_factor,
+            unsigned char block_size      = default_block_size,
+            unsigned char parallelization = default_parallelization
+        );
+        static void split_libscrypt_mcf_factor(
+            unsigned int   combined,
+            unsigned char& factor,
+            unsigned char& block_size,
+            unsigned char& parallelization
         );
         
         bool operator==( const scrypt& ) const;
@@ -152,9 +172,7 @@ namespace pqxx
                 if( std::isprint( *iter ) )
                     decoded << *iter;
                 else
-                {
                     decoded << "\\x" << ( unsigned int )*iter;
-                }
             
             return decoded.str();
         }
