@@ -48,7 +48,7 @@ namespace
             pqxx::result result = transaction.exec_prepared(
                 "create_user_core",
                 blame.when,
-                user.info.password.type,
+                user.info.password.type(),
                 pqxx::binarystring( user.info.password.hash() ),
                 pqxx::binarystring( user.info.password.salt() ),
                 user.info.password.factor()
@@ -140,7 +140,7 @@ namespace stickers
     
     void password::cleanup()
     {
-        switch( type )
+        switch( _type )
         {
         case RAW:
         {
@@ -155,23 +155,36 @@ namespace stickers
         default:
             break;
         }
-        type = INVALID;
+        _type = INVALID;
         invalid_value = nullptr;
     }
     
-    password::password() : type( INVALID ), invalid_value( nullptr ) {}
+    const char* password::type_name() const
+    {
+        switch( _type )
+        {
+        case RAW:
+            return "raw";
+        case SCRYPT:
+            return "scrypt";
+        default:
+            return "invalid";
+        }
+    }
+    
+    password::password() : _type( INVALID ), invalid_value( nullptr ) {}
     
     password::password( const std::string& v ) :
-        type(      RAW ),
+        _type(      RAW ),
         raw_value( v   )
     {}
     
     password::password( const scrypt& v ) :
-        type(         SCRYPT ),
+        _type(         SCRYPT ),
         scrypt_value( v      )
     {}
     
-    password::password( const password& o ) : type( INVALID )
+    password::password( const password& o ) : _type( INVALID )
     {
         *this = o;
     }
@@ -183,7 +196,7 @@ namespace stickers
     
     bool password::operator==( const password& o ) const
     {
-        switch( type )
+        switch( _type )
         {
         case RAW:
         {
@@ -216,7 +229,7 @@ namespace stickers
     
     password& password::operator=( const password& o )
     {
-        switch( o.type )
+        switch( o._type )
         {
         case RAW:
             *this = o.raw_value;
@@ -234,7 +247,7 @@ namespace stickers
     password& password::operator=( const std::string& v )
     {
         cleanup();
-        type = RAW;
+        _type = RAW;
         new( &raw_value ) std::string( v );
         return *this;
     }
@@ -242,14 +255,14 @@ namespace stickers
     password& password::operator=( const scrypt& v )
     {
         cleanup();
-        type = SCRYPT;
+        _type = SCRYPT;
         new( &scrypt_value ) scrypt( v );
         return *this;
     }
     
     std::string password::hash() const
     {
-        switch( type )
+        switch( _type )
         {
         case SCRYPT:
             return scrypt_value.raw_digest();
@@ -260,7 +273,7 @@ namespace stickers
     
     std::string password::salt() const
     {
-        switch( type )
+        switch( _type )
         {
         case SCRYPT:
             return scrypt_value.raw_salt();
@@ -271,7 +284,7 @@ namespace stickers
     
     long password::factor() const
     {
-        switch( type )
+        switch( _type )
         {
         case SCRYPT:
             return scrypt::make_libscrypt_mcf_factor(
@@ -326,13 +339,13 @@ namespace stickers
             info
         };
         
-        if( new_user.info.password.type == RAW )
+        if( new_user.info.password.type() == RAW )
         {
             new_user.info.password = hash_password(
-                new_user.info.password.raw_value
+                new_user.info.password.value< std::string >()
             );
         }
-        else if( new_user.info.password.type != INVALID )
+        else if( new_user.info.password.type() != INVALID )
             STICKERS_LOG(
                 WARNING,
                 "creating user with a pre-set password"
@@ -365,7 +378,7 @@ namespace stickers
             PSQL(
                 SELECT
                     user_id,
-                    ( password ).type AS password_type,
+                    ( password )._type AS password__type,
                     ( password ).hash AS password_hash,
                     ( password ).salt AS password_salt,
                     ( password ).factor AS password_factor,
@@ -387,7 +400,7 @@ namespace stickers
             throw no_such_user( id, "loading" );
         
         password pw;
-        if( result[ 0 ][ "password_type" ].as< password_type >() == SCRYPT )
+        if( result[ 0 ][ "password__type" ].as< password_type >() == SCRYPT )
         {
             unsigned char factor, block_size, parallelization;
             
@@ -426,9 +439,9 @@ namespace stickers
         
         user updated_user = u;
         
-        if( updated_user.info.password.type == RAW )
+        if( updated_user.info.password.type() == RAW )
             updated_user.info.password = hash_password(
-                updated_user.info.password.raw_value
+                updated_user.info.password.value< std::string >()
             );
         
         write_user_details(

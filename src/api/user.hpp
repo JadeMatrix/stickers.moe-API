@@ -5,6 +5,7 @@
 
 #include <string>
 #include <optional>
+#include <exception>
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
@@ -23,9 +24,10 @@ namespace stickers
         SCRYPT
     };
     
-    struct password
+    class password
     {
-        password_type type;
+    protected:
+        password_type _type;
         union
         {
             void*       invalid_value;
@@ -34,12 +36,21 @@ namespace stickers
         };
         
         void cleanup();
+        const char* type_name() const;
         
+    public:
         password();
         password( const std::string& o );
         password( const scrypt     & o );
         password( const password& );
         ~password();
+        
+        password_type type() const { return _type; }
+        template< typename T > T& value();
+        
+        std::string   hash() const;
+        std::string   salt() const;
+        long        factor() const;
         
         bool operator==( const password& ) const;
         bool operator!=( const password& ) const;
@@ -47,11 +58,26 @@ namespace stickers
         password& operator=( const password   & );
         password& operator=( const std::string& );
         password& operator=( const scrypt     & );
-        
-        std::string   hash() const;
-        std::string   salt() const;
-        long        factor() const;
     };
+    
+    template<> inline std::string& password::value< std::string >()
+    {
+        if( _type != RAW )
+            throw std::runtime_error(
+                "attempt to get wrong type of value (raw) from "
+                "stickers::password (" + std::string( type_name() ) + ")"
+            );
+        return raw_value;
+    }
+    template<> inline scrypt& password::value< scrypt >()
+    {
+        if( _type != RAW )
+            throw std::runtime_error(
+                "attempt to get wrong type of value (scrypt) from "
+                "stickers::password (" + std::string( type_name() ) + ")"
+            );
+        return scrypt_value;
+    }
     
     // Return a fresh hashing of a new password using the preferred method
     password hash_password( const std::string& );
