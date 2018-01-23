@@ -378,9 +378,9 @@ namespace stickers
             PSQL(
                 SELECT
                     user_id,
-                    ( password )._type AS password__type,
-                    ( password ).hash AS password_hash,
-                    ( password ).salt AS password_salt,
+                    ( password ).type   AS password_type,
+                    ( password ).hash   AS password_hash,
+                    ( password ).salt   AS password_salt,
                     ( password ).factor AS password_factor,
                     created,
                     revised,
@@ -400,7 +400,7 @@ namespace stickers
             throw no_such_user( id, "loading" );
         
         password pw;
-        if( result[ 0 ][ "password__type" ].as< password_type >() == SCRYPT )
+        if( result[ 0 ][ "password_type" ].as< password_type >() == SCRYPT )
         {
             unsigned char factor, block_size, parallelization;
             
