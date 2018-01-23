@@ -133,9 +133,9 @@ namespace stickers
         sha256 h;
         
         size_t i = 0;
-        for( auto iter = h.digest.begin(); iter != h.digest.end(); ++iter )
+        for( auto& b : h.digest )
         {
-            *iter = ( unhex( s[ i ] ) << 4 ) | ( unhex( s[ i + 1 ] ) );
+            b = ( unhex( s[ i ] ) << 4 ) | ( unhex( s[ i + 1 ] ) );
             i += 2;
         }
         

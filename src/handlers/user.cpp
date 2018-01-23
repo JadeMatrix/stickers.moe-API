@@ -43,12 +43,11 @@ namespace stickers
         
         request_stream >> details_json;
         
-        std::array< std::string, 3 > required_fields{ {
+        for( const auto& field : std::array< std::string, 3 >{ {
             "password",
             "display_name",
             "email"
-        } };
-        for( const auto& field : required_fields )
+        } } )
             if( details_json.find( field ) == details_json.end() )
                 throw handler_exit(
                     { 400, "Bad Request" },

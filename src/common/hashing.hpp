@@ -168,11 +168,11 @@ namespace pqxx
             std::ostringstream decoded;
             decoded << std::hex;
             
-            for( auto iter = encoded.begin(); iter != encoded.end(); ++iter )
-                if( std::isprint( *iter ) )
-                    decoded << *iter;
+            for( auto& b : encoded )
+                if( std::isprint( b ) )
+                    decoded << b;
                 else
-                    decoded << "\\x" << ( unsigned int )*iter;
+                    decoded << "\\x" << ( unsigned int )b;
             
             return decoded.str();
         }
