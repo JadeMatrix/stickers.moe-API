@@ -18,7 +18,7 @@ namespace stickers
         
         handler_exit(
             show::response_code response_code,
-            std::string         message
+            const std::string&  message
         ) :
             response_code( response_code ),
             message( message )
