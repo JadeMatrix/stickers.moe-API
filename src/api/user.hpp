@@ -18,18 +18,43 @@ namespace stickers
 {
     enum password_type
     {
-        UNKNOWN = 0,
-        INVALID,
-        BCRYPT
+        INVALID = 0,
+        RAW,
+        SCRYPT
     };
     
     struct password
     {
-        password_type   type;
-        std::string     hash;
-        std::string     salt;
-        int           factor;
+        password_type type;
+        union
+        {
+            void*       invalid_value;
+            std::string raw_value;
+            scrypt      scrypt_value;
+        };
+        
+        void cleanup();
+        
+        password();
+        password( const std::string& o );
+        password( const scrypt     & o );
+        password( const password& );
+        ~password();
+        
+        bool operator==( const password& ) const;
+        bool operator!=( const password& ) const;
+        
+        password& operator=( const password   & );
+        password& operator=( const std::string& );
+        password& operator=( const scrypt     & );
+        
+        std::string   hash() const;
+        std::string   salt() const;
+        long        factor() const;
     };
+    
+    // Return a fresh hashing of a new password using the preferred method
+    password hash_password( const std::string& );
     
     struct user_info
     {
@@ -92,8 +117,8 @@ namespace pqxx
         static void from_string( const char str[], stickers::password_type& pt )
         {
             std::string s( str );
-            if( s == "bcrypt" )
-                pt = stickers::BCRYPT;
+            if( s == "scrypt" )
+                pt = stickers::SCRYPT;
             else if( s == "invalid" )
                 pt = stickers::INVALID;
             else
@@ -110,8 +135,8 @@ namespace pqxx
         {
             switch( pt )
             {
-            case stickers::BCRYPT:
-                return "bcrypt";
+            case stickers::SCRYPT:
+                return "scrypt";
             default:
                 return "invalid";
             }

@@ -9,10 +9,9 @@
 #include "../common/config.hpp"
 #include "../common/json.hpp"
 
+#include <array>
+
 #line __LINE__ "server/handlers.cpp"
-
-
-// TODO: move to ../api/
 
 
 namespace
@@ -36,8 +35,6 @@ namespace stickers
 {
     void handlers::create_user( show::request& request )
     {
-        // throw handler_exit( { 500, "Not Implemented" }, "Not implemented" );
-        
         if( request.path().size() > 1 )
             throw handler_exit( { 404, "Not Found" }, "" );
         
@@ -46,13 +43,21 @@ namespace stickers
         
         request_stream >> details_json;
         
+        std::array< std::string, 3 > required_fields{ {
+            "password",
+            "display_name",
+            "email"
+        } };
+        for( const auto& field : required_fields )
+            if( details_json.find( field ) == details_json.end() )
+                throw handler_exit(
+                    { 400, "Bad Request" },
+                    "missing required field \"" + field + "\""
+                );
+        
         user_info details;
         
-        details.password.type   = INVALID;//details_json[ "password" ][ "type"   ];
-        details.password.hash   = details_json[ "password" ][ "hash"   ];
-        details.password.salt   = details_json[ "password" ][ "salt"   ];
-        details.password.factor = details_json[ "password" ][ "factor" ];
-        
+        details.password     = details_json[ "password" ].get< std::string >();
         details.created      = now();
         details.display_name = details_json[ "display_name" ];
         details.email        = details_json[ "email"        ];
@@ -69,23 +74,11 @@ namespace stickers
         
         details_json = {
             { "user_id", created_user.id },
-            { "password", {
-                { "hash",   created_user.info.password.hash   },
-                { "salt",   created_user.info.password.salt   },
-                { "factor", created_user.info.password.factor },
-            } },
             { "created", to_iso8601_str( created_user.info.created ) },
             { "revised", to_iso8601_str( created_user.info.revised ) },
             { "display_name", created_user.info.display_name },
             { "email", created_user.info.email }
         };
-        switch( created_user.info.password.type )
-        {
-        case BCRYPT:
-            details_json[ "password" ][ "type" ] = "bcrypt";
-        default:
-            details_json[ "password" ][ "type" ] = nullptr;
-        }
         
         if( created_user.info.real_name )
             details_json[ "real_name" ] = *created_user.info.real_name;
@@ -110,6 +103,9 @@ namespace stickers
                 { "Content-Type", { "application/json" } },
                 { "Content-Length", {
                     std::to_string( user_json.size() )
+                } },
+                { "Location", {
+                    "/user/" + std::to_string( ( long long )created_user.id )
                 } }
             }
         );
@@ -139,31 +135,11 @@ namespace stickers
             
             nlj::json user = {
                 { "user_id", user_id },
-                // {
-                //     "user_id",
-                //     show::base64_encode( std::string( ( char* )( &user_id_ll ), sizeof( user_id_ll ) ) )
-                // },
-                { "password", {
-                    // { "type",   info.password.type   },
-                    { "hash",   info.password.hash   },
-                    { "salt",   info.password.salt   },
-                    { "factor", info.password.factor },
-                } },
                 { "created", to_iso8601_str( info.created ) },
                 { "revised", to_iso8601_str( info.revised ) },
                 { "display_name", info.display_name },
                 { "email", info.email }
             };
-            
-            switch( info.password.type )
-            {
-            case BCRYPT:
-                user[ "password" ][ "type" ] = "bcrypt";
-                break;
-            default:
-                user[ "password" ][ "type" ] = nullptr;
-                break;
-            }
             
             if( info.real_name )
                 user[ "real_name" ] = *info.real_name;
