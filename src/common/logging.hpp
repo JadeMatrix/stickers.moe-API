@@ -8,6 +8,7 @@
 #include "formatting.hpp"
 
 #include <ctime>
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -59,6 +60,23 @@ namespace stickers
                 args...
             );
         }
+    }
+    
+    inline std::string log_sanitize( const std::string& raw )
+    {
+        std::stringstream sanitized;
+        sanitized << std::hex;
+        for( const auto& c : raw )
+            if( isprint( c ) )
+                sanitized << c;
+            else
+                sanitized
+                    << "\\x"
+                    << std::setw( 2 )
+                    << std::setfill( '0' )
+                    << ( unsigned int )( unsigned char )c
+                ;
+        return sanitized.str();
     }
 }
 
