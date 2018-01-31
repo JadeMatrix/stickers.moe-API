@@ -31,4 +31,9 @@ namespace stickers
         stream >> date::parse( "%F %T%z", ts );
         return !stream.fail();
     }
+    
+    std::string to_iso8601_str( const timestamp& ts )
+    {
+         return date::format( "%F %T%z", ts );
+    }
 }

@@ -19,10 +19,7 @@ namespace stickers
     
     timestamp from_iso8601_str( const std::string&             );
     bool      from_iso8601_str( const std::string&, timestamp& );
-    template< typename TS > std::string to_iso8601_str( const TS& ts )
-    {
-        return date::format( "%F %T%z", ts );
-    }
+    std::string to_iso8601_str( const timestamp& );
 }
 
 
