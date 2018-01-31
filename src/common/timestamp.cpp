@@ -36,4 +36,18 @@ namespace stickers
     {
          return date::format( "%F %T%z", ts );
     }
+    
+    timestamp from_unix_time( unsigned int unix_time )
+    {
+        return timestamp( std::chrono::duration_cast<
+            std::chrono::microseconds
+        >( std::chrono::seconds( unix_time ) ) );
+    }
+    
+    unsigned int to_unix_time( const timestamp& ts )
+    {
+        return std::chrono::duration_cast<
+            std::chrono::seconds
+        >( ts.time_since_epoch() ).count();
+    }
 }
