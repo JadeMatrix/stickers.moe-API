@@ -52,7 +52,7 @@ namespace stickers
     {
         if( s.size() == CryptoPP::SHA256::DIGESTSIZE )
             for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
-                digest.BytePtr()[ i ] = ( byte )s[ i ];
+                digest.BytePtr()[ i ] = ( CryptoPP::byte )s[ i ];
         else
             throw hash_error(
                 "mismatch between digest and input sizes constructing a sha256 "
@@ -69,7 +69,7 @@ namespace stickers
     {
         if( l == CryptoPP::SHA256::DIGESTSIZE )
             for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
-                digest.BytePtr()[ i ] = ( byte )s[ i ];
+                digest.BytePtr()[ i ] = ( CryptoPP::byte )s[ i ];
         else
             throw hash_error(
                 "mismatch between digest and input sizes constructing a sha256 "
@@ -106,7 +106,7 @@ namespace stickers
         
         CryptoPP::SHA256().CalculateDigest(
             h.digest.begin(),
-            ( byte* )s,
+            ( CryptoPP::byte* )s,
             l
         );
         
@@ -190,7 +190,7 @@ namespace stickers
     {
         std::string hex;
         CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
-            ( const byte* )digest.c_str(),
+            ( const CryptoPP::byte* )digest.c_str(),
             digest.size()
         );
         return hex;
@@ -205,7 +205,7 @@ namespace stickers
     {
         std::string hex;
         CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
-            ( const byte* )salt.c_str(),
+            ( const CryptoPP::byte* )salt.c_str(),
             salt.size()
         );
         return hex;

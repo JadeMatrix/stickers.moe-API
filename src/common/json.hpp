@@ -3,7 +3,7 @@
 #define STICKERS_MOE_COMMON_JSON_HPP
 
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 namespace nlj = nlohmann;
 
