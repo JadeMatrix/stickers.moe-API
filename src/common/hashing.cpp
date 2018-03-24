@@ -1,6 +1,7 @@
 #include "hashing.hpp"
 
 #include <libscrypt.h>
+#include <cryptopp/hex.h>
 
 #include <cmath>
 

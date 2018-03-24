@@ -4,7 +4,6 @@
 
 
 #include <cryptopp/sha.h>
-#include <cryptopp/hex.h>
 
 #include <cctype>
 #include <exception>
