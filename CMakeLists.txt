@@ -32,6 +32,7 @@ ADD_EXECUTABLE(
     src/common/bigid.cpp
     src/common/postgres.cpp
     src/common/hashing.cpp
+    src/common/jwt.cpp
     src/common/uuid.cpp
     src/api/user.cpp
 )

@@ -1,10 +1,12 @@
-#include <fstream>
-#include <iostream>
-
 #include "server.hpp"
 #include "../common/config.hpp"
 #include "../common/logging.hpp"
 #include "../common/json.hpp"
+
+#include <cstdlib>  // std::srand()
+#include <ctime>    // std::time()
+#include <fstream>
+#include <iostream>
 
 #line __LINE__ "server/main.cpp"
 
@@ -24,6 +26,8 @@ int main( int argc, char* argv[] )
         );
         return 1;
     }
+    
+    std::srand( std::time( nullptr ) );
     
     try
     {
