@@ -1,9 +1,11 @@
 #include "routing.hpp"
 
 #include "server.hpp"
+#include "../common/auth.hpp"
 #include "../common/config.hpp"
 #include "../common/logging.hpp"
 #include "../common/json.hpp"
+#include "../common/string_utils.hpp"
 #include "../handlers/handlers.hpp"
 
 #include <exception>
@@ -19,6 +21,7 @@ namespace stickers
         bool handler_finished = false;
         show::response_code error_code    = { 400, "Bad Request" };
         std::string         error_message = "";
+        show::headers_type  error_headers = { server_header };
         
         try
         {
@@ -54,6 +57,45 @@ namespace stickers
             error_code    = he.response_code;
             error_message = he.message;
         }
+        catch( const authentication_error& ae )
+        {
+            error_code    = { 401, "Unauthorized" };    // HTTP :^)
+            error_message = "this action requires authentication credentials";
+            error_headers[ "WWW-Authenticate" ] = {
+                "Bearer realm=\"stickers.moe JWT\""
+            };
+            STICKERS_LOG(
+                INFO,
+                "unauthenticated ",
+                request.method(),
+                " request from ",
+                request.client_address(),
+                " on ",
+                join( request.path(), std::string( "/" ) ),
+                ": ",
+                ae.what()
+            );
+        }
+        catch( const authorization_error& ae )
+        {
+            error_code    = { 403, "Forbidden" };
+            error_message =
+                "you are not permitted to perform this action ("
+                + std::string( ae.what() )
+                + ")"
+            ;
+            STICKERS_LOG(
+                INFO,
+                "unauthorized ",
+                request.method(),
+                " request from ",
+                request.client_address(),
+                " on ",
+                join( request.path(), std::string( "/" ) ),
+                ": ",
+                ae.what()
+            );
+        }
         catch( const std::exception& e )
         {
             error_code    = { 500, "Server Error" };
@@ -86,17 +128,16 @@ namespace stickers
         };
         std::string error_json = error_object.dump();
         
+        error_headers[ "Content-Type"   ] = { "application/json" };
+        error_headers[ "Content-Length" ] = {
+            std::to_string( error_json.size() )
+        };
+        
         show::response response(
             request.connection(),
             show::HTTP_1_1,
             error_code,
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( error_json.size() )
-                } }
-            }
+            error_headers
         );
         
         response.sputn( error_json.c_str(), error_json.size() );

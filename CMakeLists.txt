@@ -27,6 +27,7 @@ ADD_EXECUTABLE(
     src/server/server.cpp
     src/server/routing.cpp
     src/handlers/user.cpp
+    src/common/auth.cpp
     src/common/config.cpp
     src/common/timestamp.cpp
     src/common/bigid.cpp
