@@ -31,6 +31,8 @@ namespace stickers
         const bigid& operator          -=( long long    )      ;
         bool         operator          ==( const bigid& ) const;
         bool         operator          !=( const bigid& ) const;
+        
+        static bigid from_string( const std::string& );
     };
     
     const long long _BIGID_MIN = 1000000000000000000ll;

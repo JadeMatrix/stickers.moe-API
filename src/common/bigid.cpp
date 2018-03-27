@@ -92,6 +92,22 @@ namespace stickers
     {
         return value != o.value;
     }
+    
+    bigid bigid::from_string( const std::string& str )
+    {
+        try
+        {
+            long long llid;
+            pqxx::string_traits< long long >::from_string( str.c_str(), llid );
+            return llid;
+        }
+        catch( const pqxx::argument_error& e )
+        {
+            throw std::invalid_argument(
+                "can't convert \"" + str + "\" to a big-ID"
+            );
+        }
+    }
 }
 
 
