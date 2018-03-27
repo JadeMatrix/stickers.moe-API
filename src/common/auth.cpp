@@ -1,7 +1,10 @@
 #include "auth.hpp"
 
 #include "jwt.hpp"
+#include "postgres.hpp"
 #include "string_utils.hpp"
+#include "logging.hpp"
+#include "../api/user.hpp"  // stickers::no_such_user
 
 #include <algorithm>    // std::set_difference()
 #include <iterator>     // std::inserter
@@ -80,10 +83,50 @@ namespace stickers
         );
     }
     
-    // std::string generate_auth_token_for_user( bigid user_id )
-    // {
+    std::string generate_auth_token_for_user(
+        bigid user_id,
+        const audit::blame& blame
+    )
+    {
+        auto permissions = get_user_permissions( user_id );
         
-    // }
+        jwt token_jwt{
+            .claims = {
+                {
+                    "user_id",
+                    std::to_string( static_cast< long long >( user_id ) )
+                },
+                { "permissions", permissions },
+                { "blame", {
+                    { "who"  , std::to_string( static_cast< long long >( blame.who ) ) },
+                    { "what" ,                                           blame.what    },
+                    { "when" ,                           to_iso8601_str( blame.when  ) },
+                    { "where",                                           blame.where   }
+                } }
+            }
+        };
+        
+        std::string token = jwt::serialize( token_jwt );
+        
+        STICKERS_LOG(
+            INFO,
+            "user ",
+            static_cast< long long >( blame.who ),
+            " generated auth token for user ",
+            static_cast< long long >( user_id ),
+            " from ",
+            blame.where,
+            " at ",
+            to_iso8601_str( blame.when ),
+            " ",
+            blame.what,
+            ": \"",
+            log_sanitize( token ),
+            "\""
+        );
+        
+        return token;
+    }
     
     // void set_user_permissions(
     //     bigid user_id,
@@ -93,10 +136,37 @@ namespace stickers
         
     // }
     
-    // permissions_type get_user_permissions( bigid user_id )
-    // {
+    permissions_type get_user_permissions( bigid user_id )
+    {
+        auto connection = postgres::connect();
+        pqxx::work transaction( *connection );
         
-    // }
+        pqxx::result result = transaction.exec_params(
+            PSQL(
+                SELECT p.permission AS permission
+                FROM
+                    users.users AS u
+                    JOIN permissions.role_permissions AS rp
+                        ON u.user_role_id = rp.role_id
+                    JOIN permissions.permissions AS p
+                        ON rp.permission_id = p.permission_id
+                WHERE u.user_id = $1
+                ;
+            ),
+            user_id
+        );
+        transaction.commit();
+        
+        if( result.size() < 1 )
+            throw no_such_user( user_id, "getting user permissions" );
+        
+        permissions_type permissions;
+        
+        for( const auto& row : result )
+            permissions.insert( row[ "permission" ].as< std::string >() );
+        
+        return permissions;
+    }
     
     void permissions_assert_any(
         const permissions_type& got,
