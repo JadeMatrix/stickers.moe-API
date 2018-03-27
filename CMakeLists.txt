@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.6 )
 
-SET( CMAKE_C_COMPILER   /usr/local/Cellar/llvm/5.0.1/bin/clang   )
-SET( CMAKE_CXX_COMPILER /usr/local/Cellar/llvm/5.0.1/bin/clang++ )
+SET( CMAKE_C_COMPILER   /usr/local/Cellar/llvm/6.0.0/bin/clang   )
+SET( CMAKE_CXX_COMPILER /usr/local/Cellar/llvm/6.0.0/bin/clang++ )
 
 SET( CMAKE_CXX_STANDARD          17 )
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
