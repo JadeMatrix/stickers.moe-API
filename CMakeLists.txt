@@ -25,6 +25,7 @@ ADD_EXECUTABLE(
     server
     src/server/main.cpp
     src/server/server.cpp
+    src/server/parse.cpp
     src/server/routing.cpp
     src/handlers/auth.cpp
     src/handlers/user.cpp

@@ -6,6 +6,7 @@
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
 #include "../server/server.hpp"
+#include "../server/parse.hpp"
 
 // DEVEL:
 #include "../common/config.hpp"
@@ -38,10 +39,7 @@ namespace stickers
         if( request.path().size() > 1 )
             throw handler_exit( { 404, "Not Found" }, "" );
         
-        std::istream request_stream( &request );
-        nlj::json details_json;
-        
-        request_stream >> details_json;
+        auto details_json = parse_request_content( request );
         
         for( const auto& field : std::array< std::string, 3 >{ {
             "password",
