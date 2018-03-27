@@ -17,7 +17,13 @@ namespace stickers
 {
     using permissions_type = std::set< std::string >;
     
-    permissions_type authenticate( const show::request& );
+    struct auth_info
+    {
+        bigid            user_id;
+        permissions_type user_permissions;
+    };
+    
+    auth_info authenticate( const show::request& );
     // std::string generate_auth_token_for_user( bigid );
     // void set_user_permissions( bigid, const permissions_type& );
     // permissions_type get_user_permissions( bigid );
