@@ -1,3 +1,6 @@
+#line 2 "api/user.cpp"
+
+
 #include "user.hpp"
 
 #include <fstream>
@@ -7,8 +10,6 @@
 #include "../common/postgres.hpp"
 #include "../common/redis.hpp"
 #include "../common/logging.hpp"
-
-#line __LINE__ "common/user.cpp"
 
 
 namespace

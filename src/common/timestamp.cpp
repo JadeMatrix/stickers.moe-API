@@ -1,9 +1,10 @@
+#line 2 "common/timestamp.cpp"
+
+
 #include "timestamp.hpp"
 
 #include <iomanip>
 #include <sstream>
-
-#line __LINE__ "common/timestamp.cpp"
 
 
 namespace stickers

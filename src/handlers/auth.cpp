@@ -1,3 +1,6 @@
+#line 2 "handlers/auth.cpp"
+
+
 #include "handlers.hpp"
 
 

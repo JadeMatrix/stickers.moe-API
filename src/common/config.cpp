@@ -1,8 +1,9 @@
+#line 2 "common/config.cpp"
+
+
 #include "config.hpp"
 
 #include <thread>
-
-#line __LINE__ "common/config.cpp"
 
 
 namespace

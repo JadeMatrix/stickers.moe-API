@@ -1,3 +1,6 @@
+#line 2 "server/main.cpp"
+
+
 #include "server.hpp"
 #include "../common/config.hpp"
 #include "../common/logging.hpp"
@@ -7,8 +10,6 @@
 #include <ctime>    // std::time()
 #include <fstream>
 #include <iostream>
-
-#line __LINE__ "server/main.cpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////

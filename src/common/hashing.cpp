@@ -1,11 +1,12 @@
+#line 2 "common/hashing.cpp"
+
+
 #include "hashing.hpp"
 
 #include <libscrypt.h>
 #include <cryptopp/hex.h>
 
 #include <cmath>
-
-#line __LINE__ "common/hashing.cpp"
 
 
 namespace

@@ -1,3 +1,6 @@
+#line 2 "server/parse.cpp"
+
+
 #include "parse.hpp"
 
 #include "handler.hpp"
@@ -5,8 +8,6 @@
 #include "../common/string_utils.hpp"
 
 #include <iterator> // std::istreambuf_iterator
-
-#line __LINE__ "server/parse.cpp"
 
 
 namespace

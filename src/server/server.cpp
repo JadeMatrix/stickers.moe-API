@@ -1,3 +1,6 @@
+#line 2 "server/server.cpp"
+
+
 #include "server.hpp"
 
 #include "routing.hpp"
@@ -10,8 +13,6 @@
 #include <list>
 #include <sstream>
 #include <thread>
-
-#line __LINE__ "server/server.cpp"
 
 
 // Request global time handling ------------------------------------------------

@@ -1,3 +1,6 @@
+#line 2 "common/auth.cpp"
+
+
 #include "auth.hpp"
 
 #include "jwt.hpp"

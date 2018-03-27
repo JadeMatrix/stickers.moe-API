@@ -1,3 +1,6 @@
+#line 2 "server/routing.cpp"
+
+
 #include "routing.hpp"
 
 #include "server.hpp"
@@ -10,8 +13,6 @@
 
 #include <exception>
 #include <map>
-
-#line __LINE__ "server/routing.cpp"
 
 
 namespace stickers

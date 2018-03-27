@@ -1,3 +1,6 @@
+#line 2 "common/uuid.cpp"
+
+
 #include "uuid.hpp"
 
 #include <uuid/uuid.h>

@@ -1,3 +1,6 @@
+#line 2 "handlers/user.cpp"
+
+
 #include "handlers.hpp"
 
 #include <array>
@@ -11,8 +14,6 @@
 // DEVEL:
 #include "../common/config.hpp"
 #include "../common/json.hpp"
-
-#line __LINE__ "server/handlers.cpp"
 
 
 namespace

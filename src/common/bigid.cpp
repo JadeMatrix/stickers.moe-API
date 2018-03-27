@@ -1,6 +1,7 @@
-#include "bigid.hpp"
+#line 2 "common/bigid.cpp"
 
-#line __LINE__ "common/bigid.cpp"
+
+#include "bigid.hpp"
 
 
 // bigid -----------------------------------------------------------------------

@@ -1,3 +1,6 @@
+#line 2 "common/jwt.cpp"
+
+
 #include "jwt.hpp"
 
 #include "config.hpp"
