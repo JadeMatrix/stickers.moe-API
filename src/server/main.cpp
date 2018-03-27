@@ -3,13 +3,13 @@
 
 #include "server.hpp"
 #include "../common/config.hpp"
-#include "../common/logging.hpp"
 #include "../common/json.hpp"
+#include "../common/logging.hpp"
 
-#include <cstdlib>  // std::srand()
-#include <ctime>    // std::time()
 #include <fstream>
 #include <iostream>
+#include <cstdlib>  // std::srand()
+#include <ctime>    // std::time()
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,12 +20,12 @@ int main( int argc, char* argv[] )
     if( argc < 2 )
     {
         STICKERS_LOG(
-            ERROR,
+            stickers::log_level::ERROR,
             "usage: ",
             argv[ 0 ],
             " config.json"
         );
-        return 1;
+        return -1;
     }
     
     std::srand( std::time( nullptr ) );
@@ -34,14 +34,14 @@ int main( int argc, char* argv[] )
     {
         {
             nlj::json config;
-            std::ifstream config_file( argv[ 1 ] );
+            std::ifstream config_file{ argv[ 1 ] };
             
             if( config_file.is_open() )
                 config_file >> config;
             else
             {
                 STICKERS_LOG(
-                    ERROR,
+                    stickers::log_level::ERROR,
                     "could not open config file ",
                     argv[ 1 ]
                 );
@@ -56,7 +56,7 @@ int main( int argc, char* argv[] )
     catch( const std::exception &e )
     {
         STICKERS_LOG(
-            ERROR,
+            stickers::log_level::ERROR,
             "uncaught std::exception in main(): ",
             e.what()
         );
@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
     catch( ... )
     {
         STICKERS_LOG(
-            ERROR,
+            stickers::log_level::ERROR,
             "uncaught non-std::exception in main()"
         );
         return -1;

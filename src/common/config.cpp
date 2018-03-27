@@ -14,7 +14,9 @@ namespace
     
     // Start at verbose so anything that happens before the config is loaded can
     // be diagnosed
-    stickers::log_level_type log_level_cache = stickers::VERBOSE;
+    stickers::log_level log_level_cache{
+        stickers::log_level::VERBOSE
+    };
     
     void set_log_level()
     {
@@ -24,21 +26,21 @@ namespace
             level_setting == global_config.end()
             || !level_setting -> is_string()
         )
-            log_level_cache = stickers::INFO;
+            log_level_cache = stickers::log_level::INFO;
         else if( *level_setting == "SILENT"   )
-            log_level_cache = stickers::SILENT;
+            log_level_cache = stickers::log_level::SILENT;
         else if( *level_setting == "ERROR"   )
-            log_level_cache = stickers::ERROR;
+            log_level_cache = stickers::log_level::ERROR;
         else if( *level_setting == "WARNING" )
-            log_level_cache = stickers::WARNING;
+            log_level_cache = stickers::log_level::WARNING;
         else if( *level_setting == "INFO"   )
-            log_level_cache = stickers::INFO;
+            log_level_cache = stickers::log_level::INFO;
         else if( *level_setting == "VERBOSE"  )
-            log_level_cache = stickers::VERBOSE;
+            log_level_cache = stickers::log_level::VERBOSE;
         else if( *level_setting == "DEBUG"    )
-            log_level_cache = stickers::DEBUG;
+            log_level_cache = stickers::log_level::DEBUG;
         else
-            log_level_cache = stickers::INFO;
+            log_level_cache = stickers::log_level::INFO;
     }
 }
 
@@ -48,13 +50,13 @@ namespace stickers
     const nlj::json& config()
     {
         // Not exactly great, but should be fine most of the time :^)
-        std::lock_guard< std::mutex > guard( config_mutex );
+        std::lock_guard< std::mutex > guard{ config_mutex };
         return global_config;
     }
     
     void set_config( const nlj::json& o )
     {
-        std::lock_guard< std::mutex > guard( config_mutex );
+        std::lock_guard< std::mutex > guard{ config_mutex };
         if( global_config == nullptr )
             global_config = o;
         set_log_level();
@@ -62,7 +64,7 @@ namespace stickers
     
     void set_config( const std::string& s )
     {
-        std::lock_guard< std::mutex > guard( config_mutex );
+        std::lock_guard< std::mutex > guard{ config_mutex };
         if( global_config == nullptr )
             global_config = nlj::json::parse( s );
         set_log_level();
@@ -70,7 +72,7 @@ namespace stickers
     
     // void open_config( const std::string& f )
     // {
-    //     std::lock_guard< std::mutex > guard( config_mutex );
+    //     std::lock_guard< std::mutex > guard{ config_mutex };
         
     //     std::ifstream config_file( f );
         
@@ -90,9 +92,9 @@ namespace stickers
     //     }
     // }
     
-    log_level_type log_level()
+    log_level current_log_level()
     {
-        std::lock_guard< std::mutex > guard( config_mutex );
+        std::lock_guard< std::mutex > guard{ config_mutex };
         return log_level_cache;
     }
 }

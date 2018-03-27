@@ -34,17 +34,17 @@ namespace stickers
         )
         {
             std::unique_ptr< pqxx::connection > connection(
-                new pqxx::connection(
+                new pqxx::connection{
                         "host="    + ( host   == "" ? "''" : host   )
                     + " port="     + std::to_string( port )
                     + " user="     + ( user   == "" ? "''" : user   )
                     + " password=" + ( pass   == "" ? "''" : pass   )
                     + " dbname="   + ( dbname == "" ? "''" : dbname )
-                )
+                }
             );
             
             STICKERS_LOG(
-                DEBUG,
+                log_level::DEBUG,
                 "created PostgreSQL connection {host=",
                 connection -> hostname(),
                 " port=",

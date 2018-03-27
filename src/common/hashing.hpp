@@ -3,14 +3,14 @@
 #define STICKERS_MOE_COMMON_HASHING_HPP
 
 
+#include "postgres.hpp"
+
 #include <cryptopp/sha.h>
 
 #include <cctype>
 #include <exception>
-#include <string>
 #include <sstream>
-
-#include "postgres.hpp"
+#include <string>
 
 
 namespace stickers
@@ -79,11 +79,11 @@ namespace stickers
         unsigned char parallelization() const;
         
         // Defaults from libscrypt v1.21
-        static const unsigned char default_salt_size       = 16;
-        static const unsigned char default_factor          = 14;
-        static const unsigned char default_block_size      =  8;
-        static const unsigned char default_parallelization = 16;
-        static const unsigned char default_digest_size     = 64;
+        static const unsigned char default_salt_size      { 16 };
+        static const unsigned char default_factor         { 14 };
+        static const unsigned char default_block_size     {  8 };
+        static const unsigned char default_parallelization{ 16 };
+        static const unsigned char default_digest_size    { 64 };
         
         static scrypt make(
             const char*   input,
@@ -147,23 +147,23 @@ namespace pqxx
         {
             try
             {
-                h = stickers::sha256( str, strlen( str ) );
+                h = stickers::sha256{ str, strlen( str ) };
             }
             catch( const stickers::hash_error& he )
             {
-                throw argument_error(
+                throw argument_error{
                     "Failed conversion to "
                     + std::string( name() )
                     + ": '"
                     + std::string( str )
                     + "'"
-                );
+                };
             }
         }
         
         static std::string to_string( const stickers::sha256& h )
         {
-            std::string        encoded = h.raw_digest();
+            std::string        encoded{ h.raw_digest() };
             std::ostringstream decoded;
             decoded << std::hex;
             

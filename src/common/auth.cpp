@@ -4,9 +4,9 @@
 #include "auth.hpp"
 
 #include "jwt.hpp"
+#include "logging.hpp"
 #include "postgres.hpp"
 #include "string_utils.hpp"
-#include "logging.hpp"
 #include "../api/user.hpp"  // stickers::no_such_user
 
 #include <algorithm>    // std::set_difference()
@@ -19,9 +19,9 @@ namespace stickers
     {
         auto authorization_header = request.headers().find( "Authorization" );
         if( authorization_header == request.headers().end() )
-            throw authentication_error( "no \"Authorization\" header" );
+            throw authentication_error{ "missing \"Authorization\" header" };
         
-        std::string bearer_begin = "Bearer ";
+        std::string bearer_begin{ "Bearer " };
         
         for( const auto& header_value : authorization_header -> second )
         {
@@ -49,9 +49,9 @@ namespace stickers
                         for( const auto& permission : permissions_found.value() )
                             permissions.insert( permission.get< std::string >() );
                     else
-                        throw authentication_error(
+                        throw authentication_error{
                             "missing required claim \"permissions\""
-                        );
+                        };
                     
                     if(
                         user_id_found != auth_jwt.claims.end()
@@ -64,26 +64,25 @@ namespace stickers
                             permissions
                         };
                     else
-                        throw authentication_error(
+                        throw authentication_error{
                             "missing required claim \"user_id\""
-                        );
+                        };
                 }
                 catch( const jwt::structure_error& e )
                 {
+                    // Ignore any tokens that aren't JWTs
                     continue;
                 }
                 catch( const jwt::validation_error& e )
                 {
-                    throw authentication_error(
-                        "invalid token signature " + std::string{ e.what() }
-                    );
+                    // Ignore any tokesn that don't pass validation (may not
+                    // even belong to this site)
+                    continue;
                 }
             }
         }
         
-        throw authentication_error(
-            "no usable authentication tokens found"
-        );
+        throw authentication_error{ "no usable authentication tokens found" };
     }
     
     std::string generate_auth_token_for_user(
@@ -97,14 +96,14 @@ namespace stickers
             .claims = {
                 {
                     "user_id",
-                    std::to_string( static_cast< long long >( user_id ) )
+                    static_cast< std::string >( user_id )
                 },
                 { "permissions", permissions },
                 { "blame", {
-                    { "who"  , std::to_string( static_cast< long long >( blame.who ) ) },
-                    { "what" ,                                           blame.what    },
-                    { "when" ,                           to_iso8601_str( blame.when  ) },
-                    { "where",                                           blame.where   }
+                    { "who"  , static_cast< std::string >( blame.who   ) },
+                    { "what" ,                             blame.what    },
+                    { "when" ,             to_iso8601_str( blame.when  ) },
+                    { "where",                             blame.where   }
                 } }
             }
         };
@@ -112,11 +111,11 @@ namespace stickers
         std::string token = jwt::serialize( token_jwt );
         
         STICKERS_LOG(
-            INFO,
+            log_level::INFO,
             "user ",
-            static_cast< long long >( blame.who ),
+            blame.who,
             " generated auth token for user ",
-            static_cast< long long >( user_id ),
+            user_id,
             " from ",
             blame.where,
             " at ",
@@ -142,7 +141,7 @@ namespace stickers
     permissions_type get_user_permissions( bigid user_id )
     {
         auto connection = postgres::connect();
-        pqxx::work transaction( *connection );
+        pqxx::work transaction{ *connection };
         
         pqxx::result result = transaction.exec_params(
             PSQL(
@@ -161,7 +160,7 @@ namespace stickers
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user( user_id, "getting user permissions" );
+            throw no_such_user{ user_id, "getting user permissions" };
         
         permissions_type permissions;
         
@@ -190,7 +189,7 @@ namespace stickers
             throw authorization_error(
                 "missing one of these permissions: \"" + join(
                     difference,
-                    std::string( "\", \"" )
+                    std::string{ "\", \"" }
                 ) + "\""
             );
     }
@@ -214,7 +213,7 @@ namespace stickers
             throw authorization_error(
                 "missing permissions: \"" + join(
                     difference,
-                    std::string( "\", \"" )
+                    std::string{ "\", \"" }
                 ) + "\""
             );
     }

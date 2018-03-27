@@ -3,8 +3,8 @@
 
 #include "uuid.hpp"
 
-#include <uuid/uuid.h>
 #include <cryptopp/hex.h>
+#include <uuid/uuid.h>
 
 
 namespace stickers
@@ -19,10 +19,10 @@ namespace stickers
     }
     
     uuid::uuid( const char* c_str, std::size_t c_str_len ) :
-        uuid( std::string( c_str, c_str_len ) )
+        uuid{ std::string{ c_str, c_str_len } }
     {}
     
-    uuid::uuid( const uuid& o ) : value( o.value ) {}
+    uuid::uuid( const uuid& o ) : value{ o.value } {}
     
     std::string uuid::raw_value() const
     {
@@ -32,8 +32,8 @@ namespace stickers
     std::string uuid::hex_value() const
     {
         std::string hex;
-        CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
-            ( const CryptoPP::byte* )value.c_str(),
+        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
+            reinterpret_cast< const CryptoPP::byte* >( value.c_str() ),
             value.size()
         );
         return hex;

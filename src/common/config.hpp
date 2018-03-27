@@ -16,7 +16,7 @@ namespace stickers
     void  set_config( const std::string& );
     // void open_config( const std::string& );
     
-    enum log_level_type
+    enum class log_level
     {
         SILENT  = 00,
         ERROR   = 10,
@@ -26,7 +26,7 @@ namespace stickers
         DEBUG   = 50
     };
     
-    log_level_type log_level();
+    log_level current_log_level();
 }
 
 

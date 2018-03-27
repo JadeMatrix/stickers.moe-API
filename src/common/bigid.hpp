@@ -15,31 +15,30 @@ namespace stickers
     {
     private:
         long long value;
+        bigid();
+        
     public:
         bigid( long long );
         bigid( const bigid& );
-                     operator   long long()               const;
-                     operator std::string()               const;
-                     operator        bool()               const;
+                     operator   long long(              ) const;
+                     operator std::string(              ) const;
+                     operator        bool(              ) const;
         const bigid& operator           =( const bigid& )      ;
         const bigid& operator           =( long long    )      ;
         bigid        operator           +( long long    ) const;
         bigid        operator           -( long long    ) const;
-        const bigid& operator          ++()                    ;
-        const bigid& operator          --()                    ;
+        const bigid& operator          ++(              )      ;
+        const bigid& operator          --(              )      ;
         const bigid& operator          +=( long long    )      ;
         const bigid& operator          -=( long long    )      ;
         bool         operator          ==( const bigid& ) const;
         bool         operator          !=( const bigid& ) const;
         
+        static bigid MIN();
+        static bigid MAX();
+        
         static bigid from_string( const std::string& );
     };
-    
-    const long long _BIGID_MIN = 1000000000000000000ll;
-    const long long _BIGID_MAX = 9223372036854775807ll;
-    
-    const bigid BIGID_MIN( _BIGID_MIN );
-    const bigid BIGID_MAX( _BIGID_MAX );
     
     class bigid_out_of_range : public std::out_of_range
     {
@@ -94,13 +93,13 @@ namespace pqxx
                 conversion_error = true;
             }
             if( conversion_error )
-                throw argument_error(
+                throw argument_error{
                     "Failed conversion to "
-                    + std::string( name() )
+                    + static_cast< std::string >( name() )
                     + ": '"
-                    + std::string( str )
+                    + static_cast< std::string >( str )
                     + "'"
-                );
+                };
         }
         
         static std::string to_string( const stickers::bigid& id )

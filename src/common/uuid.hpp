@@ -3,11 +3,11 @@
 #define STICKERS_MOE_COMMON_UUID_HPP
 
 
-#include <exception>    // std::invalid_argument
-#include <string>
-#include <sstream>      // std::ostringstream
-
 #include "postgres.hpp"
+
+#include <exception>    // std::invalid_argument
+#include <sstream>      // std::ostringstream
+#include <string>
 
 
 namespace stickers
@@ -65,15 +65,15 @@ namespace pqxx
         {
             try
             {
-                v = stickers::uuid( str, strlen( str ) );
+                v = stickers::uuid( str );
             }
             catch( const std::invalid_argument& e )
             {
                 throw argument_error(
                     "Failed conversion to "
-                    + std::string( name() )
+                    + static_cast< std::string >( name() )
                     + ": '"
-                    + std::string( str )
+                    + static_cast< std::string >( str )
                     + "'"
                 );
             }
@@ -81,7 +81,7 @@ namespace pqxx
         
         static std::string to_string( const stickers::uuid& v )
         {
-            std::string        encoded = v.raw_value();
+            std::string        encoded{ v.raw_value() };
             std::ostringstream decoded;
             decoded << std::hex;
             
@@ -89,7 +89,7 @@ namespace pqxx
                 if( std::isprint( b ) )
                     decoded << b;
                 else
-                    decoded << "\\x" << ( unsigned int )b;
+                    decoded << "\\x" << static_cast< unsigned int >( b );
             
             return decoded.str();
         }

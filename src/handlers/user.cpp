@@ -3,13 +3,13 @@
 
 #include "handlers.hpp"
 
-#include <array>
-
 #include "../api/user.hpp"
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
 #include "../server/server.hpp"
 #include "../server/parse.hpp"
+
+#include <array>
 
 // DEVEL:
 #include "../common/config.hpp"
@@ -38,20 +38,22 @@ namespace stickers
     void handlers::create_user( show::request& request )
     {
         if( request.path().size() > 1 )
-            throw handler_exit( { 404, "Not Found" }, "" );
+            throw handler_exit{ { 404, "Not Found" }, "" };
         
         auto details_json = parse_request_content( request );
         
-        for( const auto& field : std::array< std::string, 3 >{ {
+        for( const auto& field : {
             "password",
             "display_name",
             "email"
-        } } )
+        } )
             if( details_json.find( field ) == details_json.end() )
-                throw handler_exit(
+                throw handler_exit{
                     { 400, "Bad Request" },
-                    "missing required field \"" + field + "\""
-                );
+                    "missing required field \""
+                    + static_cast< std::string >( field )
+                    + "\""
+                };
         
         user_info details;
         
@@ -60,10 +62,10 @@ namespace stickers
         details.display_name = details_json[ "display_name" ];
         details.email        = details_json[ "email"        ];
         
-        user created_user = create_user(
+        auto created_user = create_user(
             details,
             {
-                BIGID_MIN,
+                bigid::MIN(),
                 "user signup",
                 now(),
                 request.client_address()
@@ -71,11 +73,11 @@ namespace stickers
         );
         
         details_json = {
-            { "user_id", created_user.id },
-            { "created", to_iso8601_str( created_user.info.created ) },
-            { "revised", to_iso8601_str( created_user.info.revised ) },
-            { "display_name", created_user.info.display_name },
-            { "email", created_user.info.email }
+            { "user_id"     , created_user.id                             },
+            { "created"     , to_iso8601_str( created_user.info.created ) },
+            { "revised"     , to_iso8601_str( created_user.info.revised ) },
+            { "display_name", created_user.info.display_name              },
+            { "email"       , created_user.info.email                     }
         };
         
         if( created_user.info.real_name )
@@ -90,9 +92,9 @@ namespace stickers
         else
             details_json[ "avatar" ] = nullptr;
         
-        std::string user_json = details_json.dump();
+        auto user_json = details_json.dump();
         
-        show::response response(
+        show::response response{
             request.connection(),
             show::HTTP_1_1,
             { 201, "Created" },
@@ -103,10 +105,10 @@ namespace stickers
                     std::to_string( user_json.size() )
                 } },
                 { "Location", {
-                    "/user/" + std::to_string( ( long long )created_user.id )
+                    "/user/" + static_cast< std::string >( created_user.id )
                 } }
             }
-        );
+        };
         
         response.sputn( user_json.c_str(), user_json.size() );
     }
@@ -114,9 +116,9 @@ namespace stickers
     void handlers::get_user( show::request& request )
     {
         if( request.path().size() < 2 )
-            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
-        stickers::bigid user_id( BIGID_MIN );
+        stickers::bigid user_id{ bigid::MIN() };
         
         try
         {
@@ -124,19 +126,19 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         }
         
         try
         {
-            user_info info = load_user( user_id );
+            auto info = load_user( user_id );
             
             nlj::json user = {
-                { "user_id", user_id },
-                { "created", to_iso8601_str( info.created ) },
-                { "revised", to_iso8601_str( info.revised ) },
-                { "display_name", info.display_name },
-                { "email", info.email }
+                { "user_id"     , user_id                        },
+                { "created"     , to_iso8601_str( info.created ) },
+                { "revised"     , to_iso8601_str( info.revised ) },
+                { "display_name", info.display_name              },
+                { "email"       , info.email                     }
             };
             
             if( info.real_name )
@@ -149,9 +151,9 @@ namespace stickers
             else
                 user[ "avatar" ] = nullptr;
             
-            std::string user_json = user.dump();
+            auto user_json = user.dump();
             
-            show::response response(
+            show::response response{
                 request.connection(),
                 show::HTTP_1_1,
                 { 200, "OK" },
@@ -162,27 +164,27 @@ namespace stickers
                         std::to_string( user_json.size() )
                     } }
                 }
-            );
+            };
             
             response.sputn( user_json.c_str(), user_json.size() );
         }
         catch( const no_such_user& nsu )
         {
-            throw handler_exit( { 404, "Not Found" }, "no such user" );
+            throw handler_exit{ { 404, "Not Found" }, "no such user" };
         }
     }
     
     void handlers::edit_user( show::request& request )
     {
-        throw handler_exit( { 500, "Not Implemented" }, "Not implemented" );
+        throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
     }
     
     void handlers::delete_user( show::request& request )
     {
         if( request.path().size() > 2 )
-            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
-        stickers::bigid user_id( BIGID_MIN );
+        stickers::bigid user_id{ bigid::MIN() };
         
         try
         {
@@ -190,7 +192,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit( { 404, "Not Found" }, "need a user ID" );
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         }
         
         try
@@ -199,7 +201,7 @@ namespace stickers
                 user_id,
                 {
                     // DEVEL:
-                    BIGID_MIN,
+                    bigid::MIN(),
                     "delete user handler",
                     now(),
                     request.client_address()
@@ -208,7 +210,7 @@ namespace stickers
             
             std::string null_json = "null";
             
-            show::response response(
+            show::response response{
                 request.connection(),
                 show::HTTP_1_1,
                 { 200, "OK" },
@@ -219,13 +221,13 @@ namespace stickers
                         std::to_string( null_json.size() )
                     } }
                 }
-            );
+            };
             
             response.sputn( null_json.c_str(), null_json.size() );
         }
         catch( const no_such_user& nsu )
         {
-            throw handler_exit( { 404, "Not Found" }, "no such user" );
+            throw handler_exit{ { 404, "Not Found" }, "no such user" };
         }
     }
 }

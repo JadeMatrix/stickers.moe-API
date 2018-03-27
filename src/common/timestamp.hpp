@@ -3,11 +3,11 @@
 #define STICKERS_MOE_COMMON_TIMESTAMP_HPP
 
 
+#include "postgres.hpp"
+
 #include <date/date.h>
 
 #include <string>
-
-#include "postgres.hpp"
 
 
 namespace stickers
@@ -50,14 +50,14 @@ namespace pqxx
         
         static void from_string( const char str[], stickers::timestamp& ts )
         {
-            if( !stickers::from_iso8601_str( std::string( str ) + "00", ts ) )
-                throw argument_error(
+            if( !stickers::from_iso8601_str( std::string{ str } + "00", ts ) )
+                throw argument_error{
                     "Failed conversion to "
-                    + std::string( name() )
+                    + static_cast< std::string >( name() )
                     + ": '"
-                    + std::string( str )
+                    + static_cast< std::string >( str )
                     + "'"
-                );
+                };
         }
         
         static std::string to_string( const stickers::timestamp& ts )

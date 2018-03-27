@@ -8,9 +8,9 @@
 #include "logging.hpp"
 #include "string_utils.hpp"
 
-#include <show/base64.hpp>
-#include <cryptopp/hmac.h>
 #include <cryptopp/hex.h>
+#include <cryptopp/hmac.h>
+#include <show/base64.hpp>
 
 #include <cstdlib>      // std::rand()
 
@@ -37,7 +37,7 @@ namespace stickers
         auto token = parse_no_validate( raw );
         
         auto split_pos = raw.rfind( "." );
-        std::string payload   = raw.substr( 0, split_pos );
+        std::string payload = raw.substr( 0, split_pos );
         std::string signature;
         
         try
@@ -49,30 +49,33 @@ namespace stickers
         }
         catch( const show::base64_decode_error& e )
         {
-            throw validation_error( "signature segment is not valid base64" );
+            throw validation_error{ "signature segment is not valid base64" };
         }
         
         if( !token.kid )
         {
             STICKERS_LOG(
-                WARNING,
-                "attempt to authenticate with JWT without a signing key ID; full token: ",
+                log_level::WARNING,
+                (
+                    "attempt to authenticate with JWT without a signing key ID;"
+                    " full token: "
+                ),
                 log_sanitize( raw )
             );
-            throw validation_error( "missing signing key ID" );
+            throw validation_error{ "missing signing key ID" };
         }
         
         auto signing_key_found = signing_keys.find( *token.kid );
         if( signing_key_found == signing_keys.end() )
         {
             STICKERS_LOG(
-                WARNING,
+                log_level::WARNING,
                 "attempt to authenticate with JWT using unknown signing key ",
                 log_sanitize( *token.kid ),
                 "; full token: ",
                 log_sanitize( raw )
             );
-            throw validation_error( "unknown signing key ID" );
+            throw validation_error{ "unknown signing key ID" };
         }
         
         switch( token.alg )
@@ -81,47 +84,52 @@ namespace stickers
             {
                 bool validated = false;
                 
-                CryptoPP::HMAC< CryptoPP::SHA512 > hmac(
-                    ( CryptoPP::byte* )( signing_key_found -> second.c_str() ),
+                CryptoPP::HMAC< CryptoPP::SHA512 > hmac{
+                    reinterpret_cast< const CryptoPP::byte* >(
+                        signing_key_found -> second.c_str()
+                    ),
                     signing_key_found -> second.size()
-                );
+                };
                 
                 // Seems like a good place to use
                 // `CryptoPP::HashVerificationFilter::PUT_HASH`, but there's no
                 // documentation on how to use that flag.  I hate Crypto++.
-                CryptoPP::StringSource(
+                CryptoPP::StringSource{
                     payload + signature,
                     true,
-                    new CryptoPP::HashVerificationFilter(
+                    new CryptoPP::HashVerificationFilter{
                         hmac,
-                        new CryptoPP::ArraySink(
-                            ( CryptoPP::byte* )( &validated ),
+                        new CryptoPP::ArraySink{
+                            reinterpret_cast< CryptoPP::byte* >( &validated ),
                             sizeof( validated )
-                        ),
+                        },
                         (
                               CryptoPP::HashVerificationFilter::HASH_AT_END
                             | CryptoPP::HashVerificationFilter::PUT_RESULT
                         )
-                    )
-                );
+                    }
+                };
                 
                 if( !validated )
                 {
                     STICKERS_LOG(
-                        WARNING,
-                        "attempt to authenticate with JWT with invalid signature; full token: ",
+                        log_level::WARNING,
+                        (
+                            "attempt to authenticate with JWT with invalid "
+                            "signature; full token: "
+                        ),
                         log_sanitize( raw )
                     );
-                    throw validation_error( "signature mismatch" );
+                    throw validation_error{ "signature mismatch" };
                 }
             }
             break;
         }
         
         if( token.nbf && *token.nbf > now() )
-            throw validation_error( "premature token" );
+            throw validation_error{ "premature token" };
         if( token.exp && *token.exp <= now() )
-            throw validation_error( "expired token" );
+            throw validation_error{ "expired token" };
         
         // TODO: check jti against blacklist
         
@@ -138,11 +146,11 @@ namespace stickers
         {
             auto jwt_segments = split< std::vector< std::string > >(
                 raw,
-                std::string( "." )
+                std::string{ "." }
             );
             
             if( jwt_segments.size() != 3 )
-                throw structure_error( "token does not have 3 segments" );
+                throw structure_error{ "token does not have 3 segments" };
             
             try
             {
@@ -155,13 +163,13 @@ namespace stickers
             {
                 // DEBUG:
                 STICKERS_LOG(
-                    DEBUG,
+                    log_level::DEBUG,
                     "invalid base64 header (",
                     e.what(),
                     "): ",
                     log_sanitize( jwt_segments[ 0 ] )
                 );
-                throw validation_error( "header segment is not valid base64" );
+                throw validation_error{ "header segment is not valid base64" };
             }
             
             try
@@ -173,7 +181,7 @@ namespace stickers
             }
             catch( const show::base64_decode_error& e )
             {
-                throw validation_error( "claims segment is not valid base64" );
+                throw validation_error{ "claims segment is not valid base64" };
             }
         }
         
@@ -184,24 +192,24 @@ namespace stickers
         }
         catch( const nlj::json::parse_error& e )
         {
-            throw structure_error( "header segment is not valid JSON" );
+            throw structure_error{ "header segment is not valid JSON" };
         }
         
         if( !header.is_object() )
-            throw structure_error( "header segment is not a JSON object" );
+            throw structure_error{ "header segment is not a JSON object" };
         
         auto alg = header.find( "alg" );
         auto kid = header.find( "kid" );
         
         if( alg == header.end() )
-            throw structure_error( "header missing required key \"alg\"" );
+            throw structure_error{ "header missing required key \"alg\"" };
         if( kid == header.end() )
-            throw structure_error( "header missing required key \"kid\"" );
+            throw structure_error{ "header missing required key \"kid\"" };
         
         if( !alg.value().is_string() )
-            throw structure_error( "header key \"alg\" is not a string" );
+            throw structure_error{ "header key \"alg\" is not a string" };
         if( !kid.value().is_string() )
-            throw structure_error( "header key \"kid\" is not a string" );
+            throw structure_error{ "header key \"kid\" is not a string" };
         
         auto alg_string = alg.value().get< std::string >();
         
@@ -213,17 +221,20 @@ namespace stickers
             // is a considerable security hole.  This just logs anyone possibly
             // trying to take advantage of that.
             STICKERS_LOG(
-                WARNING,
-                "attempt to authenticate with JWT with unknown hashing algorithm \"",
+                log_level::WARNING,
+                (
+                    "attempt to authenticate with JWT with unknown hashing "
+                    "algorithm \""
+                ),
                 log_sanitize( alg_string ),
                 "\"; full token: ",
                 log_sanitize( raw )
             );
-            throw structure_error(
+            throw structure_error{
                 "unsupported hashing algorithm \""
                 + log_sanitize( alg_string )
                 + "\""
-            );
+            };
         }
         
         token.kid = kid.value().get< std::string >();
@@ -234,10 +245,10 @@ namespace stickers
         }
         catch( const nlj::json::parse_error& e )
         {
-            throw structure_error( "claims segment is not valid JSON" );
+            throw structure_error{ "claims segment is not valid JSON" };
         }
         if( !token.claims.is_object() )
-            throw structure_error( "claims segment is not a JSON object" );
+            throw structure_error{ "claims segment is not a JSON object" };
         
         // Check known header keys /////////////////////////////////////////////
         
@@ -245,7 +256,7 @@ namespace stickers
         auto jti = header.find( "jti" );
         
         if( typ == header.end() )
-            throw structure_error( "missing required header field \"typ\"" );
+            throw structure_error{ "missing required header field \"typ\"" };
         else
             try
             {
@@ -255,17 +266,17 @@ namespace stickers
                 else if( typ_string == "JWT" )
                     token.typ = jwt_type::JWT;
                 else
-                    throw structure_error(
+                    throw structure_error{
                         "unsupported JWT type \""
                         + log_sanitize( typ_string )
                         + "\""
-                    );
+                    };
             }
             catch( const nlj::json::parse_error& e )
             {
-                throw structure_error(
+                throw structure_error{
                     "header field \"typ\" is not a JSON string"
-                );
+                };
             }
         
         if( jti != header.end() )
@@ -274,22 +285,22 @@ namespace stickers
                 auto jti_string = jti.value().get< std::string >();
                 try
                 {
-                    token.jti = uuid( jti_string );
+                    token.jti = uuid{ jti_string };
                 }
                 catch( const std::invalid_argument& e )
                 {
-                    throw structure_error(
+                    throw structure_error{
                         "unsupported non-UUID \"jti\" field \""
                         + log_sanitize( jti_string )
                         + "\""
-                    );
+                    };
                 }
             }
             catch( const nlj::json::parse_error& e )
             {
-                throw structure_error(
+                throw structure_error{
                     "header field \"jti\" is not a JSON string"
-                );
+                };
             }
         
         // Check known claims //////////////////////////////////////////////////
@@ -312,12 +323,12 @@ namespace stickers
             }
             catch( const nlj::json::parse_error& e )
             {
-                throw structure_error(
-                    "claim field \"iat\" is not a JSON " + std::string(
+                throw structure_error{
+                    "claim field \"iat\" is not a JSON " + std::string{
                         token.typ == jwt_type::JWT_PLUS ?
                         "string" : "unsigned integer"
-                    )
-                );
+                    }
+                };
             }
         
         if( nbf != token.claims.end() )
@@ -334,12 +345,12 @@ namespace stickers
             }
             catch( const nlj::json::parse_error& e )
             {
-                throw structure_error(
-                    "claim field \"nbf\" is not a JSON " + std::string(
+                throw structure_error{
+                    "claim field \"nbf\" is not a JSON " + std::string{
                         token.typ == jwt_type::JWT_PLUS ?
                         "string" : "unsigned integer"
-                    )
-                );
+                    }
+                };
             }
         
         if( exp != token.claims.end() )
@@ -356,12 +367,12 @@ namespace stickers
             }
             catch( const nlj::json::parse_error& e )
             {
-                throw structure_error(
-                    "claim field \"exp\" is not a JSON " + std::string(
+                throw structure_error{
+                    "claim field \"exp\" is not a JSON " + std::string{
                         token.typ == jwt_type::JWT_PLUS ?
                         "string" : "unsigned integer"
-                    )
-                );
+                    }
+                };
             }
         
         return token;
@@ -395,7 +406,7 @@ namespace stickers
             header[ "typ" ] = "JWT";
         
         if( token.jti )
-            header[ "jti" ] = ( *token.jti ).hex_value();
+            header[ "jti" ] = token.jti -> hex_value();
         else
             header[ "jti" ] = uuid::generate().hex_value();
         
@@ -405,10 +416,10 @@ namespace stickers
             // Find the specified signing key in `signing_keys`
             auto key_found = signing_keys.find( *token.kid );
             if( key_found == signing_keys.end() )
-                throw std::runtime_error(
+                throw std::runtime_error{
                     "specified a JWT signing key that does not exist in the "
                     "available options"
-                );
+                };
             header[ "kid" ]    = key_found -> first;
             signing_key_string = key_found -> second;
         }
@@ -457,19 +468,21 @@ namespace stickers
         );
         std::string signature_string;
         
-        CryptoPP::HMAC< CryptoPP::SHA512 > hmac(
-            ( CryptoPP::byte* )signing_key_string.c_str(),
+        CryptoPP::HMAC< CryptoPP::SHA512 > hmac{
+            reinterpret_cast< const CryptoPP::byte* >(
+                signing_key_string.c_str()
+            ),
             signing_key_string.size()
-        );
+        };
         
-        CryptoPP::StringSource(
+        CryptoPP::StringSource{
             header_claims_string,
             true,
-            new CryptoPP::HashFilter(
+            new CryptoPP::HashFilter{
                 hmac,
-                new CryptoPP::StringSink( signature_string )
-            )
-        );
+                new CryptoPP::StringSink{ signature_string }
+            }
+        };
         
         return header_claims_string + "." + show::base64_encode(
             signature_string,

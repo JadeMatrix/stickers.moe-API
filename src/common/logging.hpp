@@ -18,22 +18,22 @@
 namespace stickers
 {
     template< typename... Args > void log(
-        log_level_type level,
+        log_level   level,
         std::string file_name,
-        long long file_line,
-        Args... args
+        long long   file_line,
+        Args...     args
     )
     {
-        static const std::map< log_level_type, std::string > level_strings{
-            { SILENT , "SILENT"  },
-            { ERROR  , "ERROR"   },
-            { WARNING, "WARNING" },
-            { INFO   , "INFO"    },
-            { VERBOSE, "VERBOSE" },
-            { DEBUG  , "DEBUG"   }
+        static const std::map< log_level, std::string > level_strings{
+            { log_level::SILENT , "SILENT"  },
+            { log_level::ERROR  , "ERROR"   },
+            { log_level::WARNING, "WARNING" },
+            { log_level::INFO   , "INFO"    },
+            { log_level::VERBOSE, "VERBOSE" },
+            { log_level::DEBUG  , "DEBUG"   }
         };
         
-        if( stickers::log_level() >= level )
+        if( current_log_level() >= level )
         {
             auto t = std::time( nullptr );
             std::stringstream time_string;
@@ -46,12 +46,12 @@ namespace stickers
             thread_id_string << std::this_thread::get_id();
             
             ff::writeln(
-                ( level == stickers::ERROR ? std::cerr : std::cout ),
-                "[", level_strings.at( level ), "]",
-                "[", time_string.str(), "]",
-                "[thread ", thread_id_string.str(), "]",
-                stickers::log_level() >= stickers::DEBUG ? (
-                    std::string( "[" )
+                ( level == log_level::ERROR ? std::cerr : std::cout ),
+                "["       , level_strings.at( level ), "]",
+                "["       , time_string.str()        , "]",
+                "[thread ", thread_id_string.str()   , "]",
+                current_log_level() >= log_level::DEBUG ? (
+                    static_cast< std::string >( "[" )
                     + file_name
                     + ":"
                     + std::to_string( file_line )
@@ -67,6 +67,9 @@ namespace stickers
         std::stringstream sanitized;
         sanitized << std::hex;
         for( const auto& c : raw )
+        {
+            if( c == '"' )
+                sanitized << '\\';
             if( isprint( c ) )
                 sanitized << c;
             else
@@ -74,15 +77,18 @@ namespace stickers
                     << "\\x"
                     << std::setw( 2 )
                     << std::setfill( '0' )
-                    << ( unsigned int )( unsigned char )c
+                    << static_cast< unsigned int >(
+                        static_cast< unsigned char >( c )
+                    )
                 ;
+        }
         return sanitized.str();
     }
 }
 
 
 #define STICKERS_LOG( LEVEL, ... ) stickers::log( \
-    stickers::LEVEL, \
+    LEVEL, \
     __FILE__, \
     __LINE__, \
     __VA_ARGS__ \

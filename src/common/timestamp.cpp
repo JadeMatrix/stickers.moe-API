@@ -18,11 +18,11 @@ namespace stickers
     {
         timestamp ts;
         if( !from_iso8601_str( s, ts ) )
-            throw std::runtime_error(
+            throw std::runtime_error{
                 "failed to parse "
                 + s
                 + " as an ISO 8601 timestamp"
-            );
+            };
         return ts;
     }
     
@@ -40,9 +40,9 @@ namespace stickers
     
     timestamp from_unix_time( unsigned int unix_time )
     {
-        return timestamp( std::chrono::duration_cast<
+        return timestamp{ std::chrono::duration_cast<
             std::chrono::microseconds
-        >( std::chrono::seconds( unix_time ) ) );
+        >( std::chrono::seconds{ unix_time } ) };
     }
     
     unsigned int to_unix_time( const timestamp& ts )

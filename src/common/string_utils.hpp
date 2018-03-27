@@ -20,29 +20,30 @@ namespace stickers
         auto segment_begin = v.begin();
         for( auto iter = v.begin(); iter != v.end(); ++iter )
         {
-            // if( ValueType( segment_begin, iter )  )
-            // if( iter - segment_begin >= joiner.size() )
             {
                 auto joiner_candidate_begin = iter + 1 - joiner.size();
                 auto joiner_candidate_end   = iter + 1                ;
-                if( ValueType( joiner_candidate_begin, joiner_candidate_end ) == joiner )
+                if( ValueType{
+                    joiner_candidate_begin,
+                    joiner_candidate_end
+                } == joiner )
                 {
-                    c.push_back( ValueType( segment_begin, joiner_candidate_begin ) );
+                    c.emplace_back( segment_begin, joiner_candidate_begin );
                     segment_begin = joiner_candidate_end;
                 }
             }
         }
-        c.push_back( ValueType( segment_begin, v.end() ) );
+        c.emplace_back( segment_begin, v.end() );
         return c;
     }
     
     template< typename CollectionType, typename ValueType > ValueType join(
         const CollectionType& c,
-        const ValueType&      joiner
+        const ValueType     & joiner
     )
     {
         ValueType v;
-        for( auto iter = c.begin(); iter != c.end(); /*++iter*/ )
+        for( auto iter = c.begin(); iter != c.end(); )
         {
             v += *iter;
             if( ++iter != c.end() )

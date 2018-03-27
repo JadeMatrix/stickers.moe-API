@@ -5,10 +5,12 @@
 
 #include <show.hpp>
 
+#include <functional>   // std::function
+
 
 namespace stickers
 {
-    using handler_type = void (*)( show::request& );
+    using handler_type = std::function< void( show::request& ) >;
     
     class handler_exit
     {
@@ -20,8 +22,8 @@ namespace stickers
             show::response_code response_code,
             const std::string&  message
         ) :
-            response_code( response_code ),
-            message( message )
+            response_code{ response_code },
+            message{       message       }
         {}
     };
 }

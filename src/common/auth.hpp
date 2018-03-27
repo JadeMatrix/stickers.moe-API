@@ -6,11 +6,11 @@
 #include "bigid.hpp"
 #include "../audit/blame.hpp"
 
-#include <exception>
-#include <string>
-#include <set>
-
 #include <show.hpp>
+
+#include <exception>
+#include <set>
+#include <string>
 
 
 namespace stickers
@@ -42,9 +42,9 @@ namespace stickers
         using runtime_error::runtime_error;
     };
     
+    // Authorization error messages will be publicly displayed by the API
     class authorization_error : public std::runtime_error
     {
-        // Authorization error messages will be publicly displayed by the API
         using runtime_error::runtime_error;
     };
 }

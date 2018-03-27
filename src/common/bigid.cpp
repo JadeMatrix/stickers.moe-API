@@ -4,11 +4,10 @@
 #include "bigid.hpp"
 
 
-// bigid -----------------------------------------------------------------------
-
-
-namespace stickers
+namespace stickers // Big-ID ///////////////////////////////////////////////////
 {
+    bigid::bigid() {}
+    
     bigid::bigid( long long v )
     {
         *this = v;
@@ -32,7 +31,7 @@ namespace stickers
     bigid::operator bool() const
     {
         // Should always be true
-        return ( bool )value;
+        return static_cast< bool >( value );
     }
     
     const bigid& bigid::operator =( const bigid& o )
@@ -43,32 +42,32 @@ namespace stickers
     
     const bigid& bigid::operator =( long long v )
     {
-        if( v >= _BIGID_MIN && v <= _BIGID_MAX )
+        if( v >= MIN().value && v <= MAX().value )
             value = v;
         else
-            throw bigid_out_of_range( v );
+            throw bigid_out_of_range{ v };
         return *this;
     }
     
     bigid bigid::operator +( long long i ) const
     {
-        return bigid( value + i );
+        return bigid{ value + i };
     }
     
     bigid bigid::operator -( long long i ) const
     {
-        return bigid( value - i );
+        return bigid{ value - i };
     }
     
     const bigid& bigid::operator ++()
     {
-        ++value;
+        *this = value + 1;
         return *this;
     }
     
     const bigid& bigid::operator --()
     {
-        --value;
+        *this = value - 1;
         return *this;
     }
     
@@ -80,7 +79,7 @@ namespace stickers
     
     const bigid& bigid::operator -=( long long i )
     {
-        *this = value + i;
+        *this = value - i;
         return *this;
     }
     
@@ -94,6 +93,20 @@ namespace stickers
         return value != o.value;
     }
     
+    bigid bigid::MIN()
+    {
+        bigid min;
+        min.value = 1000000000000000000ll;
+        return min;
+    }
+    
+    bigid bigid::MAX()
+    {
+        bigid max;
+        max.value = 9223372036854775807ll;
+        return max;
+    }
+    
     bigid bigid::from_string( const std::string& str )
     {
         try
@@ -104,18 +117,15 @@ namespace stickers
         }
         catch( const pqxx::argument_error& e )
         {
-            throw std::invalid_argument(
+            throw std::invalid_argument{
                 "can't convert \"" + str + "\" to a big-ID"
-            );
+            };
         }
     }
 }
 
 
-// bigid_out_of_range ----------------------------------------------------------
-
-
-namespace stickers
+namespace stickers // Big-ID exceptions ////////////////////////////////////////
 {
     bigid_out_of_range::bigid_out_of_range( long long value ) noexcept :
         std::out_of_range( std::to_string( value ) + " out of range for bigid" )

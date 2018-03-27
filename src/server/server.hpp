@@ -8,7 +8,7 @@
 
 namespace stickers
 {
-    static const show::headers_type::value_type server_header = {
+    static const show::headers_type::value_type server_header{
         "Server",
         {
             show::version::name

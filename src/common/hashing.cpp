@@ -3,8 +3,8 @@
 
 #include "hashing.hpp"
 
-#include <libscrypt.h>
 #include <cryptopp/hex.h>
+#include <libscrypt.h>
 
 #include <cmath>
 
@@ -31,71 +31,74 @@ namespace stickers
     // SHA256 //////////////////////////////////////////////////////////////////
     
     
-    sha256::sha256() : digest( CryptoPP::SHA256::DIGESTSIZE ) {}
+    sha256::sha256() : digest{ CryptoPP::SHA256::DIGESTSIZE } {}
     
     sha256::sha256( const CryptoPP::SecByteBlock& b ) :
-        digest( CryptoPP::SHA256::DIGESTSIZE )
+        digest{ CryptoPP::SHA256::DIGESTSIZE }
     {
         if( b.size() == CryptoPP::SHA256::DIGESTSIZE )
             digest = b;
         else
-            throw hash_error(
+            throw hash_error{
                 "mismatch between digest and input sizes constructing a sha256 "
                 "object (need "
                 + std::to_string( CryptoPP::SHA256::DIGESTSIZE )
                 + " bytes, got "
                 + std::to_string( b.size() )
                 + ")"
-            );
+            };
     }
     
     sha256::sha256( const std::string& s ) :
-        digest( CryptoPP::SHA256::DIGESTSIZE )
+        digest{ CryptoPP::SHA256::DIGESTSIZE }
     {
         if( s.size() == CryptoPP::SHA256::DIGESTSIZE )
             for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
                 digest.BytePtr()[ i ] = ( CryptoPP::byte )s[ i ];
         else
-            throw hash_error(
+            throw hash_error{
                 "mismatch between digest and input sizes constructing a sha256 "
                 "object (need "
                 + std::to_string( CryptoPP::SHA256::DIGESTSIZE )
                 + " bytes, got "
                 + std::to_string( s.size() )
                 + ")"
-            );
+            };
     }
     
     sha256::sha256( const char* s, size_t l ) :
-        digest( CryptoPP::SHA256::DIGESTSIZE )
+        digest{ CryptoPP::SHA256::DIGESTSIZE }
     {
         if( l == CryptoPP::SHA256::DIGESTSIZE )
             for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
-                digest.BytePtr()[ i ] = ( CryptoPP::byte )s[ i ];
+                digest.BytePtr()[ i ] = static_cast< CryptoPP::byte >( s[ i ] );
         else
-            throw hash_error(
+            throw hash_error{
                 "mismatch between digest and input sizes constructing a sha256 "
                 "object (need "
                 + std::to_string( CryptoPP::SHA256::DIGESTSIZE )
                 + " bytes, got "
                 + std::to_string( l )
                 + ")"
-            );
+            };
     }
     
     sha256::sha256( const sha256& o ) :
-        digest( o.digest )
+        digest{ o.digest }
     {}
     
     std::string sha256::raw_digest() const
     {
-        return std::string( ( char* )digest.data(), digest.size() );
+        return {
+            reinterpret_cast< const char* >( digest.data() ),
+            digest.size()
+        };
     }
     
     std::string sha256::hex_digest() const
     {
         std::string hex;
-        CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
+        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
             digest.begin(),
             digest.size()
         );
@@ -106,9 +109,9 @@ namespace stickers
     {
         sha256 h;
         
-        CryptoPP::SHA256().CalculateDigest(
+        CryptoPP::SHA256{}.CalculateDigest(
             h.digest.begin(),
-            ( CryptoPP::byte* )s,
+            reinterpret_cast< const CryptoPP::byte* >( s ),
             l
         );
         
@@ -123,14 +126,14 @@ namespace stickers
     sha256 sha256::make_from_hex_string( const std::string& s )
     {
         if( s.size() != CryptoPP::SHA256::DIGESTSIZE * 2 )
-            throw hash_error(
+            throw hash_error{
                 "mismatch between digest and input sizes constructing a sha256 "
                 "object from hex string (need "
                 + std::to_string( CryptoPP::SHA256::DIGESTSIZE * 2 )
                 + " chars, got "
                 + std::to_string( s.size() )
                 + ")"
-            );
+            };
         
         sha256 h;
         
@@ -162,11 +165,11 @@ namespace stickers
     scrypt::scrypt() {}
     
     scrypt::scrypt( const scrypt& o ) :
-        salt(             o.salt             ),
-        digest(           o.digest           ),
-        _factor(          o._factor          ),
-        _block_size(      o._block_size      ),
-        _parallelization( o._parallelization )
+        salt{             o.salt             },
+        digest{           o.digest           },
+        _factor{          o._factor          },
+        _block_size{      o._block_size      },
+        _parallelization{ o._parallelization }
     {}
     
     scrypt::scrypt(
@@ -176,11 +179,11 @@ namespace stickers
         unsigned char      block_size,
         unsigned char      parallelization
     ) :
-        digest(           digest          ),
-        salt(             salt            ),
-        _factor(          factor          ),
-        _block_size(      block_size      ),
-        _parallelization( parallelization )
+        digest{           digest          },
+        salt{             salt            },
+        _factor{          factor          },
+        _block_size{      block_size      },
+        _parallelization{ parallelization }
     {}
     
     std::string scrypt::raw_digest() const
@@ -191,8 +194,8 @@ namespace stickers
     std::string scrypt::hex_digest() const
     {
         std::string hex;
-        CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
-            ( const CryptoPP::byte* )digest.c_str(),
+        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
+            reinterpret_cast< const CryptoPP::byte* >( digest.c_str() ),
             digest.size()
         );
         return hex;
@@ -206,8 +209,8 @@ namespace stickers
     std::string scrypt::hex_salt() const
     {
         std::string hex;
-        CryptoPP::HexEncoder( new CryptoPP::StringSink( hex ) ).Put(
-            ( const CryptoPP::byte* )salt.c_str(),
+        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
+            reinterpret_cast< const CryptoPP::byte* >( salt.c_str() ),
             salt.size()
         );
         return hex;
@@ -241,27 +244,29 @@ namespace stickers
     {
         scrypt sc;
         
+        // Can't use list initialization to call this `std::string` constructor
+        // when compiling with clang
         sc.digest = std::string( digest_size, '\0' );
         
         int result = libscrypt_scrypt(
-            ( const uint8_t* )input,
+            reinterpret_cast< const uint8_t* >( input ),
             input_len,
-            ( const uint8_t* )salt,
+            reinterpret_cast< const uint8_t* >( salt ),
             salt_len,
-            ( uint64_t )pow( 2, factor ),
+            static_cast< uint64_t >( pow( 2, factor ) ),
             block_size,
             parallelization,
-            ( uint8_t* )sc.digest.data(),
+            reinterpret_cast< uint8_t* >( sc.digest.data() ),
             sc.digest.size()
         );
         if( result )
-            throw hash_error(
+            throw hash_error{
                 "failed to make scrypt (libscrypt_scrypt() returned "
                 + std::to_string( result )
                 + ")"
-            );
+            };
         
-        sc.salt             = std::string( salt, salt_len );
+        sc.salt             = std::string{ salt, salt_len };
         sc._factor          = factor;
         sc._block_size      = block_size;
         sc._parallelization = parallelization;
@@ -297,9 +302,9 @@ namespace stickers
     )
     {
         return (
-              ( ( unsigned int )factor          << 16 )
-            | ( ( unsigned int )block_size      <<  8 )
-            | ( ( unsigned int )parallelization <<  0 )
+              static_cast< unsigned int >( factor          << 16 )
+            | static_cast< unsigned int >( block_size      <<  8 )
+            | static_cast< unsigned int >( parallelization <<  0 )
         );
     }
     
@@ -317,7 +322,7 @@ namespace stickers
     
     bool scrypt::operator==( const scrypt& o ) const
     {
-        bool equals = true;
+        bool equals{ true };
         
         equals = equals && ( _factor          == o._factor          );
         equals = equals && ( _block_size      == o._block_size      );

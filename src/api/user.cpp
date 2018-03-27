@@ -3,13 +3,13 @@
 
 #include "user.hpp"
 
-#include <fstream>
-
 #include "../common/config.hpp"
-#include "../common/timestamp.hpp"
+#include "../common/logging.hpp"
 #include "../common/postgres.hpp"
 #include "../common/redis.hpp"
-#include "../common/logging.hpp"
+#include "../common/timestamp.hpp"
+
+#include <fstream>
 
 
 namespace
@@ -22,7 +22,7 @@ namespace
         bool                                 signup = false
     )
     {
-        pqxx::work transaction( *connection );
+        pqxx::work transaction{ *connection };
         std::string current_email;
         
         if( generate_id )
@@ -119,32 +119,26 @@ namespace
 }
 
 
-// User management -------------------------------------------------------------
-
-
-namespace stickers
+namespace stickers // Passwords ////////////////////////////////////////////////
 {
-    // Password ////////////////////////////////////////////////////////////////
-    
-    
     void password::cleanup()
     {
         switch( _type )
         {
-        case RAW:
+        case password_type::RAW:
         {
             // Clang fails to compile this without the `using` statement
             using std::string;
             ( &raw_value ) -> string::~string();
             break;
         }
-        case SCRYPT:
+        case password_type::SCRYPT:
             ( &scrypt_value ) -> scrypt::~scrypt();
             break;
         default:
             break;
         }
-        _type = INVALID;
+        _type = password_type::INVALID;
         invalid_value = nullptr;
     }
     
@@ -152,31 +146,34 @@ namespace stickers
     {
         switch( _type )
         {
-        case RAW:
+        case password_type::RAW:
             return "raw";
-        case SCRYPT:
+        case password_type::SCRYPT:
             return "scrypt";
         default:
             return "invalid";
         }
     }
     
-    password::password() : _type( INVALID ), invalid_value( nullptr ) {}
-    
-    password::password( const std::string& v ) :
-        _type(      RAW ),
-        raw_value( v   )
+    password::password() :
+        _type{         password_type::INVALID },
+        invalid_value{ nullptr                }
     {}
     
-    password::password( const scrypt& v ) :
-        _type(         SCRYPT ),
-        scrypt_value( v      )
-    {}
-    
-    password::password( const password& o ) : _type( INVALID )
+    password::password( const password& o ) : _type{ password_type::INVALID }
     {
         *this = o;
     }
+    
+    password::password( const std::string& v ) :
+        _type{     password_type::RAW },
+        raw_value{ v                  }
+    {}
+    
+    password::password( const scrypt& v ) :
+        _type{        password_type::SCRYPT },
+        scrypt_value{ v                     }
+    {}
     
     password::~password()
     {
@@ -187,7 +184,7 @@ namespace stickers
     {
         switch( _type )
         {
-        case RAW:
+        case password_type::RAW:
         {
             bool equals = true;
             
@@ -204,7 +201,7 @@ namespace stickers
             
             return equals;
         }
-        case SCRYPT:
+        case password_type::SCRYPT:
             return scrypt_value == o.scrypt_value;
         default:
             return false;
@@ -220,10 +217,10 @@ namespace stickers
     {
         switch( o._type )
         {
-        case RAW:
+        case password_type::RAW:
             *this = o.raw_value;
             break;
-        case SCRYPT:
+        case password_type::SCRYPT:
             *this = o.scrypt_value;
             break;
         default:
@@ -236,7 +233,7 @@ namespace stickers
     password& password::operator=( const std::string& v )
     {
         cleanup();
-        _type = RAW;
+        _type = password_type::RAW;
         new( &raw_value ) std::string( v );
         return *this;
     }
@@ -244,7 +241,7 @@ namespace stickers
     password& password::operator=( const scrypt& v )
     {
         cleanup();
-        _type = SCRYPT;
+        _type = password_type::SCRYPT;
         new( &scrypt_value ) scrypt( v );
         return *this;
     }
@@ -253,7 +250,7 @@ namespace stickers
     {
         switch( _type )
         {
-        case SCRYPT:
+        case password_type::SCRYPT:
             return scrypt_value.raw_digest();
         default:
             return "";
@@ -264,7 +261,7 @@ namespace stickers
     {
         switch( _type )
         {
-        case SCRYPT:
+        case password_type::SCRYPT:
             return scrypt_value.raw_salt();
         default:
             return "";
@@ -275,10 +272,10 @@ namespace stickers
     {
         switch( _type )
         {
-        case SCRYPT:
+        case password_type::SCRYPT:
             return scrypt::make_libscrypt_mcf_factor(
-                scrypt_value.factor(),
-                scrypt_value.block_size(),
+                scrypt_value.         factor(),
+                scrypt_value.     block_size(),
                 scrypt_value.parallelization()
             );
         default:
@@ -290,26 +287,26 @@ namespace stickers
     {
         std::ifstream urandom( "/dev/urandom", std::ios::binary );
         if( !urandom.good() )
-            throw hash_error( "failed to open /dev/urandom" );
+            throw hash_error{ "failed to open /dev/urandom" };
         
         char salt[ scrypt::default_salt_size ];
         
         urandom.read( salt, scrypt::default_salt_size );
         if( !urandom.good() )
-            throw hash_error( "failed to read from /dev/urandom" );
+            throw hash_error{ "failed to read from /dev/urandom" };
         
-        return password( scrypt::make(
+        return password{ scrypt::make(
             raw.c_str(),
             raw.size(),
             salt,
             scrypt::default_salt_size
-        ) );
+        ) };
     }
-    
-    
-    // User ////////////////////////////////////////////////////////////////////
-    
-    
+}
+
+
+namespace stickers // User management //////////////////////////////////////////
+{
     user create_user(
         const user_info& info,
         const audit::blame& blame,
@@ -317,7 +314,7 @@ namespace stickers
     )
     {
         STICKERS_LOG(
-            VERBOSE,
+            log_level::VERBOSE,
             "creating new user"
         );
         
@@ -328,15 +325,15 @@ namespace stickers
             info
         };
         
-        if( new_user.info.password.type() == RAW )
+        if( new_user.info.password.type() == password_type::RAW )
         {
             new_user.info.password = hash_password(
                 new_user.info.password.value< std::string >()
             );
         }
-        else if( new_user.info.password.type() != INVALID )
+        else if( new_user.info.password.type() != password_type::INVALID )
             STICKERS_LOG(
-                WARNING,
+                log_level::WARNING,
                 "creating user with a pre-set password"
             );
         
@@ -349,7 +346,7 @@ namespace stickers
         );
         
         STICKERS_LOG(
-            INFO,
+            log_level::INFO,
             "created new user with id ",
             new_user.id
         );
@@ -360,7 +357,7 @@ namespace stickers
     user_info load_user( const bigid& id )
     {
         auto connection = postgres::connect();
-        pqxx::work transaction( *connection );
+        pqxx::work transaction{ *connection };
         
         pqxx::result result = transaction.exec_params(
             PSQL(
@@ -385,10 +382,13 @@ namespace stickers
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user( id, "loading" );
+            throw no_such_user{ id, "loading" };
         
         password pw;
-        if( result[ 0 ][ "password_type" ].as< password_type >() == SCRYPT )
+        if(
+            result[ 0 ][ "password_type" ].as< password_type >()
+            == password_type::SCRYPT
+        )
         {
             unsigned char factor, block_size, parallelization;
             
@@ -399,23 +399,23 @@ namespace stickers
                 parallelization
             );
             
-            pw = scrypt(
+            pw = scrypt{
                 pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
                 pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
                 factor,
                 block_size,
                 parallelization
-            );
+            };
         }
         
         user_info found_info = {
             pw,
-            result[ 0 ][ "created"      ].as<  timestamp   >(),
-            result[ 0 ][ "revised"      ].as<  timestamp   >(),
-            result[ 0 ][ "display_name" ].as<  std::string >(),
+            result[ 0 ][ "created"      ]. as< timestamp   >(),
+            result[ 0 ][ "revised"      ]. as< timestamp   >(),
+            result[ 0 ][ "display_name" ]. as< std::string >(),
             result[ 0 ][ "real_name"    ].get< std::string >(),
             result[ 0 ][ "avatar_hash"  ].get< sha256      >(),
-            result[ 0 ][ "email"        ].as<  std::string >(),
+            result[ 0 ][ "email"        ]. as< std::string >(),
         };
         
         return found_info;
@@ -427,7 +427,7 @@ namespace stickers
         
         user updated_user = u;
         
-        if( updated_user.info.password.type() == RAW )
+        if( updated_user.info.password.type() == password_type::RAW )
             updated_user.info.password = hash_password(
                 updated_user.info.password.value< std::string >()
             );
@@ -445,7 +445,7 @@ namespace stickers
     void delete_user( const bigid& id, const audit::blame& blame )
     {
         auto connection = postgres::connect();
-        pqxx::work transaction( *connection );
+        pqxx::work transaction{ *connection };
         
         pqxx::result result = transaction.exec_params(
             PSQL(
@@ -473,15 +473,12 @@ namespace stickers
 }
 
 
-// no_such_user ----------------------------------------------------------------
-
-
-namespace stickers
+namespace stickers // Exceptions ///////////////////////////////////////////////
 {
     no_such_user::no_such_user( const bigid& id, const std::string& purpose ) :
         std::runtime_error(
             "no such user with ID "
-            + ( std::string )id
+            + static_cast< std::string >( id )
             + " ("
             + purpose
             + ")"

@@ -19,10 +19,10 @@ namespace stickers
 {
     void route_request( show::request& request )
     {
-        bool handler_finished = false;
-        show::response_code error_code    = { 400, "Bad Request" };
-        std::string         error_message = "";
-        show::headers_type  error_headers = { server_header };
+        bool handler_finished{ false };
+        show::response_code error_code   { 400, "Bad Request" };
+        std::string         error_message;
+        show::headers_type  error_headers{ server_header };
         
         try
         {
@@ -33,14 +33,14 @@ namespace stickers
                     if( request.method() == "POST" )
                         handlers::signup( request );
                     else
-                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
                 }
                 else if( request.path()[ 0 ] == "login" )
                 {
                     if( request.method() == "POST" )
                         handlers::login( request );
                     else
-                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
                 }
                 else if( request.path()[ 0 ] == "user" )
                 {
@@ -53,13 +53,13 @@ namespace stickers
                     else if( request.method() == "DELETE" )
                         handlers::delete_user( request );
                     else
-                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
                 }
                 else
-                    throw handler_exit( { 404, "Not Found" }, "" );
+                    throw handler_exit{ { 404, "Not Found" }, "" };
             }
             else
-                throw handler_exit( { 404, "Not Found" }, "need an API path" );
+                throw handler_exit{ { 404, "Not Found" }, "need an API path" };
             
             handler_finished = true;
         }
@@ -80,13 +80,13 @@ namespace stickers
                 "Bearer realm=\"stickers.moe JWT\""
             };
             STICKERS_LOG(
-                INFO,
+                log_level::INFO,
                 "unauthenticated ",
                 request.method(),
                 " request from ",
                 request.client_address(),
                 " on ",
-                join( request.path(), std::string( "/" ) ),
+                join( request.path(), std::string{ "/" } ),
                 ": ",
                 ae.what()
             );
@@ -96,17 +96,17 @@ namespace stickers
             error_code    = { 403, "Forbidden" };
             error_message =
                 "you are not permitted to perform this action ("
-                + std::string( ae.what() )
+                + static_cast< std::string >( ae.what() )
                 + ")"
             ;
             STICKERS_LOG(
-                INFO,
+                log_level::INFO,
                 "unauthorized ",
                 request.method(),
                 " request from ",
                 request.client_address(),
                 " on ",
-                join( request.path(), std::string( "/" ) ),
+                join( request.path(), std::string{ "/" } ),
                 ": ",
                 ae.what()
             );
@@ -116,7 +116,7 @@ namespace stickers
             error_code    = { 500, "Server Error" };
             error_message = "please try again later";
             STICKERS_LOG(
-                ERROR,
+                log_level::ERROR,
                 "uncaught std::exception in route_request(show::request&): ",
                 e.what()
             );
@@ -126,19 +126,19 @@ namespace stickers
             error_code    = { 500, "Server Error" };
             error_message = "please try again later";
             STICKERS_LOG(
-                ERROR,
+                log_level::ERROR,
                 "uncaught non-std::exception in route_request(show::request&)"
             );
         }
         
         if( !request.unknown_content_length() )
-            while( !request.eof() ) request.sbumpc();
+            request.flush();
         
         if( handler_finished )
             return;
         
         nlj::json error_object = {
-            { "message", error_message              },
+            { "message", error_message                   },
             { "contact", config()[ "server" ][ "admin" ] }
         };
         std::string error_json = error_object.dump();
@@ -148,12 +148,12 @@ namespace stickers
             std::to_string( error_json.size() )
         };
         
-        show::response response(
+        show::response response{
             request.connection(),
             show::HTTP_1_1,
             error_code,
             error_headers
-        );
+        };
         
         response.sputn( error_json.c_str(), error_json.size() );
     }

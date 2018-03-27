@@ -45,10 +45,10 @@ namespace stickers
     document_type parse_request_content( show::request& request )
     {
         if( request.unknown_content_length() )
-            throw handler_exit(
+            throw handler_exit{
                 { 400, "Bad Request" },
                 "Missing \"Content-Length\" header"
-            );
+            };
         
         auto content_type_found = request.headers().find( "Content-Type" );
         
@@ -56,10 +56,10 @@ namespace stickers
             content_type_found == request.headers().end()
             || content_type_found -> second.size() != 1
         )
-            throw handler_exit(
+            throw handler_exit{
                 { 400, "Bad Request" },
                 "Indeterminate content type"
-            );
+            };
         
         if( content_type_found -> second[ 0 ] == "application/json" )
         {
@@ -68,7 +68,7 @@ namespace stickers
             
             try
             {
-                std::istream request_stream( &request );
+                std::istream request_stream{ &request };
                 request_stream >> parsed;
                 
                 malformed_json = !request.eof();
@@ -79,10 +79,10 @@ namespace stickers
             }
             
             if( malformed_json )
-                throw handler_exit(
+                throw handler_exit{
                     { 400, "Bad Request" },
                     "Malformed JSON payload"
-                );
+                };
             else
                 return parsed;
         }
@@ -91,31 +91,31 @@ namespace stickers
             == "application/x-www-form-urlencoded"
         )
         {
-            return parse_form_urlencoded( std::string(
-                std::istreambuf_iterator< char >( &request ),
+            return parse_form_urlencoded( std::string{
+                std::istreambuf_iterator< char >{ &request },
                 {}
-            ) );
+            } );
         }
         else
         {
             // Stick a warning in the log in case we're not supporting something
             // common
             STICKERS_LOG(
-                WARNING,
+                log_level::WARNING,
                 "got unsupported content type \"",
                 log_sanitize( content_type_found -> second[ 0 ] ),
                 "\" in \"",
                 request.method(),
                 "\" request"
             );
-            throw handler_exit(
+            throw handler_exit{
                 { 400, "Bad Request" },
                 (
                     "Unsupported content type '"
                     + log_sanitize( content_type_found -> second[ 0 ] )
                     + "'"
                 )
-            );
+            };
         }
     }
 }

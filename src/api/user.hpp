@@ -3,20 +3,20 @@
 #define STICKERS_MOE_API_USER_HPP
 
 
-#include <string>
-#include <optional>
 #include <exception>
+#include <optional>
+#include <string>
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
-#include "../common/timestamp.hpp"
 #include "../common/hashing.hpp"
 #include "../common/postgres.hpp"
+#include "../common/timestamp.hpp"
 
 
-namespace stickers
+namespace stickers // Passwords ////////////////////////////////////////////////
 {
-    enum password_type
+    enum class password_type
     {
         INVALID = 0,
         RAW,
@@ -39,9 +39,9 @@ namespace stickers
         
     public:
         password();
-        password( const std::string& o );
-        password( const scrypt     & o );
-        password( const password& );
+        password( const password   & );
+        password( const std::string& );
+        password( const scrypt     & );
         ~password();
         
         password_type type() const { return _type; }
@@ -61,26 +61,34 @@ namespace stickers
     
     template<> inline std::string& password::value< std::string >()
     {
-        if( _type != RAW )
-            throw std::runtime_error(
+        if( _type != password_type::RAW )
+            throw std::runtime_error{
                 "attempt to get wrong type of value (raw) from "
-                "stickers::password (" + std::string( type_name() ) + ")"
-            );
+                "stickers::password ("
+                + static_cast< std::string >( type_name() )
+                + ")"
+            };
         return raw_value;
     }
     template<> inline scrypt& password::value< scrypt >()
     {
-        if( _type != RAW )
-            throw std::runtime_error(
+        if( _type != password_type::SCRYPT )
+            throw std::runtime_error{
                 "attempt to get wrong type of value (scrypt) from "
-                "stickers::password (" + std::string( type_name() ) + ")"
-            );
+                "stickers::password ("
+                + static_cast< std::string >( type_name() )
+                + ")"
+            };
         return scrypt_value;
     }
     
     // Return a fresh hashing of a new password using the preferred method
     password hash_password( const std::string& );
-    
+}
+
+
+namespace stickers // User management //////////////////////////////////////////
+{
     struct user_info
     {
         password                     password;
@@ -99,12 +107,17 @@ namespace stickers
     };
     
     user      create_user( const user_info&, const audit::blame&, bool signup = true );
-    user_info   load_user( const bigid&                          );
-    user_info   save_user( const user&     , const audit::blame& );
-    void      delete_user( const bigid&    , const audit::blame& );
+    user_info   load_user( const bigid    &                      );
+    user_info   save_user( const user     &, const audit::blame& );
+    void      delete_user( const bigid    &, const audit::blame& );
     
+    // TODO: Move
     void send_validation_email( const bigid& );
-    
+}
+
+
+namespace stickers // Exceptions ///////////////////////////////////////////////
+{
     class no_such_user : public std::runtime_error
     {
     public:
@@ -140,24 +153,24 @@ namespace pqxx
         {
             std::string s( str );
             if( s == "scrypt" )
-                pt = stickers::SCRYPT;
+                pt = stickers::password_type::SCRYPT;
             else if( s == "invalid" )
-                pt = stickers::INVALID;
+                pt = stickers::password_type::INVALID;
             else
-                throw argument_error(
+                throw argument_error{
                     "Failed conversion to "
-                    + std::string( name() )
+                    + static_cast< std::string >( name() )
                     + ": '"
-                    + std::string( str )
+                    + static_cast< std::string >( str )
                     + "'"
-                );
+                };
         }
         
         static std::string to_string( stickers::password_type pt )
         {
             switch( pt )
             {
-            case stickers::SCRYPT:
+            case stickers::password_type::SCRYPT:
                 return "scrypt";
             default:
                 return "invalid";

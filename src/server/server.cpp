@@ -11,8 +11,9 @@
 #include <show.hpp>
 
 #include <list>
+#include <mutex>
 #include <sstream>
-#include <thread>
+#include <thread> 
 
 
 // Request global time handling ------------------------------------------------
@@ -43,16 +44,15 @@ namespace stickers
 namespace
 {
     std::mutex worker_count_mutex;
-    unsigned long long  worker_count = 0;
+    unsigned long long worker_count{ 0 };
     
     void handle_connection( show::connection* connection )
     {
-        // Really?
         std::stringstream worker_id;
         worker_id << std::this_thread::get_id();
         
         STICKERS_LOG(
-            VERBOSE,
+            stickers::log_level::VERBOSE,
             "handling connection from ",
             connection -> client_address(),
             " with worker ",
@@ -66,7 +66,7 @@ namespace
         while( true )
             try
             {
-                show::request request( *connection );
+                show::request request{ *connection };
                 
                 set_request_time_to_now();
                 
@@ -81,9 +81,9 @@ namespace
                     && connection_header -> second.size() == 1
                 )
                 {
-                    const std::string& ch_val(
+                    const std::string& ch_val{
                         connection_header -> second[ 0 ]
-                    );
+                    };
                     if( ch_val == "keep-alive" )
                         continue;
                     else if( ch_val == "close" )
@@ -95,13 +95,13 @@ namespace
             catch( const show::request_parse_error& rpe )
             {
                 STICKERS_LOG(
-                    INFO,
+                    stickers::log_level::INFO,
                     "client ",
                     connection -> client_address(),
                     " sent a malformed request"
                 );
                 
-                show::response response(
+                show::response response{
                     *connection,
                     show::HTTP_1_1,
                     { 400, "Bad Request" },
@@ -109,24 +109,27 @@ namespace
                         stickers::server_header,
                         { "Content-Length", { "0" } }
                     }
-                );
+                };
                 
                 break;
             }
             catch( const show::connection_interrupted& ci )
             {
                 STICKERS_LOG(
-                    VERBOSE,
+                    stickers::log_level::VERBOSE,
                     "connection to client ",
                     connection -> client_address(),
-                    " interrupted (client disconnected or timed out), closing connection"
+                    (
+                        " interrupted (client disconnected or timed out), "
+                        "closing connection"
+                    )
                 );
                 break;
             }
             catch( const std::exception& e )
             {
                 STICKERS_LOG(
-                    ERROR,
+                    stickers::log_level::ERROR,
                     "uncaught exception in handle_connection(): ",
                     e.what()
                 );
@@ -136,12 +139,12 @@ namespace
         delete connection;
         
         {
-            std::lock_guard< std::mutex > guard( worker_count_mutex );
+            std::lock_guard< std::mutex > guard{ worker_count_mutex };
             --worker_count;
         }
         
         STICKERS_LOG(
-            VERBOSE,
+            stickers::log_level::VERBOSE,
             "cleaning up worker ",
             worker_id.str()
         );
@@ -152,41 +155,41 @@ namespace stickers
 {
     void run_server()
     {
-        show::server server(
+        show::server server{
             stickers::config()[ "server" ][ "host" ],
             stickers::config()[ "server" ][ "port" ],
             stickers::config()[ "server" ][ "wait_for_connection" ]
-        );
+        };
         
         while( true )
         {
             try
             {
-                auto connection = new show::connection( server.serve() );
+                auto connection = new show::connection{ server.serve() };
                 
-                std::lock_guard< std::mutex > guard( worker_count_mutex );
+                std::lock_guard< std::mutex > guard{ worker_count_mutex };
                 ++worker_count;
                 
-                std::thread worker(
+                std::thread worker{
                     handle_connection,
                     connection
-                );
+                };
                 worker.detach();
             }
             catch( const show::connection_timeout& ct )
             {
                 STICKERS_LOG(
-                    VERBOSE,
+                    log_level::VERBOSE,
                     "timed out waiting for connection, looping..."
                 );
             }
             
-            if( stickers::log_level() >= stickers::VERBOSE )
+            if( current_log_level() >= log_level::VERBOSE )
             {
-                std::lock_guard< std::mutex > guard( worker_count_mutex );
+                std::lock_guard< std::mutex > guard{ worker_count_mutex };
                 if( worker_count > 0 )
                     STICKERS_LOG(
-                        VERBOSE,
+                        log_level::VERBOSE,
                         "currently serving ",
                         worker_count,
                         " connections"

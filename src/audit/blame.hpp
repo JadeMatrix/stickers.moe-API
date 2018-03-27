@@ -3,12 +3,12 @@
 #define STICKERS_MOE_AUDIT_BLAME_HPP
 
 
+#include "../common/bigid.hpp"
+#include "../common/timestamp.hpp"
+
 #include <stdexcept>
 #include <string>
 #include <utility>
-
-#include "../common/bigid.hpp"
-#include "../common/timestamp.hpp"
 
 
 namespace stickers
