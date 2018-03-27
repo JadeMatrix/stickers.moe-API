@@ -27,7 +27,21 @@ namespace stickers
         {
             if( request.path().size() > 0 )
             {
-                if( request.path()[ 0 ] == "user" )
+                if( request.path()[ 0 ] == "signup" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::signup( request );
+                    else
+                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
+                }
+                else if( request.path()[ 0 ] == "login" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::login( request );
+                    else
+                        throw handler_exit( { 405, "Method Not Allowed" }, "" );
+                }
+                else if( request.path()[ 0 ] == "user" )
                 {
                     if( request.method() == "POST" )
                         handlers::create_user( request );

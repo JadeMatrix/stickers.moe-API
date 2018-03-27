@@ -10,6 +10,9 @@ namespace stickers
 {
     namespace handlers
     {
+        void      signup( show::request& );
+        void       login( show::request& );
+        
         void create_user( show::request& );
         void    get_user( show::request& );
         void   edit_user( show::request& );
