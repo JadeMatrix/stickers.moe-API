@@ -53,7 +53,7 @@ namespace stickers
         digest{ CryptoPP::SHA256::DIGESTSIZE }
     {
         if( s.size() == CryptoPP::SHA256::DIGESTSIZE )
-            for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
+            for( std::size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
                 digest.BytePtr()[ i ] = ( CryptoPP::byte )s[ i ];
         else
             throw hash_error{
@@ -66,11 +66,11 @@ namespace stickers
             };
     }
     
-    sha256::sha256( const char* s, size_t l ) :
+    sha256::sha256( const char* s, std::size_t l ) :
         digest{ CryptoPP::SHA256::DIGESTSIZE }
     {
         if( l == CryptoPP::SHA256::DIGESTSIZE )
-            for( size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
+            for( std::size_t i = 0; i < CryptoPP::SHA256::DIGESTSIZE; ++i )
                 digest.BytePtr()[ i ] = static_cast< CryptoPP::byte >( s[ i ] );
         else
             throw hash_error{
@@ -105,7 +105,7 @@ namespace stickers
         return hex;
     }
     
-    sha256 sha256::make( const char* s, size_t l )
+    sha256 sha256::make( const char* s, std::size_t l )
     {
         sha256 h;
         
@@ -137,7 +137,7 @@ namespace stickers
         
         sha256 h;
         
-        size_t i = 0;
+        std::size_t i = 0;
         for( auto& b : h.digest )
         {
             b = ( unhex( s[ i ] ) << 4 ) | ( unhex( s[ i + 1 ] ) );
@@ -233,13 +233,13 @@ namespace stickers
     
     scrypt scrypt::make(
         const char*   input,
-        size_t        input_len,
+        std::size_t   input_len,
         const char*   salt,
-        size_t        salt_len,
+        std::size_t   salt_len,
         unsigned char factor,
         unsigned char block_size,
         unsigned char parallelization,
-        size_t        digest_size
+        std::size_t   digest_size
     )
     {
         scrypt sc;
@@ -280,7 +280,7 @@ namespace stickers
         unsigned char      factor,
         unsigned char      block_size,
         unsigned char      parallelization,
-        size_t             digest_size
+        std::size_t        digest_size
     )
     {
         return make(
@@ -328,12 +328,12 @@ namespace stickers
         equals = equals && ( _block_size      == o._block_size      );
         equals = equals && ( _parallelization == o._parallelization );
         
-        size_t slen;
+        std::size_t slen;
         
         // `std::string::size()` is guaranteed constant-time as of C++11
         
         slen = salt.size() > o.salt.size() ? salt.size() : o.salt.size();
-        for( size_t i = 0; i < slen; ++i )
+        for( std::size_t i = 0; i < slen; ++i )
         {
             char c1 = i >=   salt.size() ? o.salt[ i ] :   salt[ i ];
             char c2 = i >= o.salt.size() ?   salt[ i ] : o.salt[ i ];
@@ -341,7 +341,7 @@ namespace stickers
         }
         
         slen = digest.size() > o.digest.size() ? digest.size() : o.digest.size();
-        for( size_t i = 0; i < slen; ++i )
+        for( std::size_t i = 0; i < slen; ++i )
         {
             char c1 = i >=   digest.size() ? o.digest[ i ] :   digest[ i ];
             char c2 = i >= o.digest.size() ?   digest[ i ] : o.digest[ i ];

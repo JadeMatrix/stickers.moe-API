@@ -34,13 +34,13 @@ namespace stickers
     public:
         sha256( const CryptoPP::SecByteBlock& );
         sha256( const std::string& );
-        sha256( const char*, size_t );
+        sha256( const char*, std::size_t );
         sha256( const sha256& );
         
         std::string raw_digest() const;
         std::string hex_digest() const;
         
-        static sha256 make( const char*, size_t );
+        static sha256 make( const char*, std::size_t );
         static sha256 make( const std::string& );
         
         static sha256 make_from_hex_string( const std::string& );
@@ -87,13 +87,13 @@ namespace stickers
         
         static scrypt make(
             const char*   input,
-            size_t        input_len,
+            std::size_t   input_len,
             const char*   salt,
-            size_t        salt_len,
+            std::size_t   salt_len,
             unsigned char factor          = default_factor,
             unsigned char block_size      = default_block_size,
             unsigned char parallelization = default_parallelization,
-            size_t        digest_size     = default_digest_size
+            std::size_t   digest_size     = default_digest_size
         );
         static scrypt make(
             const std::string& input,
@@ -101,7 +101,7 @@ namespace stickers
             unsigned char      factor          = default_factor,
             unsigned char      block_size      = default_block_size,
             unsigned char      parallelization = default_parallelization,
-            size_t             digest_size     = default_digest_size
+            std::size_t        digest_size     = default_digest_size
         );
         
         static unsigned int make_libscrypt_mcf_factor(

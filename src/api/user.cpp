@@ -188,11 +188,11 @@ namespace stickers // Passwords ////////////////////////////////////////////////
         {
             bool equals = true;
             
-            size_t slen = (
+            std::size_t slen = (
                 raw_value.size() > o.raw_value.size()
                 ? raw_value.size() : o.raw_value.size()
             );
-            for( size_t i = 0; i < slen; ++i )
+            for( std::size_t i = 0; i < slen; ++i )
             {
                 char c1 = i >=   raw_value.size() ? o.raw_value[ i ] :   raw_value[ i ];
                 char c2 = i >= o.raw_value.size() ?   raw_value[ i ] : o.raw_value[ i ];
