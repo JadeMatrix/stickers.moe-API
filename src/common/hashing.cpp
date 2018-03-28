@@ -26,11 +26,8 @@ namespace
 }
 
 
-namespace stickers
+namespace stickers // SHA256 ///////////////////////////////////////////////////
 {
-    // SHA256 //////////////////////////////////////////////////////////////////
-    
-    
     sha256::sha256() : digest{ CryptoPP::SHA256::DIGESTSIZE } {}
     
     sha256::sha256( const CryptoPP::SecByteBlock& b ) :
@@ -157,11 +154,11 @@ namespace stickers
     {
         return digest != h.digest;
     }
-    
-    
-    // SCRYPT //////////////////////////////////////////////////////////////////
-    
-    
+}
+
+
+namespace stickers // SCRYPT ///////////////////////////////////////////////////
+{
     scrypt::scrypt() {}
     
     scrypt::scrypt( const scrypt& o ) :
