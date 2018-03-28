@@ -52,6 +52,27 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    password_gen
+    src/utilities/password_gen.cpp
+    src/common/config.cpp
+    src/common/timestamp.cpp
+    src/common/bigid.cpp
+    src/common/postgres.cpp
+    src/common/hashing.cpp
+    src/api/user.cpp
+)
+TARGET_LINK_LIBRARIES(
+    password_gen
+    "-L/usr/local/Cellar/llvm/5.0.1/lib"
+    ${PQXX_LIBRARY}
+    ${FASTFORMAT_LIBRARY}
+    ${CRYPTOPP_LIBRARY}
+    ${TZ_LIBRARY}
+    ${CURL_LIBRARY}
+    ${SCRYPT_LIBRARY}
+)
+
+ADD_EXECUTABLE(
     dependency_test
     src/dependency_test.cpp
 )
