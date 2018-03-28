@@ -291,6 +291,33 @@ namespace stickers // Passwords ////////////////////////////////////////////////
         return !( *this == o );
     }
     
+    bool password::operator==( const std::string& raw ) const
+    {
+        switch( _type )
+        {
+        case password_type::RAW:
+            return *this == password( raw );
+            break;
+        case password_type::SCRYPT:
+            return scrypt_value == scrypt::make(
+                raw,
+                scrypt_value.raw_salt(),
+                scrypt_value.factor(),
+                scrypt_value.block_size(),
+                scrypt_value.parallelization(),
+                scrypt_value.raw_digest().size()
+            );
+            break;
+        default:
+            return false;
+        }
+    }
+    
+    bool password::operator!=( const std::string& raw ) const
+    {
+        return !( *this == raw );
+    }
+    
     password& password::operator=( const password& o )
     {
         switch( o._type )
@@ -483,6 +510,7 @@ namespace stickers // User management //////////////////////////////////////////
                     deleted_by,
                     deleted_from
                 ) VALUES ( $1, $2, $3, $4 )
+                ON CONFLICT DO NOTHING
                 ;
             ),
             id,

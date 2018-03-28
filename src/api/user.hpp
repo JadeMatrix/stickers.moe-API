@@ -51,8 +51,11 @@ namespace stickers // Passwords ////////////////////////////////////////////////
         std::string   salt() const;
         long        factor() const;
         
-        bool operator==( const password& ) const;
-        bool operator!=( const password& ) const;
+        bool operator==( const    password& ) const;
+        bool operator!=( const    password& ) const;
+        // Check hashed password against a raw password string
+        bool operator==( const std::string& ) const;
+        bool operator!=( const std::string& ) const;
         
         password& operator=( const password   & );
         password& operator=( const std::string& );
