@@ -61,6 +61,10 @@ namespace stickers
                 );
                 auto auth_token = jwt::serialize( auth_jwt );
                 
+                auto token_message_json = nlj::json{
+                    { "jwt", auth_token }
+                }.dump();
+                
                 show::response response{
                     request.connection(),
                     show::HTTP_1_1,
@@ -70,12 +74,26 @@ namespace stickers
                         { "Authorization", {
                             "Bearer " + auth_token
                         } },
-                        { "Content-Length", { "0" } },
+                        { "Content-Type", { "application/json" } },
+                        { "Content-Length", {
+                            std::to_string( token_message_json.size() )
+                        } },
                         { "Location", {
                             "/user/" + static_cast< std::string >( user.id )
+                        } },
+                        { "Set-Cookie", {
+                            "stickers_moe_jwt="
+                            + auth_token
+                            + "; expires="
+                            + to_http_ts_str( *auth_jwt.exp )
                         } }
                     }
                 };
+                
+                response.sputn(
+                    token_message_json.c_str(),
+                    token_message_json.size()
+                );
                 
                 return;
             }
