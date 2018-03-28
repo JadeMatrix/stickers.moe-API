@@ -20,6 +20,7 @@ namespace stickers
     timestamp from_iso8601_str( const std::string&             );
     bool      from_iso8601_str( const std::string&, timestamp& );
     std::string to_iso8601_str( const timestamp& );
+    std::string to_http_ts_str( const timestamp& );
     
     timestamp  from_unix_time( unsigned int );
     unsigned int to_unix_time( const timestamp& );

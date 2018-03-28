@@ -3,6 +3,8 @@
 
 #include "timestamp.hpp"
 
+#include <date/iso_week.h>
+
 #include <iomanip>
 #include <sstream>
 
@@ -35,7 +37,24 @@ namespace stickers
     
     std::string to_iso8601_str( const timestamp& ts )
     {
-         return date::format( "%F %T%z", ts );
+        return date::format( "%F %T%z", ts );
+    }
+    
+    std::string to_http_ts_str( const timestamp& ts )
+    {
+        std::stringstream weekday_abbreviation;
+        weekday_abbreviation << static_cast< iso_week::year_weeknum_weekday >(
+            std::chrono::time_point_cast< date::days >( ts )
+        ).weekday();
+        
+        return (
+            weekday_abbreviation.str()
+            // timestamps serialize to UTC/GMT by default
+            + date::format(
+                " %d-%m-%Y %H:%M:%S GMT",
+                std::chrono::time_point_cast< std::chrono::seconds >( ts )
+            )
+        );
     }
     
     timestamp from_unix_time( unsigned int unix_time )
