@@ -7,6 +7,7 @@
 #include "postgres.hpp"
 #include "string_utils.hpp"
 #include "../api/user.hpp"  // stickers::no_such_user
+#include "../common/config.hpp"
 
 #include <algorithm>    // std::set_difference()
 #include <iterator>     // std::inserter
@@ -91,7 +92,14 @@ namespace stickers
     {
         auto permissions = get_user_permissions( user_id );
         
-        jwt token_jwt{
+        auto token_lifetime = std::chrono::hours{
+            config()[ "auth" ][ "token_lifetime_hours" ].get< int >()
+        };
+        
+        jwt token{
+            .iat = now(),
+            .nbf = now(),
+            .exp = now() + token_lifetime,
             .claims = {
                 {
                     "user_id",
@@ -121,7 +129,7 @@ namespace stickers
             blame.what
         );
         
-        return token_jwt;
+        return token;
     }
     
     // void set_user_permissions(
