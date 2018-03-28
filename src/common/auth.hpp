@@ -4,6 +4,7 @@
 
 
 #include "bigid.hpp"
+#include "jwt.hpp"
 #include "../audit/blame.hpp"
 
 #include <show.hpp>
@@ -24,7 +25,7 @@ namespace stickers
     };
     
     auth_info authenticate( const show::request& );
-    std::string generate_auth_token_for_user( bigid, const audit::blame& );
+    jwt generate_auth_token_for_user( bigid, const audit::blame& );
     // void set_user_permissions( bigid, const permissions_type& );
     permissions_type get_user_permissions( bigid );
     

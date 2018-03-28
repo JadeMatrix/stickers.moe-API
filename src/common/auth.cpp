@@ -3,7 +3,6 @@
 
 #include "auth.hpp"
 
-#include "jwt.hpp"
 #include "logging.hpp"
 #include "postgres.hpp"
 #include "string_utils.hpp"
@@ -85,7 +84,7 @@ namespace stickers
         throw authentication_error{ "no usable authentication tokens found" };
     }
     
-    std::string generate_auth_token_for_user(
+    jwt generate_auth_token_for_user(
         bigid user_id,
         const audit::blame& blame
     )
@@ -108,8 +107,6 @@ namespace stickers
             }
         };
         
-        std::string token = jwt::serialize( token_jwt );
-        
         STICKERS_LOG(
             log_level::INFO,
             "user ",
@@ -121,13 +118,10 @@ namespace stickers
             " at ",
             to_iso8601_str( blame.when ),
             " ",
-            blame.what,
-            ": \"",
-            log_sanitize( token ),
-            "\""
+            blame.what
         );
         
-        return token;
+        return token_jwt;
     }
     
     // void set_user_permissions(

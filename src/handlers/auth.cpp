@@ -50,6 +50,17 @@ namespace stickers
                 == content[ "password" ].get< std::string >()
             )
             {
+                auto auth_jwt = generate_auth_token_for_user(
+                    user.id,
+                    {
+                        user.id,
+                        "user login",
+                        now(),
+                        request.client_address()
+                    }
+                );
+                auto auth_token = jwt::serialize( auth_jwt );
+                
                 show::response response{
                     request.connection(),
                     show::HTTP_1_1,
@@ -57,15 +68,7 @@ namespace stickers
                     {
                         server_header,
                         { "Authorization", {
-                            "Bearer " + generate_auth_token_for_user(
-                                user.id,
-                                {
-                                    user.id,
-                                    "user login",
-                                    now(),
-                                    request.client_address()
-                                }
-                            )
+                            "Bearer " + auth_token
                         } },
                         { "Content-Length", { "0" } },
                         { "Location", {
