@@ -42,7 +42,7 @@ namespace stickers
         
         auto details_json = parse_request_content( request );
         
-        for( const auto& field : {
+        for( const auto field : {
             "password",
             "display_name",
             "email"
@@ -53,6 +53,13 @@ namespace stickers
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
+                };
+            else if( !details_json[ field ].is_string() )
+                throw handler_exit{
+                    { 400, "Bad Request" },
+                    "required field \""
+                    + static_cast< std::string >( field )
+                    + "\" must be a string"
                 };
         
         user_info details;
