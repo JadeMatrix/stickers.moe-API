@@ -4,6 +4,7 @@
 #include "user.hpp"
 
 #include "../common/config.hpp"
+#include "../common/formatting.hpp"
 #include "../common/logging.hpp"
 #include "../common/postgres.hpp"
 #include "../common/redis.hpp"
@@ -115,6 +116,83 @@ namespace
         
         transaction.commit();
         return user.id;
+    }
+    
+    template< typename T > pqxx::result query_user_records_by(
+        pqxx::work& transaction,
+        const std::string& field,
+        const T& iden
+    )
+    {
+        std::string query_string;
+        
+        ff::fmt(
+            query_string,
+            PSQL(
+                SELECT
+                    user_id,
+                    ( password ).type   AS password_type,
+                    ( password ).hash   AS password_hash,
+                    ( password ).salt   AS password_salt,
+                    ( password ).factor AS password_factor,
+                    created,
+                    revised,
+                    display_name,
+                    real_name,
+                    avatar_hash,
+                    email
+                FROM users.users
+                WHERE {0} = $1
+                ;
+            ),
+            field
+        );
+        
+        pqxx::result result = transaction.exec_params(
+            query_string,
+            iden
+        );
+        transaction.commit();
+        
+        return result;
+    }
+    
+    stickers::user_info compile_user_info_from_row( const pqxx::row& row )
+    {
+        stickers::password pw;
+        
+        if(
+            row[ "password_type" ].as< stickers::password_type >()
+            == stickers::password_type::SCRYPT
+        )
+        {
+            unsigned char factor, block_size, parallelization;
+            
+            stickers::scrypt::split_libscrypt_mcf_factor(
+                row[ "password_factor" ].as< unsigned int >(),
+                factor,
+                block_size,
+                parallelization
+            );
+            
+            pw = stickers::scrypt{
+                pqxx::binarystring( row[ "password_hash" ] ).str(),
+                pqxx::binarystring( row[ "password_salt" ] ).str(),
+                factor,
+                block_size,
+                parallelization
+            };
+        }
+        
+        return {
+            pw,
+            row[ "created"      ]. as< stickers::timestamp >(),
+            row[ "revised"      ]. as< stickers::timestamp >(),
+            row[ "display_name" ]. as<      std::string    >(),
+            row[ "real_name"    ].get<      std::string    >(),
+            row[ "avatar_hash"  ].get< stickers::sha256    >(),
+            row[ "email"        ]. as<      std::string    >(),
+        };
     }
 }
 
@@ -359,66 +437,16 @@ namespace stickers // User management //////////////////////////////////////////
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        pqxx::result result = transaction.exec_params(
-            PSQL(
-                SELECT
-                    user_id,
-                    ( password ).type   AS password_type,
-                    ( password ).hash   AS password_hash,
-                    ( password ).salt   AS password_salt,
-                    ( password ).factor AS password_factor,
-                    created,
-                    revised,
-                    display_name,
-                    real_name,
-                    avatar_hash,
-                    email
-                FROM users.users
-                WHERE user_id = $1
-                ;
-            ),
+        auto result = query_user_records_by(
+            transaction,
+            "user_id",
             id
         );
-        transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user{ id, "loading" };
+            throw no_such_user::by_id( id, "loading" );
         
-        password pw;
-        if(
-            result[ 0 ][ "password_type" ].as< password_type >()
-            == password_type::SCRYPT
-        )
-        {
-            unsigned char factor, block_size, parallelization;
-            
-            scrypt::split_libscrypt_mcf_factor(
-                result[ 0 ][ "password_factor" ].as< unsigned int >(),
-                factor,
-                block_size,
-                parallelization
-            );
-            
-            pw = scrypt{
-                pqxx::binarystring( result[ 0 ][ "password_hash" ] ).str(),
-                pqxx::binarystring( result[ 0 ][ "password_salt" ] ).str(),
-                factor,
-                block_size,
-                parallelization
-            };
-        }
-        
-        user_info found_info = {
-            pw,
-            result[ 0 ][ "created"      ]. as< timestamp   >(),
-            result[ 0 ][ "revised"      ]. as< timestamp   >(),
-            result[ 0 ][ "display_name" ]. as< std::string >(),
-            result[ 0 ][ "real_name"    ].get< std::string >(),
-            result[ 0 ][ "avatar_hash"  ].get< sha256      >(),
-            result[ 0 ][ "email"        ]. as< std::string >(),
-        };
-        
-        return found_info;
+        return compile_user_info_from_row( result[ 0 ] );
     }
     
     user_info save_user( const user& u, const audit::blame& blame )
@@ -466,6 +494,26 @@ namespace stickers // User management //////////////////////////////////////////
         transaction.commit();
     }
     
+    user load_user_by_email( const std::string& email )
+    {
+        auto connection = postgres::connect();
+        pqxx::work transaction{ *connection };
+        
+        auto result = query_user_records_by(
+            transaction,
+            "email",
+            email
+        );
+        
+        if( result.size() < 1 )
+            throw no_such_user::by_email( email, "loading" );
+        
+        return {
+            result[ 0 ][ "user_id" ].as< bigid >(),
+            compile_user_info_from_row( result[ 0 ] )
+        };
+    }
+    
     void send_validation_email( const bigid& id )
     {
         // IMPLEMENT:
@@ -475,13 +523,35 @@ namespace stickers // User management //////////////////////////////////////////
 
 namespace stickers // Exceptions ///////////////////////////////////////////////
 {
-    no_such_user::no_such_user( const bigid& id, const std::string& purpose ) :
-        std::runtime_error(
+    no_such_user::no_such_user( const std::string& msg ) :
+        std::runtime_error( msg )
+    {}
+    
+    no_such_user no_such_user::by_id(
+        const bigid& id,
+        const std::string& purpose
+    )
+    {
+        return no_such_user{
             "no such user with ID "
             + static_cast< std::string >( id )
             + " ("
             + purpose
             + ")"
-        )
-    {}
+        };
+    }
+    
+    no_such_user no_such_user::by_email(
+        const std::string& email,
+        const std::string& purpose
+    )
+    {
+        return no_such_user{
+            "no such user with email "
+            + email
+            + " ("
+            + purpose
+            + ")"
+        };
+    }
 }

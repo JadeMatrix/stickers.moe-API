@@ -160,7 +160,7 @@ namespace stickers
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user{ user_id, "getting user permissions" };
+            throw no_such_user::by_id( user_id, "getting user permissions" );
         
         permissions_type permissions;
         

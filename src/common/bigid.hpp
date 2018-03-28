@@ -13,6 +13,10 @@ namespace stickers
 {
     class bigid
     {
+        // So libpqxx can use bigid's protected default constructor
+        friend bigid pqxx::field::as< bigid >() const;
+        friend bigid pqxx::field::as< bigid >( const bigid& ) const;
+        
     private:
         long long value;
         bigid();

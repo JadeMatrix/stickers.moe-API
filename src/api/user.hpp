@@ -111,6 +111,8 @@ namespace stickers // User management //////////////////////////////////////////
     user_info   save_user( const user     &, const audit::blame& );
     void      delete_user( const bigid    &, const audit::blame& );
     
+    user load_user_by_email( const std::string& );
+    
     // TODO: Move
     void send_validation_email( const bigid& );
 }
@@ -120,9 +122,11 @@ namespace stickers // Exceptions ///////////////////////////////////////////////
 {
     class no_such_user : public std::runtime_error
     {
+    protected:
+        no_such_user( const std::string& );
     public:
-        // no_such_user( const bigid& );
-        no_such_user( const bigid&, const std::string& );
+        static no_such_user by_id   ( const       bigid&, const std::string& );
+        static no_such_user by_email( const std::string&, const std::string& );
     };
 }
 
