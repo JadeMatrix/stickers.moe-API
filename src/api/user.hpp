@@ -65,7 +65,7 @@ namespace stickers // Passwords ////////////////////////////////////////////////
     template<> inline std::string& password::value< std::string >()
     {
         if( _type != password_type::RAW )
-            throw std::runtime_error{
+            throw std::logic_error{
                 "attempt to get wrong type of value (raw) from "
                 "stickers::password ("
                 + static_cast< std::string >( type_name() )
@@ -76,7 +76,7 @@ namespace stickers // Passwords ////////////////////////////////////////////////
     template<> inline scrypt& password::value< scrypt >()
     {
         if( _type != password_type::SCRYPT )
-            throw std::runtime_error{
+            throw std::logic_error{
                 "attempt to get wrong type of value (scrypt) from "
                 "stickers::password ("
                 + static_cast< std::string >( type_name() )
