@@ -4,16 +4,14 @@
 #include "handlers.hpp"
 
 #include "../api/user.hpp"
+#include "../common/auth.hpp"
+#include "../common/json.hpp"
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
 #include "../server/server.hpp"
 #include "../server/parse.hpp"
 
 #include <array>
-
-// DEVEL:
-#include "../common/config.hpp"
-#include "../common/json.hpp"
 
 
 namespace
@@ -39,6 +37,12 @@ namespace stickers
     {
         if( request.path().size() > 1 )
             throw handler_exit{ { 404, "Not Found" }, "" };
+        
+        auto auth = authenticate( request );
+        permissions_assert_all(
+            auth.user_permissions,
+            { "create_user" }
+        );
         
         auto details_json = parse_request_content( request );
         
@@ -72,7 +76,7 @@ namespace stickers
         auto created_user = create_user(
             details,
             {
-                bigid::MIN(),
+                auth.user_id,
                 "user signup",
                 now(),
                 request.client_address()
@@ -125,11 +129,16 @@ namespace stickers
         if( request.path().size() < 2 )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
-        stickers::bigid user_id{ bigid::MIN() };
+        auto auth = authenticate( request );
+        permissions_assert_all(
+            auth.user_permissions,
+            { "see_any_user" }
+        );
         
+        stickers::bigid user_id{ bigid::MIN() };
         try
         {
-            user_id = std::stoll( request.path()[ 1 ] );
+            user_id = bigid::from_string( request.path()[ 1 ] );
         }
         catch( const std::exception& e )
         {
@@ -183,6 +192,31 @@ namespace stickers
     
     void handlers::edit_user( show::request& request )
     {
+        if( request.path().size() < 2 )
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+        
+        stickers::bigid user_id{ bigid::MIN() };
+        try
+        {
+            user_id = bigid::from_string( request.path()[ 1 ] );
+        }
+        catch( const std::exception& e )
+        {
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+        }
+        
+        auto auth = authenticate( request );
+        if( auth.user_id == user_id )
+            permissions_assert_all(
+                auth.user_permissions,
+                { "edit_own_user" }
+            );
+        else
+            permissions_assert_all(
+                auth.user_permissions,
+                { "edit_any_user" }
+            );
+        
         throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
     }
     
@@ -192,23 +226,33 @@ namespace stickers
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
-        
         try
         {
-            user_id = std::stoll( request.path()[ 1 ] );
+            user_id = bigid::from_string( request.path()[ 1 ] );
         }
         catch( const std::exception& e )
         {
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         }
         
+        auto auth = authenticate( request );
+        if( auth.user_id == user_id )
+            permissions_assert_all(
+                auth.user_permissions,
+                { "delete_own_user" }
+            );
+        else
+            permissions_assert_all(
+                auth.user_permissions,
+                { "delete_any_user" }
+            );
+        
         try
         {
             delete_user(
                 user_id,
                 {
-                    // DEVEL:
-                    bigid::MIN(),
+                    auth.user_id,
                     "delete user handler",
                     now(),
                     request.client_address()

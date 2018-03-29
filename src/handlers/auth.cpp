@@ -50,6 +50,11 @@ namespace stickers
                 == content[ "password" ].get< std::string >()
             )
             {
+                permissions_assert_all(
+                    get_user_permissions( user.id ),
+                    { "can_log_in" }
+                );
+                
                 auto auth_jwt = generate_auth_token_for_user(
                     user.id,
                     {
