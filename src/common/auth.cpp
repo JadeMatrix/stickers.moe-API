@@ -162,7 +162,13 @@ namespace stickers
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_user::by_id( user_id, "getting user permissions" );
+        {
+            // Assert that the user even exists; if so, continue to return an
+            // empty set of permissions; if not, throw `no_such_user`
+            // FIXME: This (possibly) requires an extra database access for e.g.
+            // banned users, who we most likely _don't_ want causing extra load
+            auto user_info = load_user( user_id );
+        }
         
         permissions_type permissions;
         
