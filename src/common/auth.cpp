@@ -13,76 +13,152 @@
 #include <iterator>     // std::inserter
 
 
+namespace
+{
+    bool extract_auth_from_token(
+        const std::string& token_string,
+        stickers::auth_info& info
+    )
+    {
+        // DEBUG:
+        STICKERS_LOG(
+            stickers::log_level::DEBUG,
+            "extract_auth_from_token(), token = ",
+            token_string
+        );
+        
+        try
+        {
+            auto auth_jwt = stickers::jwt::parse( token_string );
+            
+            auto user_id_found = auth_jwt.claims.find(
+                "user_id"
+            );
+            auto permissions_found = auth_jwt.claims.find(
+                "permissions"
+            );
+            
+            stickers::permissions_type permissions;
+            
+            if(
+                permissions_found != auth_jwt.claims.end()
+                && permissions_found.value().is_array()
+            )
+                for( const auto& permission : permissions_found.value() )
+                    permissions.insert( permission.get< std::string >() );
+            else
+                throw stickers::authentication_error{
+                    "missing required claim \"permissions\""
+                };
+            
+            if(
+                user_id_found != auth_jwt.claims.end()
+                && user_id_found.value().is_string()
+            )
+            {
+                info = {
+                    stickers::bigid::from_string(
+                        user_id_found.value().get< std::string >()
+                    ),
+                    permissions
+                };
+                
+                return true;
+            }
+            else
+                throw stickers::authentication_error{
+                    "missing required claim \"user_id\""
+                };
+        }
+        catch( const stickers::jwt::structure_error& e )
+        {
+            // Ignore any tokens that aren't JWTs
+            STICKERS_LOG(
+                stickers::log_level::VERBOSE,
+                "skipping unusable token (not a JWT: ",
+                e.what(),
+                ")"
+            );
+            return false;
+        }
+        catch( const stickers::jwt::validation_error& e )
+        {
+            // Ignore any tokesn that don't pass validation (may not
+            // even belong to this site)
+            STICKERS_LOG(
+                stickers::log_level::VERBOSE,
+                "skipping unusable token (not valid: ",
+                e.what(),
+                ")"
+            );
+            return false;
+        }
+    }
+}
+
+
 namespace stickers
 {
     auth_info authenticate( const show::request& request )
     {
-        auto authorization_header = request.headers().find( "Authorization" );
-        if( authorization_header == request.headers().end() )
-            throw authentication_error{ "missing \"Authorization\" header" };
+        bool header_found = false;
+        bool   auth_found = false;
         
-        std::string bearer_begin{ "Bearer " };
+        auth_info info{ bigid::MIN(), {} };
         
-        for( const auto& header_value : authorization_header -> second )
+        auto authorization_headers = request.headers().find( "Authorization" );
+        if( authorization_headers != request.headers().end() )
         {
-            if( header_value.find( bearer_begin ) == 0 )
+            header_found = true;
+            std::string bearer_begin{ "Bearer " };
+            
+            for( const auto& header_value : authorization_headers -> second )
             {
-                try
+                if( header_value.find( bearer_begin ) == 0 )
                 {
-                    auto auth_jwt = jwt::parse(
-                        header_value.substr( bearer_begin.size() )
+                    auth_found = extract_auth_from_token(
+                        header_value.substr( bearer_begin.size() ),
+                        info
                     );
-                    
-                    auto user_id_found = auth_jwt.claims.find(
-                        "user_id"
-                    );
-                    auto permissions_found = auth_jwt.claims.find(
-                        "permissions"
-                    );
-                    
-                    permissions_type permissions;
-                    
-                    if(
-                        permissions_found != auth_jwt.claims.end()
-                        && permissions_found.value().is_array()
-                    )
-                        for( const auto& permission : permissions_found.value() )
-                            permissions.insert( permission.get< std::string >() );
-                    else
-                        throw authentication_error{
-                            "missing required claim \"permissions\""
-                        };
-                    
-                    if(
-                        user_id_found != auth_jwt.claims.end()
-                        && user_id_found.value().is_string()
-                    )
-                        return {
-                            bigid::from_string(
-                                user_id_found.value().get< std::string >()
-                            ),
-                            permissions
-                        };
-                    else
-                        throw authentication_error{
-                            "missing required claim \"user_id\""
-                        };
-                }
-                catch( const jwt::structure_error& e )
-                {
-                    // Ignore any tokens that aren't JWTs
-                    continue;
-                }
-                catch( const jwt::validation_error& e )
-                {
-                    // Ignore any tokesn that don't pass validation (may not
-                    // even belong to this site)
-                    continue;
+                    if( auth_found )
+                        break;
                 }
             }
         }
         
-        throw authentication_error{ "no usable authentication tokens found" };
+        auto cookie_headers = request.headers().find( "Cookie" );
+        if( cookie_headers != request.headers().end() )
+        {
+            header_found = true;
+            std::string cookie_begin{
+                config()[ "auth" ][ "token_cookie_name" ].get< std::string >()
+                + "="
+            };
+            
+            for( const auto& header_value : cookie_headers -> second )
+            {
+                if( header_value.find( cookie_begin ) == 0 )
+                {
+                    auth_found = extract_auth_from_token(
+                        header_value.substr( cookie_begin.size() ),
+                        info
+                    );
+                    if( auth_found )
+                        break;
+                }
+            }
+        }
+        
+        if( !header_found )
+            throw authentication_error{
+                "missing auth header (\"Authorization\" or \"Cookie\")"
+            };
+        else if( !auth_found )
+            throw authentication_error{
+                "no usable authentication tokens found" 
+            };
+        else
+            return info;
     }
     
     jwt generate_auth_token_for_user(
