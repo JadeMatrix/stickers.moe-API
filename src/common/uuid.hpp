@@ -36,6 +36,9 @@ namespace stickers
         // overhead generating a new UUID which we'd like to avoid in some cases
         // where the default constructor would be used
         static uuid generate();
+        
+        // Parse from a 32-char hex string or 8-4-4-4-12 hex string
+        static uuid from_string( const std::string& );
     };
 }
 

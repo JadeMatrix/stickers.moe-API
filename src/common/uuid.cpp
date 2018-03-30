@@ -64,4 +64,33 @@ namespace stickers
         uuid_generate( generated );
         return { reinterpret_cast< char* >( generated ), 16 };
     }
+    
+    uuid uuid::from_string( const std::string& s )
+    {
+        std::size_t max_possible_length = 32 + 4;
+        
+        if( s.size() > max_possible_length )
+            throw std::invalid_argument(
+                "max standard UUID representation length is "
+                + std::to_string( max_possible_length )
+                + " chars"
+            );
+        
+        std::string filtered( 32, '\0' );
+        for( auto c : s )
+            if( c != '-' )
+                filtered += c;
+        
+        std::string unhexed;
+        
+        CryptoPP::StringSource{
+            filtered,
+            true,
+            new CryptoPP::HexDecoder{
+                new CryptoPP::StringSink{ unhexed }
+            }
+        };
+        
+        return uuid{ unhexed };
+    }
 }

@@ -285,14 +285,15 @@ namespace stickers
                 auto jti_string = jti.value().get< std::string >();
                 try
                 {
-                    token.jti = uuid{ jti_string };
+                    token.jti = uuid::from_string( jti_string );
                 }
                 catch( const std::invalid_argument& e )
                 {
                     throw structure_error{
                         "unsupported non-UUID \"jti\" field \""
                         + log_sanitize( jti_string )
-                        + "\""
+                        + "\": "
+                        + std::string{ e.what() }
                     };
                 }
             }
