@@ -88,7 +88,10 @@ namespace stickers
                             "/user/" + static_cast< std::string >( user.id )
                         } },
                         { "Set-Cookie", {
-                            "stickers_moe_jwt="
+                            config()[ "auth" ][ "token_cookie_name" ].get<
+                                std::string
+                            >()
+                            + "="
                             + auth_token
                             + "; expires="
                             + to_http_ts_str( *auth_jwt.exp )
