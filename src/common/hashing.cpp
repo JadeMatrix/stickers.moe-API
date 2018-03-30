@@ -95,10 +95,13 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
     std::string sha256::hex_digest() const
     {
         std::string hex;
-        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
-            digest.begin(),
-            digest.size()
-        );
+        CryptoPP::StringSource{
+            digest,
+            true,
+            new CryptoPP::HexEncoder{
+                new CryptoPP::StringSink{ hex }
+            }
+        };
         return hex;
     }
     
@@ -191,10 +194,13 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
     std::string scrypt::hex_digest() const
     {
         std::string hex;
-        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
-            reinterpret_cast< const CryptoPP::byte* >( digest.c_str() ),
-            digest.size()
-        );
+        CryptoPP::StringSource{
+            digest,
+            true,
+            new CryptoPP::HexEncoder{
+                new CryptoPP::StringSink{ hex }
+            }
+        };
         return hex;
     }
     
@@ -206,10 +212,13 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
     std::string scrypt::hex_salt() const
     {
         std::string hex;
-        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
-            reinterpret_cast< const CryptoPP::byte* >( salt.c_str() ),
-            salt.size()
-        );
+        CryptoPP::StringSource{
+            salt,
+            true,
+            new CryptoPP::HexEncoder{
+                new CryptoPP::StringSink{ hex }
+            }
+        };
         return hex;
     }
     

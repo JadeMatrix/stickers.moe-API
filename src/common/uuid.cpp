@@ -32,10 +32,13 @@ namespace stickers
     std::string uuid::hex_value() const
     {
         std::string hex;
-        CryptoPP::HexEncoder{ new CryptoPP::StringSink{ hex } }.Put(
-            reinterpret_cast< const CryptoPP::byte* >( value.c_str() ),
-            value.size()
-        );
+        CryptoPP::StringSource{
+            value,
+            true,
+            new CryptoPP::HexEncoder{
+                new CryptoPP::StringSink{ hex }
+            }
+        };
         return hex;
     }
     
