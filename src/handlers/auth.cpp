@@ -5,6 +5,7 @@
 
 #include "../api/user.hpp"
 #include "../common/auth.hpp"
+#include "../common/config.hpp"
 #include "../server/parse.hpp"
 #include "../server/server.hpp"
 
@@ -91,6 +92,10 @@ namespace stickers
                             + auth_token
                             + "; expires="
                             + to_http_ts_str( *auth_jwt.exp )
+                            + "; domain="
+                            + config()[ "auth" ][ "token_cookie_domain" ].get<
+                                std::string
+                            >()
                         } }
                     }
                 };
