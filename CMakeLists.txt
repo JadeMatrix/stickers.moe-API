@@ -41,7 +41,7 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     server
-    "-L/usr/local/Cellar/llvm/5.0.1/lib"
+    "-L/usr/local/Cellar/llvm/6.0.0/lib"
     ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
