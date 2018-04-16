@@ -20,13 +20,6 @@ namespace
         stickers::auth_info& info
     )
     {
-        // DEBUG:
-        STICKERS_LOG(
-            stickers::log_level::DEBUG,
-            "extract_auth_from_token(), token = ",
-            token_string
-        );
-        
         try
         {
             auto auth_jwt = stickers::jwt::parse( token_string );
