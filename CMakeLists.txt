@@ -28,6 +28,11 @@ ADD_EXECUTABLE(
     src/server/parse.cpp
     src/server/routing.cpp
     src/handlers/auth.cpp
+    src/handlers/design.cpp
+    src/handlers/list.cpp
+    src/handlers/person.cpp
+    src/handlers/product.cpp
+    src/handlers/shop.cpp
     src/handlers/user.cpp
     src/common/auth.cpp
     src/common/config.cpp

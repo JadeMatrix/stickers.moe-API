@@ -55,6 +55,79 @@ namespace stickers
                     else
                         throw handler_exit{ { 405, "Method Not Allowed" }, "" };
                 }
+                else if( request.path()[ 0 ] == "list" )
+                {
+                    if( request.path().size() > 1 )
+                    {
+                        if( request.method() == "POST" )
+                            handlers::add_list_item( request );
+                        else if( request.method() == "PUT" )
+                            handlers::update_list_item( request );
+                        else if( request.method() == "DELETE" )
+                            handlers::remove_list_item( request );
+                        else
+                            throw handler_exit{
+                                { 405, "Method Not Allowed" },
+                                ""
+                            };
+                    }
+                    else if( request.method() == "GET" )
+                        handlers::get_list( request );
+                    else
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                }
+                else if( request.path()[ 0 ] == "person" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::create_person( request );
+                    else if( request.method() == "GET" )
+                        handlers::get_person( request );
+                    else if( request.method() == "PUT" )
+                        handlers::edit_person( request );
+                    else if( request.method() == "DELETE" )
+                        handlers::delete_person( request );
+                    else
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                }
+                else if( request.path()[ 0 ] == "shop" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::create_shop( request );
+                    else if( request.method() == "GET" )
+                        handlers::get_shop( request );
+                    else if( request.method() == "PUT" )
+                        handlers::edit_shop( request );
+                    else if( request.method() == "DELETE" )
+                        handlers::delete_shop( request );
+                    else
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                }
+                else if( request.path()[ 0 ] == "design" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::create_design( request );
+                    else if( request.method() == "GET" )
+                        handlers::get_design( request );
+                    else if( request.method() == "PUT" )
+                        handlers::edit_design( request );
+                    else if( request.method() == "DELETE" )
+                        handlers::delete_design( request );
+                    else
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                }
+                else if( request.path()[ 0 ] == "product" )
+                {
+                    if( request.method() == "POST" )
+                        handlers::create_product( request );
+                    else if( request.method() == "GET" )
+                        handlers::get_product( request );
+                    else if( request.method() == "PUT" )
+                        handlers::edit_product( request );
+                    else if( request.method() == "DELETE" )
+                        handlers::delete_product( request );
+                    else
+                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                }
                 else
                     throw handler_exit{ { 404, "Not Found" }, "" };
             }
