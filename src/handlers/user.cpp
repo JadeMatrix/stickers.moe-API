@@ -129,12 +129,6 @@ namespace stickers
         if( request.path().size() < 2 )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
-        auto auth = authenticate( request );
-        permissions_assert_all(
-            auth.user_permissions,
-            { "see_any_user" }
-        );
-        
         stickers::bigid user_id{ bigid::MIN() };
         try
         {
