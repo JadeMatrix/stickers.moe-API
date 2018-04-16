@@ -143,6 +143,7 @@ namespace
                     email
                 FROM users.users
                 WHERE {0} = $1
+                AND NOT deleted
                 ;
             ),
             field
