@@ -29,7 +29,7 @@ namespace stickers
             const std::string&  message
         ) :
             response_code{ response_code },
-            message{       message       }
+            message      { message       }
         {}
     };
 }
