@@ -12,12 +12,18 @@
 
 namespace stickers
 {
-    void handlers::signup( show::request& request )
+    void handlers::signup(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
     }
     
-    void handlers::login( show::request& request )
+    void handlers::login(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         auto content = parse_request_content( request );
         

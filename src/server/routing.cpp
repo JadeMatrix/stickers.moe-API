@@ -13,6 +13,206 @@
 
 #include <exception>
 #include <map>
+#include <vector>
+
+
+namespace
+{
+    struct routing_node
+    {
+        using methods_type = std::map<
+            std::string,
+            stickers::handler_type,
+            show::_less_ignore_case_ASCII
+        >;
+        using subs_type = std::map<
+            std::string,
+            routing_node
+        >;
+        using variable_type = std::pair< std::string, routing_node >;
+        
+        methods_type   methods;
+        subs_type      subs;
+        variable_type* variable;
+    };
+    
+    void handle_options_request(
+        show::request& request,
+        const routing_node* current_node
+    )
+    {
+        std::vector< std::string > methods_list, subs_list;
+        
+        for( auto& method : current_node -> methods )
+            methods_list.push_back( method.first );
+        for( auto& sub : current_node -> subs )
+            subs_list.push_back( sub.first );
+        
+        nlj::json options_object = {
+            { "methods"     , methods_list },
+            { "subs"        ,    subs_list },
+            { "variable_sub", static_cast< bool >( current_node -> variable ) }
+        };
+        std::string json_string = options_object.dump();
+        
+        show::response response{
+            request.connection(),
+            show::HTTP_1_1,
+            { 200, "OK" },
+            {
+                stickers::server_header,
+                { "Content-Type"  , { "application/json" } },
+                { "Content-Length", { std::to_string( json_string.size() ) } }
+            }
+        };
+        
+        response.sputn( json_string.c_str(), json_string.size() );
+    }
+}
+
+
+namespace
+{
+    routing_node::variable_type user_manip{
+        "user_id",
+        {
+            {
+                { "GET"   , stickers::handlers::   get_user },
+                { "PUT"   , stickers::handlers::  edit_user },
+                { "DELETE", stickers::handlers::delete_user }
+            },
+            {},
+            nullptr
+        }
+    };
+    
+    routing_node::variable_type list_entry_manip{
+        "list_entry_id",
+        {
+            {
+                { "PUT"   , stickers::handlers::update_list_item },
+                { "DELETE", stickers::handlers::remove_list_item }
+            },
+            {},
+            nullptr
+        }
+    };
+    routing_node::variable_type list_subs{
+        "user_id",
+        {
+            {
+                { "GET" , stickers::handlers::get_list      },
+                { "POST", stickers::handlers::add_list_item }
+            },
+            {},
+            &list_entry_manip
+        }
+    };
+    
+    routing_node::variable_type person_manip{
+        "person_id",
+        {
+            {
+                { "PUT"   , stickers::handlers::  edit_person },
+                { "DELETE", stickers::handlers::delete_person }
+            },
+            {},
+            nullptr
+        }
+    };
+    routing_node::variable_type shop_manip{
+        "shop_id",
+        {
+            {
+                { "PUT"   , stickers::handlers::  edit_shop },
+                { "DELETE", stickers::handlers::delete_shop }
+            },
+            {},
+            nullptr
+        }
+    };
+    routing_node::variable_type design_manip{
+        "design_id",
+        {
+            {
+                { "PUT"   , stickers::handlers::  edit_design },
+                { "DELETE", stickers::handlers::delete_design }
+            },
+            {},
+            nullptr
+        }
+    };
+    routing_node::variable_type product_manip{
+        "product_id",
+        {
+            {
+                { "PUT"   , stickers::handlers::  edit_product },
+                { "DELETE", stickers::handlers::delete_product }
+            },
+            {},
+            nullptr
+        }
+    };
+    
+    const routing_node tree{
+        {},
+        {
+            { "signup", {
+                { { "POST", stickers::handlers::signup } },
+                {},
+                nullptr
+            } },
+            { "login", {
+                { { "POST", stickers::handlers::login } },
+                {},
+                nullptr
+            } },
+            { "user", {
+                { { "POST", stickers::handlers::create_user } },
+                {},
+                &user_manip
+            } },
+            { "list", {
+                {},
+                {},
+                nullptr
+            } },
+            { "person", {
+                {
+                    { "GET" , stickers::handlers::   get_person },
+                    { "POST", stickers::handlers::create_person }
+                },
+                {},
+                &person_manip
+            } },
+            { "shop", {
+                {
+                    { "GET" , stickers::handlers::   get_shop },
+                    { "POST", stickers::handlers::create_shop }
+                },
+                {},
+                &shop_manip
+            } },
+            { "design", {
+                {
+                    { "GET" , stickers::handlers::   get_design },
+                    { "POST", stickers::handlers::create_design }
+                },
+                {},
+                &design_manip
+            } },
+            { "product", {
+                {
+                    { "GET" , stickers::handlers::   get_product },
+                    { "POST", stickers::handlers::create_product }
+                },
+                {},
+                &product_manip
+            } },
+        },
+        nullptr
+    };
+}
 
 
 namespace stickers
@@ -26,113 +226,49 @@ namespace stickers
         
         try
         {
-            if( request.path().size() > 0 )
+            handler_vars_type variables;
+            
+            const auto* current_node = &tree;
+            
+            for( auto& element : request.path() )
             {
-                if( request.path()[ 0 ] == "signup" )
+                auto found_sub = current_node -> subs.find( element );
+                
+                if( found_sub != current_node -> subs.end() )
                 {
-                    if( request.method() == "POST" )
-                        handlers::signup( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                    current_node = &( found_sub -> second );
                 }
-                else if( request.path()[ 0 ] == "login" )
+                else if( current_node -> variable )
                 {
-                    if( request.method() == "POST" )
-                        handlers::login( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "user" )
-                {
-                    if( request.method() == "POST" )
-                        handlers::create_user( request );
-                    else if( request.method() == "GET" )
-                        handlers::get_user( request );
-                    else if( request.method() == "PUT" )
-                        handlers::edit_user( request );
-                    else if( request.method() == "DELETE" )
-                        handlers::delete_user( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "list" )
-                {
-                    if( request.path().size() > 1 )
-                    {
-                        if( request.method() == "POST" )
-                            handlers::add_list_item( request );
-                        else if( request.method() == "PUT" )
-                            handlers::update_list_item( request );
-                        else if( request.method() == "DELETE" )
-                            handlers::remove_list_item( request );
-                        else
-                            throw handler_exit{
-                                { 405, "Method Not Allowed" },
-                                ""
-                            };
-                    }
-                    else if( request.method() == "GET" )
-                        handlers::get_list( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "person" )
-                {
-                    if( request.method() == "POST" )
-                        handlers::create_person( request );
-                    else if( request.method() == "GET" )
-                        handlers::get_person( request );
-                    else if( request.method() == "PUT" )
-                        handlers::edit_person( request );
-                    else if( request.method() == "DELETE" )
-                        handlers::delete_person( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "shop" )
-                {
-                    if( request.method() == "POST" )
-                        handlers::create_shop( request );
-                    else if( request.method() == "GET" )
-                        handlers::get_shop( request );
-                    else if( request.method() == "PUT" )
-                        handlers::edit_shop( request );
-                    else if( request.method() == "DELETE" )
-                        handlers::delete_shop( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "design" )
-                {
-                    if( request.method() == "POST" )
-                        handlers::create_design( request );
-                    else if( request.method() == "GET" )
-                        handlers::get_design( request );
-                    else if( request.method() == "PUT" )
-                        handlers::edit_design( request );
-                    else if( request.method() == "DELETE" )
-                        handlers::delete_design( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
-                }
-                else if( request.path()[ 0 ] == "product" )
-                {
-                    if( request.method() == "POST" )
-                        handlers::create_product( request );
-                    else if( request.method() == "GET" )
-                        handlers::get_product( request );
-                    else if( request.method() == "PUT" )
-                        handlers::edit_product( request );
-                    else if( request.method() == "DELETE" )
-                        handlers::delete_product( request );
-                    else
-                        throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                    variables[ current_node -> variable -> first ] = element;
+                    current_node = &( current_node -> variable -> second );
                 }
                 else
                     throw handler_exit{ { 404, "Not Found" }, "" };
             }
+            
+            auto found_method = current_node -> methods.find(
+                request.method()
+            );
+            
+            if( found_method != current_node -> methods.end() )
+            {
+                found_method -> second( request, variables );
+            }
+            else if( request.method() == "OPTIONS" )
+            {
+                handle_options_request( request, current_node );
+            }
+            else if( request.method() == "HEAD" )
+            {
+                // TODO: HEAD method implementation for CORS
+                throw handler_exit{
+                    { 500, "Not Implemented" },
+                    "CORS not implemented"
+                };
+            }
             else
-                throw handler_exit{ { 404, "Not Found" }, "need an API path" };
+                throw handler_exit{ { 405, "Method Not Allowed" }, "" };
             
             handler_finished = true;
         }

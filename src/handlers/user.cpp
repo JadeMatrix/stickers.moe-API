@@ -33,7 +33,10 @@ namespace
 
 namespace stickers
 {
-    void handlers::create_user( show::request& request )
+    void handlers::create_user(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         if( request.path().size() > 1 )
             throw handler_exit{ { 404, "Not Found" }, "" };
@@ -124,7 +127,10 @@ namespace stickers
         response.sputn( user_json.c_str(), user_json.size() );
     }
     
-    void handlers::get_user( show::request& request )
+    void handlers::get_user(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         if( request.path().size() < 2 )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
@@ -184,7 +190,10 @@ namespace stickers
         }
     }
     
-    void handlers::edit_user( show::request& request )
+    void handlers::edit_user(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         if( request.path().size() < 2 )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
@@ -214,7 +223,10 @@ namespace stickers
         throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
     }
     
-    void handlers::delete_user( show::request& request )
+    void handlers::delete_user(
+        show::request& request,
+        const handler_vars_type& variables
+    )
     {
         if( request.path().size() > 2 )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };

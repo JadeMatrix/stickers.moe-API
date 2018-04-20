@@ -6,11 +6,17 @@
 #include <show.hpp>
 
 #include <functional>   // std::function
+#include <map>
 
 
 namespace stickers
 {
-    using handler_type = std::function< void( show::request& ) >;
+    using handler_vars_type = std::map< std::string, std::string >;
+    
+    using handler_type = std::function< void(
+        show::request&,
+        const handler_vars_type&
+    ) >;
     
     class handler_exit
     {
