@@ -38,9 +38,6 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        if( request.path().size() > 1 )
-            throw handler_exit{ { 404, "Not Found" }, "" };
-        
         auto auth = authenticate( request );
         permissions_assert_all(
             auth.user_permissions,
@@ -132,17 +129,18 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        if( request.path().size() < 2 )
+        auto found_user_id_variable = variables.find( "user_id" );
+        if( found_user_id_variable == variables.end() )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
         {
-            user_id = bigid::from_string( request.path()[ 1 ] );
+            user_id = bigid::from_string( found_user_id_variable -> second );
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
         }
         
         try
@@ -195,17 +193,18 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        if( request.path().size() < 2 )
+        auto found_user_id_variable = variables.find( "user_id" );
+        if( found_user_id_variable == variables.end() )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
         {
-            user_id = bigid::from_string( request.path()[ 1 ] );
+            user_id = bigid::from_string( found_user_id_variable -> second );
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
         }
         
         auto auth = authenticate( request );
@@ -228,17 +227,18 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        if( request.path().size() > 2 )
+        auto found_user_id_variable = variables.find( "user_id" );
+        if( found_user_id_variable == variables.end() )
             throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
         {
-            user_id = bigid::from_string( request.path()[ 1 ] );
+            user_id = bigid::from_string( found_user_id_variable -> second );
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
         }
         
         auto auth = authenticate( request );
