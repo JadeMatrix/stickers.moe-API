@@ -113,6 +113,7 @@ namespace
         "person_id",
         {
             {
+                { "GET"   , stickers::handlers::   get_person },
                 { "PUT"   , stickers::handlers::  edit_person },
                 { "DELETE", stickers::handlers::delete_person }
             },
@@ -124,6 +125,7 @@ namespace
         "shop_id",
         {
             {
+                { "GET"   , stickers::handlers::   get_shop },
                 { "PUT"   , stickers::handlers::  edit_shop },
                 { "DELETE", stickers::handlers::delete_shop }
             },
@@ -135,6 +137,7 @@ namespace
         "design_id",
         {
             {
+                { "GET"   , stickers::handlers::   get_design },
                 { "PUT"   , stickers::handlers::  edit_design },
                 { "DELETE", stickers::handlers::delete_design }
             },
@@ -146,6 +149,7 @@ namespace
         "product_id",
         {
             {
+                { "GET"   , stickers::handlers::   get_product },
                 { "PUT"   , stickers::handlers::  edit_product },
                 { "DELETE", stickers::handlers::delete_product }
             },
@@ -178,34 +182,22 @@ namespace
                 &list_subs
             } },
             { "person", {
-                {
-                    { "GET" , stickers::handlers::   get_person },
-                    { "POST", stickers::handlers::create_person }
-                },
+                { { "POST", stickers::handlers::create_person } },
                 {},
                 &person_manip
             } },
             { "shop", {
-                {
-                    { "GET" , stickers::handlers::   get_shop },
-                    { "POST", stickers::handlers::create_shop }
-                },
+                { { "POST", stickers::handlers::create_shop } },
                 {},
                 &shop_manip
             } },
             { "design", {
-                {
-                    { "GET" , stickers::handlers::   get_design },
-                    { "POST", stickers::handlers::create_design }
-                },
+                { { "POST", stickers::handlers::create_design } },
                 {},
                 &design_manip
             } },
             { "product", {
-                {
-                    { "GET" , stickers::handlers::   get_product },
-                    { "POST", stickers::handlers::create_product }
-                },
+                { { "POST", stickers::handlers::create_product } },
                 {},
                 &product_manip
             } },
