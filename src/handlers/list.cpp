@@ -3,6 +3,11 @@
 
 #include "handlers.hpp"
 
+#include "../api/user.hpp"
+#include "../api/list.hpp"
+#include "../common/json.hpp"
+#include "../server/server.hpp"
+
 
 namespace stickers
 {
@@ -11,7 +16,55 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        auto found_user_id_variable = variables.find( "user_id" );
+        if( found_user_id_variable == variables.end() )
+            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+        
+        stickers::bigid user_id{ bigid::MIN() };
+        try
+        {
+            user_id = bigid::from_string( found_user_id_variable -> second );
+        }
+        catch( const std::exception& e )
+        {
+            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
+        }
+        
+        try
+        {
+            nlj::json list = nlj::json::array();
+            
+            for( auto& item : get_user_list( user_id ) )
+                list.push_back( nlj::json{
+                    {
+                        "product_id",
+                        static_cast< std::string >( item.product_id )
+                    },
+                    { "quantity", item.quantity                  },
+                    { "updated" , to_iso8601_str( item.updated ) }
+                } );
+            
+            auto list_json = list.dump();
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 200, "OK" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( list_json.size() )
+                    } }
+                }
+            };
+            
+            response.sputn( list_json.c_str(), list_json.size() );
+        }
+        catch( const no_such_user& nsu )
+        {
+            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+        }
     }
     
     void handlers::add_list_item(

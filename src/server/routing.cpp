@@ -175,7 +175,7 @@ namespace
             { "list", {
                 {},
                 {},
-                nullptr
+                &list_subs
             } },
             { "person", {
                 {
