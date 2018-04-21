@@ -111,7 +111,7 @@ namespace stickers // User management //////////////////////////////////////////
     
     user      create_user( const user_info&, const audit::blame&, bool signup = true );
     user_info   load_user( const bigid    &                      );
-    user_info   save_user( const user     &, const audit::blame& );
+    user_info update_user( const user     &, const audit::blame& );
     void      delete_user( const bigid    &, const audit::blame& );
     
     user load_user_by_email( const std::string& );

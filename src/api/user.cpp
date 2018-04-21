@@ -28,7 +28,7 @@ namespace
         
         if( generate_id )
         {
-            pqxx::result result = transaction.exec_params(
+            auto result = transaction.exec_params(
                 PSQL(
                     INSERT INTO users.user_core (
                         user_id,
@@ -55,7 +55,7 @@ namespace
         }
         else
         {
-            pqxx::result result = transaction.exec_params(
+            auto result = transaction.exec_params(
                 PSQL(
                     SELECT email
                     FROM users.user_emails
@@ -477,7 +477,7 @@ namespace stickers // User management //////////////////////////////////////////
         return compile_user_info_from_row( result[ 0 ] );
     }
     
-    user_info save_user( const user& u, const audit::blame& blame )
+    user_info update_user( const user& u, const audit::blame& blame )
     {
         auto connection = postgres::connect();
         
@@ -503,7 +503,7 @@ namespace stickers // User management //////////////////////////////////////////
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        pqxx::result result = transaction.exec_params(
+        auto result = transaction.exec_params(
             PSQL(
                 INSERT INTO users.user_deletions (
                     user_id,

@@ -46,7 +46,7 @@ namespace stickers
         
         auto details_json = parse_request_content( request );
         
-        for( const auto field : {
+        for( const auto& field : {
             "password",
             "display_name",
             "email"
@@ -147,7 +147,7 @@ namespace stickers
         {
             auto info = load_user( user_id );
             
-            nlj::json user = {
+            nlj::json user_json{
                 { "user_id"     , user_id                        },
                 { "created"     , to_iso8601_str( info.created ) },
                 { "revised"     , to_iso8601_str( info.revised ) },
@@ -156,16 +156,16 @@ namespace stickers
             };
             
             if( info.real_name )
-                user[ "real_name" ] = *info.real_name;
+                user_json[ "real_name" ] = *info.real_name;
             else
-                user[ "real_name" ] = nullptr;
+                user_json[ "real_name" ] = nullptr;
             
             if( info.avatar_hash )
-                user[ "avatar" ] = image_hash_to_image( *info.avatar_hash );
+                user_json[ "avatar" ] = image_hash_to_image( *info.avatar_hash );
             else
-                user[ "avatar" ] = nullptr;
+                user_json[ "avatar" ] = nullptr;
             
-            auto user_json = user.dump();
+            auto user_json_string = user_json.dump();
             
             show::response response{
                 request.connection(),
@@ -175,12 +175,12 @@ namespace stickers
                     server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
-                        std::to_string( user_json.size() )
+                        std::to_string( user_json_string.size() )
                     } }
                 }
             };
             
-            response.sputn( user_json.c_str(), user_json.size() );
+            response.sputn( user_json_string.c_str(), user_json_string.size() );
         }
         catch( const no_such_user& nsu )
         {
