@@ -8,7 +8,7 @@
 #include "../common/postgres.hpp"
 
 
-namespace stickers
+namespace
 {
     stickers::bigid write_person_details(
         stickers::person            & person,
@@ -16,7 +16,7 @@ namespace stickers
         bool                          generate_id
     )
     {
-        auto connection = postgres::connect();
+        auto connection = stickers::postgres::connect();
         pqxx::work transaction{ *connection };
         
         if( generate_id )
@@ -99,7 +99,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        pqxx::result result = transaction.exec_params(
+        auto result = transaction.exec_params(
             PSQL(
                 SELECT
                     created,
