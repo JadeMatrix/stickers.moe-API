@@ -77,7 +77,7 @@ namespace stickers
             details,
             {
                 auth.user_id,
-                "user signup",
+                "create user handler",
                 now(),
                 request.client_address()
             }
