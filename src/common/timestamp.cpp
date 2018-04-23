@@ -20,7 +20,7 @@ namespace stickers
     {
         timestamp ts;
         if( !from_iso8601_str( s, ts ) )
-            throw std::runtime_error{
+            throw std::invalid_argument{
                 "failed to parse "
                 + s
                 + " as an ISO 8601 timestamp"
