@@ -5,7 +5,6 @@
 
 #include "../common/formatting.hpp"
 #include "../common/logging.hpp"
-#include "../common/postgres.hpp"
 
 
 namespace
@@ -38,6 +37,8 @@ namespace
             );
             result[ 0 ][ "person_id" ].to< stickers::bigid >( person.id );
         }
+        else
+            stickers::assert_person_exists( person.id, transaction );
         
         std::string add_person_revision_query_string{ PSQL(
             INSERT INTO people.person_revisions (
@@ -144,9 +145,6 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     person_info update_person( const person& p, const audit::blame& blame )
     {
-        // Assert person exists
-        auto info = load_person( p.id );
-        
         auto updated_person = p;
         write_person_details( updated_person, blame, true );
         return updated_person.info;
@@ -154,13 +152,12 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     void delete_person( const bigid& id, const audit::blame& blame )
     {
-        // Assert person exists
-        auto info = load_person( id );
-        
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        pqxx::result result = transaction.exec_params(
+        assert_person_exists( id, transaction );
+        
+        auto result = transaction.exec_params(
             PSQL(
                 INSERT INTO people.person_deletions (
                     person_id,
@@ -177,5 +174,24 @@ namespace stickers // Person ///////////////////////////////////////////////////
             blame.where
         );
         transaction.commit();
+    }
+}
+
+
+namespace stickers // Assertion /////////////////////////////////////////////////
+{
+    void assert_person_exists( const bigid& id, pqxx::work& transaction )
+    {
+        auto result = transaction.exec_params(
+            PSQL(
+                SELECT person_id
+                FROM people.people_core
+                WHERE person_id = $1
+                ;
+            ),
+            id
+        );
+        if( result.size() < 1 )
+            throw no_such_person( id );
     }
 }

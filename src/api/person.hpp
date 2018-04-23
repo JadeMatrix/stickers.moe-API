@@ -5,6 +5,7 @@
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
+#include "../common/postgres.hpp"
 #include "../common/timestamp.hpp"
 
 #include <exception>
@@ -37,6 +38,9 @@ namespace stickers
     person_info   load_person( const bigid      &                      );
     person_info update_person( const person     &, const audit::blame& );
     void        delete_person( const bigid      &, const audit::blame& );
+    
+    // ACID-safe assert
+    void assert_person_exists( const bigid& id, pqxx::work& transaction );
     
     class no_such_person : public std::runtime_error
     {
