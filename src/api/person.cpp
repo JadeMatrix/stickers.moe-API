@@ -39,25 +39,19 @@ namespace stickers
             result[ 0 ][ "person_id" ].to< stickers::bigid >( person.id );
         }
         
-        std::string add_person_revision_query_string;
-        
-        ff::fmt(
-            add_person_revision_query_string,
-            PSQL(
-                INSERT INTO people.person_revisions (
-                    person_id,
-                    revised,
-                    revised_by,
-                    revised_from,
-                    person_name,
-                    person_user,
-                    about
-                )
-                VALUES ( $1, $2, $3, $4, $5, $6, $7 )
-                ;
-            ),
-            person.info.has_user() ? "person_user" : "person_name"
-        );
+        std::string add_person_revision_query_string{ PSQL(
+            INSERT INTO people.person_revisions (
+                person_id,
+                revised,
+                revised_by,
+                revised_from,
+                person_name,
+                person_user,
+                about
+            )
+            VALUES ( $1, $2, $3, $4, $5, $6, $7 )
+            ;
+        ) };
         
         if( person.info.has_user() )
             transaction.exec_params(
@@ -134,7 +128,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
                 row[ "created"     ].as< timestamp   >(),
                 row[ "revised"     ].as< timestamp   >(),
                 row[ "about"       ].as< std::string >(),
-                row[ "person_user" ].as< bigid       >()
+                row[ "person_name" ].as< std::string >()
             };
         }
         else
@@ -143,7 +137,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
                 row[ "created"     ].as< timestamp   >(),
                 row[ "revised"     ].as< timestamp   >(),
                 row[ "about"       ].as< std::string >(),
-                row[ "person_name" ].as< std::string >()
+                row[ "person_user" ].as< bigid       >()
             };
         }
     }

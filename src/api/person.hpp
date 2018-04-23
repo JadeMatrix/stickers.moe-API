@@ -21,7 +21,7 @@ namespace stickers
         std::string about;
         std::variant< std::string, bigid > identifier;
         
-        bool has_user()
+        bool has_user() const
         {
             return std::holds_alternative< bigid >( identifier );
         }
