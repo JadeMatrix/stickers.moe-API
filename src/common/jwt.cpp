@@ -314,9 +314,19 @@ namespace stickers
             try
             {
                 if( token.typ == jwt_type::JWT_PLUS )
-                    token.iat = from_iso8601_str(
-                        iat.value().get< std::string >()
-                    );
+                    try
+                    {
+                        token.iat = from_iso8601_str(
+                            iat.value().get< std::string >()
+                        );
+                    }
+                    catch( const std::invalid_argument& e )
+                    {
+                        throw structure_error{
+                            "claim field \"iat\" is not a valid ISO 8601 "
+                            "timestamp "
+                        };
+                    }
                 else
                     token.iat = from_unix_time(
                         iat.value().get< unsigned int >()
@@ -336,9 +346,19 @@ namespace stickers
             try
             {
                 if( token.typ == jwt_type::JWT_PLUS )
-                    token.nbf = from_iso8601_str(
-                        nbf.value().get< std::string >()
-                    );
+                    try
+                    {
+                        token.nbf = from_iso8601_str(
+                            nbf.value().get< std::string >()
+                        );
+                    }
+                    catch( const std::invalid_argument& e )
+                    {
+                        throw structure_error{
+                            "claim field \"nbf\" is not a valid ISO 8601 "
+                            "timestamp "
+                        };
+                    }
                 else
                     token.nbf = from_unix_time(
                         nbf.value().get< unsigned int >()
@@ -358,9 +378,19 @@ namespace stickers
             try
             {
                 if( token.typ == jwt_type::JWT_PLUS )
-                    token.exp = from_iso8601_str(
-                        exp.value().get< std::string >()
-                    );
+                    try
+                    {
+                        token.exp = from_iso8601_str(
+                            exp.value().get< std::string >()
+                        );
+                    }
+                    catch( const std::invalid_argument& e )
+                    {
+                        throw structure_error{
+                            "claim field \"exp\" is not a valid ISO 8601 "
+                            "timestamp "
+                        };
+                    }
                 else
                     token.exp = from_unix_time(
                         exp.value().get< unsigned int >()
