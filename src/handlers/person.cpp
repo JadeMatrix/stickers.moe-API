@@ -5,6 +5,7 @@
 
 #include "../api/person.hpp"
 #include "../common/auth.hpp"
+#include "../common/json.hpp"
 #include "../server/parse.hpp"
 #include "../server/server.hpp"
 
