@@ -43,6 +43,7 @@ ADD_EXECUTABLE(
     src/common/jwt.cpp
     src/common/uuid.cpp
     src/api/person.cpp
+    src/api/shop.cpp
     src/api/user.cpp
 )
 TARGET_LINK_LIBRARIES(
