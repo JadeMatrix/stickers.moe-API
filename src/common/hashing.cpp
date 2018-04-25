@@ -147,15 +147,45 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
         return h;
     }
     
-    bool sha256::operator==( const sha256& h ) const
+    bool sha256::operator==( const sha256& o ) const
     {
         // `CryptoPP::SecBlock<>::operator==()` is constant-time
-        return digest == h.digest;
+        return digest == o.digest;
     }
     
-    bool sha256::operator!=( const sha256& h ) const
+    bool sha256::operator!=( const sha256& o ) const
     {
-        return digest != h.digest;
+        return digest != o.digest;
+    }
+    
+    bool sha256::operator <( const sha256& o ) const
+    {
+        int first_diff{ 0 };
+        
+        for(
+            CryptoPP::SecByteBlock::size_type i{ 0 };
+            i < CryptoPP::SHA256::DIGESTSIZE;
+            ++i
+        )
+            if( first_diff == 0 )
+                first_diff = digest.data()[ i ] - o.digest.data()[ i ];
+        
+        return first_diff < 0;
+    }
+    
+    bool sha256::operator >( const sha256& o ) const
+    {
+        return !( *this <= o );
+    }
+    
+    bool sha256::operator <=( const sha256& o ) const
+    {
+        return *this < o || *this == o;
+    }
+    
+    bool sha256::operator >=( const sha256& o ) const
+    {
+        return !( *this < o );
     }
 }
 
@@ -360,5 +390,63 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
     bool scrypt::operator!=( const scrypt& o ) const
     {
         return !( *this == o );
+    }
+    
+    bool scrypt::operator <( const scrypt& o ) const
+    {
+        std::size_t slen;
+        
+        // `std::string::size()` is guaranteed constant-time as of C++11
+        
+        auto first_diff = salt.size() - o.salt.size();
+        
+        if( first_diff == 0 )
+            first_diff = digest.size() - o.digest.size();
+        
+        slen = salt.size() > o.salt.size() ? salt.size() : o.salt.size();
+        for( std::size_t i = 0; i < slen; ++i )
+        {
+            char c1 = i >=   salt.size() ? o.salt[ i ] :   salt[ i ];
+            char c2 = i >= o.salt.size() ?   salt[ i ] : o.salt[ i ];
+            if( first_diff == 0 )
+                first_diff = c1 - c2;
+        }
+        
+        slen = digest.size() > o.digest.size() ? digest.size() : o.digest.size();
+        for( std::size_t i = 0; i < slen; ++i )
+        {
+            char c1 = i >=   digest.size() ? o.digest[ i ] :   digest[ i ];
+            char c2 = i >= o.digest.size() ?   digest[ i ] : o.digest[ i ];
+            if( first_diff == 0 )
+                first_diff = c1 - c2;
+        }
+        
+        if( first_diff == 0 )
+            first_diff = make_libscrypt_mcf_factor(
+                _factor,
+                _block_size,
+                _parallelization
+            ) - make_libscrypt_mcf_factor(
+                o._factor,
+                o._block_size,
+                o._parallelization
+            );
+        
+        return first_diff < 0;
+    }
+    
+    bool scrypt::operator >( const scrypt& o ) const
+    {
+        return !( *this <= o );
+    }
+    
+    bool scrypt::operator <=( const scrypt& o ) const
+    {
+        return *this < o || *this == o;
+    }
+    
+    bool scrypt::operator >=( const scrypt& o ) const
+    {
+        return !( *this < o );
     }
 }

@@ -37,6 +37,10 @@ namespace stickers
         const bigid& operator          -=( long long    )      ;
         bool         operator          ==( const bigid& ) const;
         bool         operator          !=( const bigid& ) const;
+        bool         operator           <( const bigid& ) const;
+        bool         operator           >( const bigid& ) const;
+        bool         operator          <=( const bigid& ) const;
+        bool         operator          >=( const bigid& ) const;
         
         static bigid MIN();
         static bigid MAX();

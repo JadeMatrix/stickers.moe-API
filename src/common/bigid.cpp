@@ -93,6 +93,26 @@ namespace stickers // Big-ID ///////////////////////////////////////////////////
         return value != o.value;
     }
     
+    bool bigid::operator <( const bigid& o ) const
+    {
+        return value < o.value;
+    }
+    
+    bool bigid::operator >( const bigid& o ) const
+    {
+        return value > o.value;
+    }
+    
+    bool bigid::operator <=( const bigid& o ) const
+    {
+        return value <= o.value;
+    }
+    
+    bool bigid::operator >=( const bigid& o ) const
+    {
+        return value >= o.value;
+    }
+    
     bigid bigid::MIN()
     {
         bigid min;

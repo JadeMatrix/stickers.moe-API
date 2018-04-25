@@ -45,8 +45,12 @@ namespace stickers
         
         static sha256 make_from_hex_string( const std::string& );
         
-        bool operator==( const sha256& ) const;
-        bool operator!=( const sha256& ) const;
+        bool operator ==( const sha256& ) const;
+        bool operator !=( const sha256& ) const;
+        bool operator  <( const sha256& ) const;
+        bool operator  >( const sha256& ) const;
+        bool operator <=( const sha256& ) const;
+        bool operator >=( const sha256& ) const;
     };
     
     class scrypt
@@ -116,8 +120,12 @@ namespace stickers
             unsigned char& parallelization
         );
         
-        bool operator==( const scrypt& ) const;
-        bool operator!=( const scrypt& ) const;
+        bool operator ==( const scrypt& ) const;
+        bool operator !=( const scrypt& ) const;
+        bool operator  <( const scrypt& ) const;
+        bool operator  >( const scrypt& ) const;
+        bool operator <=( const scrypt& ) const;
+        bool operator >=( const scrypt& ) const;
     };
 }
 
