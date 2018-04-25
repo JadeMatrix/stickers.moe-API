@@ -341,16 +341,16 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
         slen = salt.size() > o.salt.size() ? salt.size() : o.salt.size();
         for( std::size_t i = 0; i < slen; ++i )
         {
-            char c1 = i >=   salt.size() ? o.salt[ i ] :   salt[ i ];
-            char c2 = i >= o.salt.size() ?   salt[ i ] : o.salt[ i ];
+            char c1 = i >=   salt.size() ? ~o.salt[ i ] :   salt[ i ];
+            char c2 = i >= o.salt.size() ? ~  salt[ i ] : o.salt[ i ];
             equals = equals && ( c1 == c2 );
         }
         
         slen = digest.size() > o.digest.size() ? digest.size() : o.digest.size();
         for( std::size_t i = 0; i < slen; ++i )
         {
-            char c1 = i >=   digest.size() ? o.digest[ i ] :   digest[ i ];
-            char c2 = i >= o.digest.size() ?   digest[ i ] : o.digest[ i ];
+            char c1 = i >=   digest.size() ? ~o.digest[ i ] :   digest[ i ];
+            char c2 = i >= o.digest.size() ? ~  digest[ i ] : o.digest[ i ];
             equals = equals && ( c1 == c2 );
         }
         
