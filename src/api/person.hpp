@@ -50,7 +50,7 @@ namespace stickers
     };
     
     // ACID-safe assert; if any of the supplied IDs do not correspond to a
-    // record, this will throw `no_such_shop` for one of those IDs
+    // record, this will throw `no_such_person` for one of those IDs
     template< class Container = std::initializer_list< bigid > >
     void assert_people_exist(
         pqxx::work     & transaction,
