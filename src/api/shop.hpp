@@ -5,6 +5,7 @@
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
+#include "../common/crud.hpp"
 #include "../common/postgres.hpp"
 #include "../common/timestamp.hpp"
 
@@ -62,9 +63,11 @@ namespace stickers
         );
     }
     
-    class no_such_shop : public std::runtime_error
+    class no_such_shop : public no_such_record_error
     {
-        using std::runtime_error::runtime_error;
+    public:
+        const bigid id;
+        no_such_shop( const bigid& );
     };
 }
 

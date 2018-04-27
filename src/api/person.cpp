@@ -119,7 +119,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_person( id );
+            throw no_such_person{ id };
         
         auto& row = result[ 0 ];
         
@@ -178,6 +178,17 @@ namespace stickers // Person ///////////////////////////////////////////////////
 }
 
 
+namespace stickers // Exception ////////////////////////////////////////////////
+{
+    no_such_person::no_such_person( const bigid& id ) :
+        no_such_record_error{
+            "no such person with ID " + static_cast< std::string >( id )
+        },
+        id{ id }
+    {}
+}
+
+
 namespace stickers // Assertion /////////////////////////////////////////////////
 {
     void _assert_people_exist_impl::exec(
@@ -211,6 +222,6 @@ namespace stickers // Assertion ////////////////////////////////////////////////
         auto result = transaction.exec( query_string );
         
         if( result.size() > 0 )
-            throw no_such_person( result[ 0 ][ 0 ].as< bigid >() );
+            throw no_such_person{ result[ 0 ][ 0 ].as< bigid >() };
     }
 }

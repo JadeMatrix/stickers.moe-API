@@ -117,7 +117,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
         transaction.commit();
         
         if( result.size() < 1 )
-            throw no_such_shop( id );
+            throw no_such_shop{ id };
         
         auto& row = result[ 0 ];
         
@@ -174,6 +174,17 @@ namespace stickers // Person ///////////////////////////////////////////////////
 }
 
 
+namespace stickers // Exception ////////////////////////////////////////////////
+{
+    no_such_shop::no_such_shop( const bigid& id ) :
+        no_such_record_error{
+            "no such shop with ID " + static_cast< std::string >( id )
+        },
+        id{ id }
+    {}
+}
+
+
 namespace stickers // Assertion /////////////////////////////////////////////////
 {
     void _assert_shops_exist_impl::exec(
@@ -207,6 +218,6 @@ namespace stickers // Assertion ////////////////////////////////////////////////
         auto result = transaction.exec( query_string );
         
         if( result.size() > 0 )
-            throw no_such_shop( result[ 0 ][ 0 ].as< bigid >() );
+            throw no_such_shop{ result[ 0 ][ 0 ].as< bigid >() };
     }
 }
