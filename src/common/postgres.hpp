@@ -25,6 +25,33 @@ namespace stickers
             const std::string& pass,
             const std::string& dbname
         );
+        
+        // Format a sequence of query parameters as a comma-separated list which
+        // can then be formatted into a query string surrounded by the
+        // appropriate delimiters (parentheses etc.)
+        template< typename Iterable > std::string format_variable_list(
+            const pqxx::work& transaction,
+            const Iterable  & values
+        )
+        {
+            std::string s;
+            
+            // Use the begin() and end() functions like range-based `for`
+            auto current = begin( values );
+            auto    last =   end( values );
+            
+            while( true )
+            {
+                s += transaction.quote( *current );
+                ++current;
+                if( current == last )
+                    break;
+                else
+                    s += ',';
+            }
+            
+            return s;
+        }
     }
 }
 
