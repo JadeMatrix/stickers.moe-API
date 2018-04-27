@@ -5,6 +5,7 @@
 
 #include "../api/shop.hpp"
 #include "../common/auth.hpp"
+#include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../server/parse.hpp"
 #include "../server/server.hpp"
@@ -152,40 +153,47 @@ namespace stickers
             { "edit_public_pages" }
         );
         
-        auto created = create_shop(
-            shop_info_from_json( parse_request_content( request ) ),
-            {
-                auth.user_id,
-                "create shop handler",
-                now(),
-                request.client_address()
-            }
-        );
-        
-        nlj::json shop_json;
-        shop_to_json( created.id, created.info, shop_json );
-        auto shop_json_string = shop_json.dump();
-        
-        show::response response{
-            request.connection(),
-            show::HTTP_1_1,
-            { 201, "Created" },
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( shop_json_string.size() )
-                } },
-                { "Location", {
-                    "/shop/" + static_cast< std::string >( created.id )
-                } }
-            }
-        };
-        
-        response.sputn(
-            shop_json_string.c_str(),
-            shop_json_string.size()
-        );
+        try
+        {
+            auto created = create_shop(
+                shop_info_from_json( parse_request_content( request ) ),
+                {
+                    auth.user_id,
+                    "create shop handler",
+                    now(),
+                    request.client_address()
+                }
+            );
+            
+            nlj::json shop_json;
+            shop_to_json( created.id, created.info, shop_json );
+            auto shop_json_string = shop_json.dump();
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 201, "Created" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( shop_json_string.size() )
+                    } },
+                    { "Location", {
+                        "/shop/" + static_cast< std::string >( created.id )
+                    } }
+                }
+            };
+            
+            response.sputn(
+                shop_json_string.c_str(),
+                shop_json_string.size()
+            );
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+        }
     }
     
     void handlers::get_shop(
@@ -240,7 +248,7 @@ namespace stickers
         }
         catch( const no_such_shop& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such shop" };
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
         }
     }
     
@@ -313,7 +321,11 @@ namespace stickers
         }
         catch( const no_such_shop& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such shop" };
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
         }
     }
     
@@ -347,31 +359,38 @@ namespace stickers
             };
         }
         
-        delete_shop(
-            shop_id,
-            {
-                auth.user_id,
-                "delete shop handler",
-                now(),
-                request.client_address()
-            }
-        );
-        
-        std::string null_json = "null";
-        
-        show::response response{
-            request.connection(),
-            show::HTTP_1_1,
-            { 200, "OK" },
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( null_json.size() )
-                } }
-            }
-        };
-        
-        response.sputn( null_json.c_str(), null_json.size() );
+        try
+        {
+            delete_shop(
+                shop_id,
+                {
+                    auth.user_id,
+                    "delete shop handler",
+                    now(),
+                    request.client_address()
+                }
+            );
+            
+            std::string null_json = "null";
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 200, "OK" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( null_json.size() )
+                    } }
+                }
+            };
+            
+            response.sputn( null_json.c_str(), null_json.size() );
+        }
+        catch( const no_such_shop& e )
+        {
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
+        }
     }
 }

@@ -5,6 +5,7 @@
 
 #include "../api/person.hpp"
 #include "../common/auth.hpp"
+#include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../server/parse.hpp"
 #include "../server/server.hpp"
@@ -120,40 +121,47 @@ namespace stickers
             { "edit_public_pages" }
         );
         
-        auto created = create_person(
-            person_info_from_json( parse_request_content( request ) ),
-            {
-                auth.user_id,
-                "create person handler",
-                now(),
-                request.client_address()
-            }
-        );
-        
-        nlj::json person_json;
-        person_to_json( created.id, created.info, person_json );
-        auto person_json_string = person_json.dump();
-        
-        show::response response{
-            request.connection(),
-            show::HTTP_1_1,
-            { 201, "Created" },
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( person_json_string.size() )
-                } },
-                { "Location", {
-                    "/person/" + static_cast< std::string >( created.id )
-                } }
-            }
-        };
-        
-        response.sputn(
-            person_json_string.c_str(),
-            person_json_string.size()
-        );
+        try
+        {
+            auto created = create_person(
+                person_info_from_json( parse_request_content( request ) ),
+                {
+                    auth.user_id,
+                    "create person handler",
+                    now(),
+                    request.client_address()
+                }
+            );
+            
+            nlj::json person_json;
+            person_to_json( created.id, created.info, person_json );
+            auto person_json_string = person_json.dump();
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 201, "Created" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( person_json_string.size() )
+                    } },
+                    { "Location", {
+                        "/person/" + static_cast< std::string >( created.id )
+                    } }
+                }
+            };
+            
+            response.sputn(
+                person_json_string.c_str(),
+                person_json_string.size()
+            );
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+        }
     }
     
     void handlers::get_person(
@@ -208,7 +216,7 @@ namespace stickers
         }
         catch( const no_such_person& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such person" };
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
         }
     }
     
@@ -281,7 +289,11 @@ namespace stickers
         }
         catch( const no_such_person& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such person" };
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
         }
     }
     
@@ -315,31 +327,38 @@ namespace stickers
             };
         }
         
-        delete_person(
-            person_id,
-            {
-                auth.user_id,
-                "delete person handler",
-                now(),
-                request.client_address()
-            }
-        );
-        
-        std::string null_json = "null";
-        
-        show::response response{
-            request.connection(),
-            show::HTTP_1_1,
-            { 200, "OK" },
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( null_json.size() )
-                } }
-            }
-        };
-        
-        response.sputn( null_json.c_str(), null_json.size() );
+        try
+        {
+            delete_person(
+                person_id,
+                {
+                    auth.user_id,
+                    "delete person handler",
+                    now(),
+                    request.client_address()
+                }
+            );
+            
+            std::string null_json = "null";
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 200, "OK" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( null_json.size() )
+                    } }
+                }
+            };
+            
+            response.sputn( null_json.c_str(), null_json.size() );
+        }
+        catch( const no_such_person& e )
+        {
+            throw handler_exit{ { 404, "Not Found" }, e.what() };
+        }
     }
 }
