@@ -5,6 +5,7 @@
 
 #include "../api/user.hpp"
 #include "../common/auth.hpp"
+#include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
@@ -73,55 +74,62 @@ namespace stickers
         details.display_name = details_json[ "display_name" ];
         details.email        = details_json[ "email"        ];
         
-        auto created_user = create_user(
-            details,
-            {
-                auth.user_id,
-                "create user handler",
-                now(),
-                request.client_address()
-            }
-        );
-        
-        details_json = {
-            { "user_id"     , created_user.id                             },
-            { "created"     , to_iso8601_str( created_user.info.created ) },
-            { "revised"     , to_iso8601_str( created_user.info.revised ) },
-            { "display_name", created_user.info.display_name              },
-            { "email"       , created_user.info.email                     }
-        };
-        
-        if( created_user.info.real_name )
-            details_json[ "real_name" ] = *created_user.info.real_name;
-        else
-            details_json[ "real_name" ] = nullptr;
-        
-        if( created_user.info.avatar_hash )
-            details_json[ "avatar" ] = image_hash_to_image(
-                *created_user.info.avatar_hash
+        try
+        {
+            auto created_user = create_user(
+                details,
+                {
+                    auth.user_id,
+                    "create user handler",
+                    now(),
+                    request.client_address()
+                }
             );
-        else
-            details_json[ "avatar" ] = nullptr;
-        
-        auto user_json = details_json.dump();
-        
-        show::response response{
-            request.connection(),
-            show::HTTP_1_1,
-            { 201, "Created" },
-            {
-                server_header,
-                { "Content-Type", { "application/json" } },
-                { "Content-Length", {
-                    std::to_string( user_json.size() )
-                } },
-                { "Location", {
-                    "/user/" + static_cast< std::string >( created_user.id )
-                } }
-            }
-        };
-        
-        response.sputn( user_json.c_str(), user_json.size() );
+            
+            details_json = {
+                { "user_id"     , created_user.id                             },
+                { "created"     , to_iso8601_str( created_user.info.created ) },
+                { "revised"     , to_iso8601_str( created_user.info.revised ) },
+                { "display_name", created_user.info.display_name              },
+                { "email"       , created_user.info.email                     }
+            };
+            
+            if( created_user.info.real_name )
+                details_json[ "real_name" ] = *created_user.info.real_name;
+            else
+                details_json[ "real_name" ] = nullptr;
+            
+            if( created_user.info.avatar_hash )
+                details_json[ "avatar" ] = image_hash_to_image(
+                    *created_user.info.avatar_hash
+                );
+            else
+                details_json[ "avatar" ] = nullptr;
+            
+            auto user_json = details_json.dump();
+            
+            show::response response{
+                request.connection(),
+                show::HTTP_1_1,
+                { 201, "Created" },
+                {
+                    server_header,
+                    { "Content-Type", { "application/json" } },
+                    { "Content-Length", {
+                        std::to_string( user_json.size() )
+                    } },
+                    { "Location", {
+                        "/user/" + static_cast< std::string >( created_user.id )
+                    } }
+                }
+            };
+            
+            response.sputn( user_json.c_str(), user_json.size() );
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+        }
     }
     
     void handlers::get_user(
@@ -182,7 +190,7 @@ namespace stickers
             
             response.sputn( user_json_string.c_str(), user_json_string.size() );
         }
-        catch( const no_such_user& nsu )
+        catch( const no_such_user& e )
         {
             throw handler_exit{ { 404, "Not Found" }, "no such user" };
         }
@@ -219,7 +227,18 @@ namespace stickers
                 { "edit_any_user" }
             );
         
-        throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
+        try
+        {
+            throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
+        }
+        catch( const no_such_user& e )
+        {
+            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+        }
+        catch( const no_such_record_error& e )
+        {
+            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+        }
     }
     
     void handlers::delete_user(

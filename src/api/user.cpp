@@ -553,7 +553,7 @@ namespace stickers // User management //////////////////////////////////////////
 namespace stickers // Exceptions ///////////////////////////////////////////////
 {
     no_such_user::no_such_user( const std::string& msg ) :
-        std::runtime_error( msg )
+        no_such_record_error( msg )
     {}
     
     no_such_user no_such_user::by_id(
@@ -582,5 +582,46 @@ namespace stickers // Exceptions ///////////////////////////////////////////////
             + purpose
             + ")"
         };
+    }
+}
+
+
+namespace stickers // Assertions ///////////////////////////////////////////////
+{
+    void _assert_users_exist_impl::exec(
+        pqxx::work       & transaction,
+        const std::string& ids_string
+    )
+    {
+        std::string query_string;
+        
+        ff::fmt(
+            query_string,
+            PSQL(
+                WITH lookfor AS (
+                    SELECT UNNEST( ARRAY[ {0} ] ) AS user_id
+                )
+                SELECT lookfor.user_id
+                FROM
+                    lookfor
+                    LEFT JOIN users.users_core AS uc
+                        ON uc.user_id = lookfor.user_id
+                    LEFT JOIN users.user_deletions AS ud
+                        ON ud.user_id = uc.user_id
+                WHERE
+                       uc.user_id IS     NULL
+                    OR ud.user_id IS NOT NULL
+                ;
+            ),
+            ids_string
+        );
+        
+        auto result = transaction.exec( query_string );
+        
+        if( result.size() > 0 )
+            throw no_such_user::by_id(
+                result[ 0 ][ 0 ].as< bigid >(),
+                "assert"
+            );
     }
 }

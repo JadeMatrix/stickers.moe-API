@@ -9,6 +9,7 @@
 
 #include "../audit/blame.hpp"
 #include "../common/bigid.hpp"
+#include "../common/crud.hpp"
 #include "../common/hashing.hpp"
 #include "../common/postgres.hpp"
 #include "../common/timestamp.hpp"
@@ -118,12 +119,36 @@ namespace stickers // User management //////////////////////////////////////////
     
     // TODO: Move
     void send_validation_email( const bigid& );
+    
+    class _assert_users_exist_impl
+    {
+        template< class Container > friend void assert_users_exist(
+            pqxx::work     &,
+            const Container&
+        );
+        _assert_users_exist_impl();
+        static void exec( pqxx::work&, const std::string& );
+    };
+    
+    // ACID-safe assert; if any of the supplied hashes do not correspond to a
+    // record, this will throw `no_such_user` for one of those hashes
+    template< class Container = std::initializer_list< bigid > >
+    void assert_users_exist(
+        pqxx::work     & transaction,
+        const Container& hashes
+    )
+    {
+        _assert_users_exist_impl::exec(
+            transaction,
+            postgres::format_variable_list( transaction, hashes )
+        );
+    }
 }
 
 
 namespace stickers // Exceptions ///////////////////////////////////////////////
 {
-    class no_such_user : public std::runtime_error
+    class no_such_user : public no_such_record_error
     {
     protected:
         no_such_user( const std::string& );
