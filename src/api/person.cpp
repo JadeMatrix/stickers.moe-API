@@ -3,6 +3,7 @@
 
 #include "person.hpp"
 
+#include "../api/user.hpp"
 #include "../common/formatting.hpp"
 #include "../common/logging.hpp"
 
@@ -55,6 +56,13 @@ namespace
         ) };
         
         if( person.info.has_user() )
+        {
+            const auto& user_id = std::get< stickers::bigid >(
+                person.info.identifier
+            );
+            
+            stickers::assert_users_exist( transaction, { user_id } );
+            
             transaction.exec_params(
                 add_person_revision_query_string,
                 person.id,
@@ -62,9 +70,10 @@ namespace
                 blame.who,
                 blame.where,
                 nullptr,
-                std::get< stickers::bigid >( person.info.identifier ),
+                user_id,
                 person.info.about
             );
+        }
         else
             transaction.exec_params(
                 add_person_revision_query_string,
