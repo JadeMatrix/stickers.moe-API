@@ -39,11 +39,11 @@ namespace
             result[ 0 ][ "shop_id" ].to< stickers::bigid >( shop.id );
         }
         else
-            stickers::assert_shop_exists( shop.id, transaction );
+            stickers::assert_shops_exist( transaction, { shop.id } );
         
-        stickers::assert_person_exists(
-            shop.info.owner_person_id,
-            transaction
+        stickers::assert_people_exist(
+            transaction,
+            { shop.info.owner_person_id }
         );
         
         transaction.exec_params(
@@ -151,7 +151,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        assert_shop_exists( id, transaction );
+        assert_shops_exist( transaction, { id } );
         
         auto result = transaction.exec_params(
             PSQL(
@@ -176,18 +176,37 @@ namespace stickers // Person ///////////////////////////////////////////////////
 
 namespace stickers // Assertion /////////////////////////////////////////////////
 {
-    void assert_shop_exists( const bigid& id, pqxx::work& transaction )
+    void _assert_shops_exist_impl::exec(
+        pqxx::work       & transaction,
+        const std::string& ids_string
+    )
     {
-        auto result = transaction.exec_params(
+        std::string query_string;
+        
+        ff::fmt(
+            query_string,
             PSQL(
-                SELECT shop_id
-                FROM shops.shops_core
-                WHERE shop_id = $1
+                WITH lookfor AS (
+                    SELECT UNNEST( ARRAY[ {0} ] ) AS shop_id
+                )
+                SELECT lookfor.shop_id
+                FROM
+                    lookfor
+                    LEFT JOIN shops.shops_core AS sc
+                        ON sc.shop_id = lookfor.shop_id
+                    LEFT JOIN shops.shop_deletions AS sd
+                        ON sd.shop_id = sc.shop_id
+                WHERE
+                       sc.shop_id IS     NULL
+                    OR sd.shop_id IS NOT NULL
                 ;
             ),
-            id
+            ids_string
         );
-        if( result.size() < 1 )
-            throw no_such_shop( id );
+        
+        auto result = transaction.exec( query_string );
+        
+        if( result.size() > 0 )
+            throw no_such_shop( result[ 0 ][ 0 ].as< bigid >() );
     }
 }

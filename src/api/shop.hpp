@@ -38,8 +38,29 @@ namespace stickers
     shop_info update_shop( const shop     &, const audit::blame& );
     void      delete_shop( const bigid    &, const audit::blame& );
     
-    // ACID-safe assert
-    void assert_shop_exists( const bigid& id, pqxx::work& transaction );
+    class _assert_shops_exist_impl
+    {
+        template< class Container > friend void assert_shops_exist(
+            pqxx::work     &,
+            const Container&
+        );
+        _assert_shops_exist_impl();
+        static void exec( pqxx::work&, const std::string& );
+    };
+    
+    // ACID-safe assert; if any of the supplied IDs do not correspond to a
+    // record, this will throw `no_such_shop` for one of those IDs
+    template< class Container = std::initializer_list< bigid > >
+    void assert_shops_exist(
+        pqxx::work     & transaction,
+        const Container& ids
+    )
+    {
+        _assert_shops_exist_impl::exec(
+            transaction,
+            postgres::format_variable_list( transaction, ids )
+        );
+    }
     
     class no_such_shop : public std::runtime_error
     {

@@ -38,7 +38,7 @@ namespace
             result[ 0 ][ "person_id" ].to< stickers::bigid >( person.id );
         }
         else
-            stickers::assert_person_exists( person.id, transaction );
+            stickers::assert_people_exist( transaction, { person.id } );
         
         std::string add_person_revision_query_string{ PSQL(
             INSERT INTO people.person_revisions (
@@ -155,7 +155,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };
         
-        assert_person_exists( id, transaction );
+        assert_people_exist( transaction, { id } );
         
         auto result = transaction.exec_params(
             PSQL(
@@ -180,18 +180,37 @@ namespace stickers // Person ///////////////////////////////////////////////////
 
 namespace stickers // Assertion /////////////////////////////////////////////////
 {
-    void assert_person_exists( const bigid& id, pqxx::work& transaction )
+    void _assert_people_exist_impl::exec(
+        pqxx::work       & transaction,
+        const std::string& ids_string
+    )
     {
-        auto result = transaction.exec_params(
+        std::string query_string;
+        
+        ff::fmt(
+            query_string,
             PSQL(
-                SELECT person_id
-                FROM people.people_core
-                WHERE person_id = $1
+                WITH lookfor AS (
+                    SELECT UNNEST( ARRAY[ {0} ] ) AS person_id
+                )
+                SELECT lookfor.person_id
+                FROM
+                    lookfor
+                    LEFT JOIN people.people_core AS pc
+                        ON pc.person_id = lookfor.person_id
+                    LEFT JOIN people.person_deletions AS pd
+                        ON pd.person_id = pc.person_id
+                WHERE
+                       pc.person_id IS     NULL
+                    OR pd.person_id IS NOT NULL
                 ;
             ),
-            id
+            ids_string
         );
-        if( result.size() < 1 )
-            throw no_such_person( id );
+        
+        auto result = transaction.exec( query_string );
+        
+        if( result.size() > 0 )
+            throw no_such_person( result[ 0 ][ 0 ].as< bigid >() );
     }
 }
