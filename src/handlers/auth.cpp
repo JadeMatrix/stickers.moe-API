@@ -59,7 +59,7 @@ namespace stickers
             {
                 permissions_assert_all(
                     get_user_permissions( user.id ),
-                    { "can_log_in" }
+                    { "log_in" }
                 );
                 
                 auto auth_jwt = generate_auth_token_for_user(
