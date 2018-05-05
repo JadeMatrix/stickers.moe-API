@@ -9,11 +9,11 @@
 #include "../common/json.hpp"
 #include "../common/logging.hpp"
 #include "../server/routing.hpp"
-#include "../server/server.hpp"
 #include "../server/parse.hpp"
 
-#include <array>
+#include <show/constants.hpp>
 
+#include <array>
 
 namespace
 {
@@ -54,14 +54,14 @@ namespace stickers
         } )
             if( details_json.find( field ) == details_json.end() )
                 throw handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
                 };
             else if( !details_json[ field ].is_string() )
                 throw handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \""
                     + static_cast< std::string >( field )
                     + "\" must be a string"
@@ -111,9 +111,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 201, "Created" },
+                show::code::CREATED,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( user_json.size() )
@@ -128,7 +128,7 @@ namespace stickers
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -139,7 +139,7 @@ namespace stickers
     {
         auto found_user_id_variable = variables.find( "user_id" );
         if( found_user_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
@@ -148,7 +148,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
         try
@@ -178,9 +178,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( user_json_string.size() )
@@ -192,7 +192,7 @@ namespace stickers
         }
         catch( const no_such_user& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+            throw handler_exit{ show::code::NOT_FOUND, "no such user" };
         }
     }
     
@@ -203,7 +203,7 @@ namespace stickers
     {
         auto found_user_id_variable = variables.find( "user_id" );
         if( found_user_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
@@ -212,7 +212,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
         auto auth = authenticate( request );
@@ -229,15 +229,18 @@ namespace stickers
         
         try
         {
-            throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
+            throw handler_exit{
+                show::code::NOT_IMPLEMENTED,
+                "Not implemented"
+            };
         }
         catch( const no_such_user& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+            throw handler_exit{ show::code::NOT_FOUND, "no such user" };
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -248,7 +251,7 @@ namespace stickers
     {
         auto found_user_id_variable = variables.find( "user_id" );
         if( found_user_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
@@ -257,7 +260,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
         auto auth = authenticate( request );
@@ -289,9 +292,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( null_json.size() )
@@ -303,7 +306,7 @@ namespace stickers
         }
         catch( const no_such_user& nsu )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+            throw handler_exit{ show::code::NOT_FOUND, "no such user" };
         }
     }
 }

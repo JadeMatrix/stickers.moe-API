@@ -9,6 +9,7 @@
 #include "../common/logging.hpp"
 
 #include <show.hpp>
+#include <show/constants.hpp>
 
 #include <list>
 #include <mutex>
@@ -104,9 +105,9 @@ namespace
                 show::response response{
                     *connection,
                     show::HTTP_1_1,
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     {
-                        stickers::server_header,
+                        show::server_header,
                         { "Content-Length", { "0" } }
                     }
                 };

@@ -8,7 +8,8 @@
 #include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../server/parse.hpp"
-#include "../server/server.hpp"
+
+#include <show/constants.hpp>
 
 
 namespace
@@ -45,14 +46,14 @@ namespace
         } )
             if( details_json.find( field ) == details_json.end() )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
                 };
             else if( !details_json[ field ].is_string() )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \""
                     + static_cast< std::string >( field )
                     + "\" must be a string"
@@ -64,7 +65,7 @@ namespace
         } )
             if( details_json.find( field ) == details_json.end() )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
@@ -74,7 +75,7 @@ namespace
                 && !details_json[ field ].is_string()
             )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \""
                     + static_cast< std::string >( field )
                     + "\" must be a string or null"
@@ -90,7 +91,7 @@ namespace
         catch( const std::exception& e )
         {
             throw stickers::handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "required field \"owner_person_id\" not a valid ID"
             };
         }
@@ -106,7 +107,7 @@ namespace
             catch( const std::invalid_argument& e )
             {
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \"founded\" not a valid timestamp"
                 };
             }
@@ -122,7 +123,7 @@ namespace
             catch( const std::invalid_argument& e )
             {
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \"closed\" not a valid timestamp"
                 };
             }
@@ -172,9 +173,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 201, "Created" },
+                show::code::CREATED,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( shop_json_string.size() )
@@ -192,7 +193,7 @@ namespace stickers
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -203,7 +204,7 @@ namespace stickers
     {
         auto found_shop_id_variable = variables.find( "shop_id" );
         if( found_shop_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a shop ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
         stickers::bigid shop_id{ bigid::MIN() };
         try
@@ -215,7 +216,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid shop ID"
             };
         }
@@ -231,9 +232,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( shop_json_string.size() )
@@ -248,7 +249,7 @@ namespace stickers
         }
         catch( const no_such_shop& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
     }
     
@@ -265,7 +266,7 @@ namespace stickers
         
         auto found_shop_id_variable = variables.find( "shop_id" );
         if( found_shop_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a shop ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
         stickers::bigid shop_id{ bigid::MIN() };
         try
@@ -277,7 +278,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid shop ID"
             };
         }
@@ -304,9 +305,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( shop_json_string.size() )
@@ -321,11 +322,11 @@ namespace stickers
         }
         catch( const no_such_shop& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -342,7 +343,7 @@ namespace stickers
         
         auto found_shop_id_variable = variables.find( "shop_id" );
         if( found_shop_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a shop ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
         stickers::bigid shop_id{ bigid::MIN() };
         try
@@ -354,7 +355,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid shop ID"
             };
         }
@@ -376,9 +377,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( null_json.size() )
@@ -390,7 +391,7 @@ namespace stickers
         }
         catch( const no_such_shop& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
     }
 }

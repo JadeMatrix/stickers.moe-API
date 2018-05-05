@@ -7,6 +7,8 @@
 #include "../common/logging.hpp"
 #include "../common/string_utils.hpp"
 
+#include <show/constants.hpp>
+
 #include <iterator> // std::istreambuf_iterator
 
 
@@ -46,7 +48,7 @@ namespace stickers
     {
         if( request.unknown_content_length() )
             throw handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "Missing \"Content-Length\" header"
             };
         
@@ -57,7 +59,7 @@ namespace stickers
             || content_type_found -> second.size() != 1
         )
             throw handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "Indeterminate content type"
             };
         
@@ -80,7 +82,7 @@ namespace stickers
             
             if( malformed_json )
                 throw handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "Malformed JSON payload"
                 };
             else
@@ -109,7 +111,7 @@ namespace stickers
                 "\" request"
             );
             throw handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 (
                     "Unsupported content type '"
                     + log_sanitize( content_type_found -> second[ 0 ] )

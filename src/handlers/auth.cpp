@@ -7,7 +7,8 @@
 #include "../common/auth.hpp"
 #include "../common/config.hpp"
 #include "../server/parse.hpp"
-#include "../server/server.hpp"
+
+#include <show/constants.hpp>
 
 
 namespace stickers
@@ -17,7 +18,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "Not implemented" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "Not implemented" };
     }
     
     void handlers::login(
@@ -33,14 +34,14 @@ namespace stickers
         } )
             if( content.find( field ) == content.end() )
                 throw handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
                 };
             else if( !content[ field ].is_string() )
                 throw handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \""
                     + static_cast< std::string >( field )
                     + "\" must be a string"
@@ -80,9 +81,9 @@ namespace stickers
                 show::response response{
                     request.connection(),
                     show::HTTP_1_1,
-                    { 200, "OK" },
+                    show::code::OK,
                     {
-                        server_header,
+                        show::server_header,
                         { "Authorization", {
                             "Bearer " + auth_token
                         } },
@@ -121,7 +122,7 @@ namespace stickers
         {}
         
         throw handler_exit{
-            { 401, "Unauthorized" },
+            show::code::UNAUTHORIZED,
             "check email & password"
         };
     }

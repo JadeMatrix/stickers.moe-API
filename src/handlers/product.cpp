@@ -3,6 +3,8 @@
 
 #include "handlers.hpp"
 
+#include <show/constants.hpp>
+
 
 namespace stickers
 {
@@ -11,7 +13,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
     
     void handlers::get_product(
@@ -19,7 +21,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
     
     void handlers::edit_product(
@@ -27,7 +29,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
     
     void handlers::delete_product(
@@ -35,6 +37,6 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
 }

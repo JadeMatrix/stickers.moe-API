@@ -8,7 +8,8 @@
 #include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../server/parse.hpp"
-#include "../server/server.hpp"
+
+#include <show/constants.hpp>
 
 
 namespace
@@ -46,12 +47,12 @@ namespace
     {
         if( details_json.find( "about" ) == details_json.end() )
             throw stickers::handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "missing required field \"about\""
             };
         else if( !details_json[ "about" ].is_string() )
             throw stickers::handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "required field \"about\" must be a string"
             };
         
@@ -61,7 +62,7 @@ namespace
             && details_json.find( "name" ) == details_json.end()
         )
             throw stickers::handler_exit{
-                { 400, "Bad Request" },
+                show::code::BAD_REQUEST,
                 "missing one of \"name\" or \"user\""
             };
         
@@ -76,7 +77,7 @@ namespace
         {
             if( !details_json[ "user_id" ].is_string() )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \"user\" must be a string"
                 };
             info = {
@@ -92,7 +93,7 @@ namespace
         {
             if( !details_json[ "name" ].is_string() )
                 throw stickers::handler_exit{
-                    { 400, "Bad Request" },
+                    show::code::BAD_REQUEST,
                     "required field \"name\" must be a string"
                 };
             info = {
@@ -140,9 +141,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 201, "Created" },
+                show::code::CREATED,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( person_json_string.size() )
@@ -160,7 +161,7 @@ namespace stickers
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -171,7 +172,7 @@ namespace stickers
     {
         auto found_person_id_variable = variables.find( "person_id" );
         if( found_person_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a person ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
         stickers::bigid person_id{ bigid::MIN() };
         try
@@ -183,7 +184,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid person ID"
             };
         }
@@ -199,9 +200,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( person_json_string.size() )
@@ -216,7 +217,7 @@ namespace stickers
         }
         catch( const no_such_person& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
     }
     
@@ -233,7 +234,7 @@ namespace stickers
         
         auto found_person_id_variable = variables.find( "person_id" );
         if( found_person_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a person ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
         stickers::bigid person_id{ bigid::MIN() };
         try
@@ -245,7 +246,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid person ID"
             };
         }
@@ -272,9 +273,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( person_json_string.size() )
@@ -289,11 +290,11 @@ namespace stickers
         }
         catch( const no_such_person& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
         catch( const no_such_record_error& e )
         {
-            throw handler_exit{ { 400, "Bad Request" }, e.what() };
+            throw handler_exit{ show::code::BAD_REQUEST, e.what() };
         }
     }
     
@@ -310,7 +311,7 @@ namespace stickers
         
         auto found_person_id_variable = variables.find( "person_id" );
         if( found_person_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a person ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
         stickers::bigid person_id{ bigid::MIN() };
         try
@@ -322,7 +323,7 @@ namespace stickers
         catch( const std::exception& e )
         {
             throw handler_exit{
-                { 404, "Not Found" },
+                show::code::NOT_FOUND,
                 "need a valid person ID"
             };
         }
@@ -344,9 +345,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( null_json.size() )
@@ -358,7 +359,7 @@ namespace stickers
         }
         catch( const no_such_person& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, e.what() };
+            throw handler_exit{ show::code::NOT_FOUND, e.what() };
         }
     }
 }

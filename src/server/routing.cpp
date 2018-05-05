@@ -11,6 +11,8 @@
 #include "../common/string_utils.hpp"
 #include "../handlers/handlers.hpp"
 
+#include <show/constants.hpp>
+
 #include <exception>
 #include <map>
 #include <vector>
@@ -58,9 +60,9 @@ namespace
         show::response response{
             request.connection(),
             show::HTTP_1_1,
-            { 200, "OK" },
+            show::code::OK,
             {
-                stickers::server_header,
+                show::server_header,
                 { "Content-Type"  , { "application/json" } },
                 { "Content-Length", { std::to_string( json_string.size() ) } }
             }
@@ -212,9 +214,10 @@ namespace stickers
     void route_request( show::request& request )
     {
         bool handler_finished{ false };
-        show::response_code error_code   { 400, "Bad Request" };
+        // Make copies of these constants:
+        show::response_code error_code   { show::code::BAD_REQUEST };
+        show::headers_type  error_headers{ show::server_header     };
         std::string         error_message;
-        show::headers_type  error_headers{ server_header };
         
         try
         {
@@ -236,7 +239,7 @@ namespace stickers
                     current_node = &( current_node -> variable -> second );
                 }
                 else
-                    throw handler_exit{ { 404, "Not Found" }, "" };
+                    throw handler_exit{ show::code::NOT_FOUND, "" };
             }
             
             auto found_method = current_node -> methods.find(
@@ -255,12 +258,12 @@ namespace stickers
             {
                 // TODO: HEAD method implementation for CORS
                 throw handler_exit{
-                    { 500, "Not Implemented" },
+                    show::code::NOT_IMPLEMENTED,
                     "CORS not implemented"
                 };
             }
             else
-                throw handler_exit{ { 405, "Method Not Allowed" }, "" };
+                throw handler_exit{ show::code::METHOD_NOT_ALLOWED, "" };
             
             handler_finished = true;
         }
@@ -275,7 +278,7 @@ namespace stickers
         }
         catch( const authentication_error& ae )
         {
-            error_code    = { 401, "Unauthorized" };    // HTTP :^)
+            error_code    = show::code::UNAUTHORIZED;   // HTTP :^)
             error_message = "this action requires authentication credentials";
             error_headers[ "WWW-Authenticate" ] = {
                 "Bearer realm=\"stickers.moe JWT\""
@@ -294,7 +297,7 @@ namespace stickers
         }
         catch( const authorization_error& ae )
         {
-            error_code    = { 403, "Forbidden" };
+            error_code    = show::code::FORBIDDEN;
             error_message =
                 "you are not permitted to perform this action ("
                 + static_cast< std::string >( ae.what() )
@@ -314,7 +317,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            error_code    = { 500, "Server Error" };
+            error_code    = show::code::INTERNAL_SERVER_ERROR;
             error_message = "please try again later";
             STICKERS_LOG(
                 log_level::ERROR,
@@ -324,7 +327,7 @@ namespace stickers
         }
         catch( ... )
         {
-            error_code    = { 500, "Server Error" };
+            error_code    = show::code::INTERNAL_SERVER_ERROR;
             error_message = "please try again later";
             STICKERS_LOG(
                 log_level::ERROR,

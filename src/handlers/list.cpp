@@ -6,7 +6,8 @@
 #include "../api/user.hpp"
 #include "../api/list.hpp"
 #include "../common/json.hpp"
-#include "../server/server.hpp"
+
+#include <show/constants.hpp>
 
 
 namespace stickers
@@ -18,7 +19,7 @@ namespace stickers
     {
         auto found_user_id_variable = variables.find( "user_id" );
         if( found_user_id_variable == variables.end() )
-            throw handler_exit{ { 404, "Not Found" }, "need a user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
         stickers::bigid user_id{ bigid::MIN() };
         try
@@ -27,7 +28,7 @@ namespace stickers
         }
         catch( const std::exception& e )
         {
-            throw handler_exit{ { 404, "Not Found" }, "need a valid user ID" };
+            throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
         try
@@ -49,9 +50,9 @@ namespace stickers
             show::response response{
                 request.connection(),
                 show::HTTP_1_1,
-                { 200, "OK" },
+                show::code::OK,
                 {
-                    server_header,
+                    show::server_header,
                     { "Content-Type", { "application/json" } },
                     { "Content-Length", {
                         std::to_string( list_json.size() )
@@ -63,7 +64,7 @@ namespace stickers
         }
         catch( const no_such_user& nsu )
         {
-            throw handler_exit{ { 404, "Not Found" }, "no such user" };
+            throw handler_exit{ show::code::NOT_FOUND, "no such user" };
         }
     }
     
@@ -72,7 +73,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
     
     void handlers::update_list_item(
@@ -80,7 +81,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
     
     void handlers::remove_list_item(
@@ -88,6 +89,6 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        throw handler_exit{ { 500, "Not Implemented" }, "" };
+        throw handler_exit{ show::code::NOT_IMPLEMENTED, "" };
     }
 }
