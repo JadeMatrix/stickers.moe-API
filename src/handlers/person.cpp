@@ -43,23 +43,33 @@ namespace
         }
     }
     
-    stickers::person_info person_info_from_json( const nlj::json& details_json )
+    stickers::person_info person_info_from_document(
+        const stickers::document& details_doc
+    )
     {
-        if( details_json.find( "about" ) == details_json.end() )
+        if( !details_doc.is_a< stickers::map_document >() )
+            throw stickers::handler_exit{
+                show::code::BAD_REQUEST,
+                "invalid data format"
+            };
+        
+        auto& details_map{ details_doc.get< stickers::map_document >() };
+        
+        if( details_map.find( "about" ) == details_map.end() )
             throw stickers::handler_exit{
                 show::code::BAD_REQUEST,
                 "missing required field \"about\""
             };
-        else if( !details_json[ "about" ].is_string() )
+        else if( !details_map[ "about" ].is_a< stickers::string_document >() )
             throw stickers::handler_exit{
                 show::code::BAD_REQUEST,
                 "required field \"about\" must be a string"
             };
         
-        bool has_user{ details_json.find( "user_id" ) != details_json.end() };
+        bool has_user{ details_map.find( "user_id" ) != details_map.end() };
         if(
             !has_user
-            && details_json.find( "name" ) == details_json.end()
+            && details_map.find( "name" ) == details_map.end()
         )
             throw stickers::handler_exit{
                 show::code::BAD_REQUEST,
@@ -75,23 +85,35 @@ namespace
         
         if( has_user )
         {
-            if( !details_json[ "user_id" ].is_string() )
+            if( !details_map[ "user_id" ].is_a< stickers::string_document >() )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
                     "required field \"user\" must be a string"
                 };
+            stickers::bigid user_id{ stickers::bigid::MIN() };
+            try
+            {
+                user_id = stickers::bigid::from_string(
+                    details_map[ "user_id" ].get< stickers::string_document >()
+                );
+            }
+            catch( const stickers::bigid_out_of_range& e )
+            {
+                throw stickers::handler_exit{
+                    show::code::BAD_REQUEST,
+                    "required field \"user\" is not a valid user ID"
+                };
+            }
             info = {
                 stickers::now(),
                 stickers::now(),
-                details_json[ "about" ].get< std::string >(),
-                stickers::bigid::from_string(
-                    details_json[ "user_id" ].get< std::string >()
-                )
+                details_map[ "about" ].get< stickers::string_document >(),
+                user_id
             };
         }
         else
         {
-            if( !details_json[ "name" ].is_string() )
+            if( !details_map[ "name" ].is_a< stickers::string_document >() )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
                     "required field \"name\" must be a string"
@@ -99,8 +121,8 @@ namespace
             info = {
                 stickers::now(),
                 stickers::now(),
-                details_json[ "about" ].get< std::string >(),
-                details_json[ "name"  ].get< std::string >()
+                details_map[ "about" ].get< stickers::string_document >(),
+                details_map[ "name"  ].get< stickers::string_document >()
             };
         }
         
@@ -125,7 +147,7 @@ namespace stickers
         try
         {
             auto created = create_person(
-                person_info_from_json( parse_request_content( request ) ),
+                person_info_from_document( parse_request_content( request ) ),
                 {
                     auth.user_id,
                     "create person handler",
@@ -256,7 +278,9 @@ namespace stickers
             auto updated_info = update_person(
                 {
                     person_id,
-                    person_info_from_json( parse_request_content( request ) )
+                    person_info_from_document(
+                        parse_request_content( request )
+                    )
                 },
                 {
                     auth.user_id,

@@ -37,21 +37,31 @@ namespace
             shop_json[ "closed" ] = stickers::to_iso8601_str( *info.closed );
     }
     
-    stickers::shop_info shop_info_from_json( const nlj::json& details_json )
+    stickers::shop_info shop_info_from_document(
+        const stickers::document& details_doc
+    )
     {
+        if( !details_doc.is_a< stickers::map_document >() )
+            throw stickers::handler_exit{
+                show::code::BAD_REQUEST,
+                "invalid data format"
+            };
+        
+        auto& details_map{ details_doc.get< stickers::map_document >() };
+        
         for( const auto& field : {
-            "name",
-            "url",
-            "owner_person_id"
+            std::string{ "name"            },
+            std::string{ "url"             },
+            std::string{ "owner_person_id" }
         } )
-            if( details_json.find( field ) == details_json.end() )
+            if( details_map.find( field ) == details_map.end() )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
                 };
-            else if( !details_json[ field ].is_string() )
+            else if( !details_map[ field ].is_a< stickers::string_document >() )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
                     "required field \""
@@ -60,10 +70,10 @@ namespace
                 };
         
         for( const auto& field : {
-            "founded",
-            "closed"
+            std::string{ "founded" },
+            std::string{ "closed"  }
         } )
-            if( details_json.find( field ) == details_json.end() )
+            if( details_map.find( field ) == details_map.end() )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
                     "missing required field \""
@@ -71,8 +81,8 @@ namespace
                     + "\""
                 };
             else if(
-                   !details_json[ field ].is_null  ()
-                && !details_json[ field ].is_string()
+                   !details_map[ field ].is_a< stickers::  null_document >()
+                && !details_map[ field ].is_a< stickers::string_document >()
             )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
@@ -85,7 +95,9 @@ namespace
         try
         {
             owner_person_id = stickers::bigid::from_string(
-                details_json[ "owner_person_id" ].get< std::string >()
+                details_map[ "owner_person_id" ].get<
+                    stickers::string_document
+                >()
             );
         }
         catch( const std::exception& e )
@@ -97,42 +109,58 @@ namespace
         }
         
         std::optional< stickers::timestamp > founded;
-        if( !details_json[ "founded" ].is_null() )
-            try
-            {
-                founded = stickers::from_iso8601_str(
-                    details_json[ "founded" ].get< std::string >()
-                );
-            }
-            catch( const std::invalid_argument& e )
-            {
+        if( !details_map[ "founded" ].is_a< stickers::null_document >() )
+        {
+            bool valid{ false };
+            
+            if( details_map[ "founded" ].is_a< stickers::string_document >() )
+                try
+                {
+                    founded = stickers::from_iso8601_str(
+                        details_map[ "founded" ].get<
+                            stickers::string_document
+                        >()
+                    );
+                    valid = true;
+                }
+                catch( const std::invalid_argument& e ) {}
+            
+            if( !valid )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
-                    "required field \"founded\" not a valid timestamp"
+                    "required field \"founded\" not a valid ISO 8601 timestamp"
                 };
-            }
+        }
         
         std::optional< stickers::timestamp > closed;
-        if( !details_json[ "closed" ].is_null() )
-            try
-            {
-                closed = stickers::from_iso8601_str(
-                    details_json[ "closed" ].get< std::string >()
-                );
-            }
-            catch( const std::invalid_argument& e )
-            {
+        if( !details_map[ "closed" ].is_a< stickers::null_document >() )
+        {
+            bool valid{ false };
+            
+            if( details_map[ "closed" ].is_a< stickers::string_document >() )
+                try
+                {
+                    closed = stickers::from_iso8601_str(
+                        details_map[ "closed" ].get<
+                            stickers::string_document
+                        >()
+                    );
+                    valid = true;
+                }
+                catch( const std::invalid_argument& e ) {}
+            
+            if( !valid )
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
-                    "required field \"closed\" not a valid timestamp"
+                    "required field \"closed\" not a valid ISO 8601 timestamp"
                 };
-            }
+        }
         
         return {
             stickers::now(),
             stickers::now(),
-            details_json[ "name" ].get< std::string >(),
-            details_json[ "url"  ].get< std::string >(),
+            details_map[ "name" ].get< stickers::string_document >(),
+            details_map[ "url"  ].get< stickers::string_document >(),
             owner_person_id,
             founded,
             closed
@@ -157,7 +185,7 @@ namespace stickers
         try
         {
             auto created = create_shop(
-                shop_info_from_json( parse_request_content( request ) ),
+                shop_info_from_document( parse_request_content( request ) ),
                 {
                     auth.user_id,
                     "create shop handler",
@@ -288,7 +316,7 @@ namespace stickers
             auto updated_info = update_shop(
                 {
                     shop_id,
-                    shop_info_from_json( parse_request_content( request ) )
+                    shop_info_from_document( parse_request_content( request ) )
                 },
                 {
                     auth.user_id,

@@ -26,36 +26,44 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto content = parse_request_content( request );
+        auto content_doc = parse_request_content( request );
         
-        for( const auto field : {
-            "email",
-            "password"
+        if( !content_doc.is_a< map_document >() )
+            throw handler_exit{
+                show::code::BAD_REQUEST,
+                "invalid data format"
+            };
+        
+        auto& content{ content_doc.get< map_document >() };
+        
+        for( const auto& field : {
+            std::string{ "email"    },
+            std::string{ "password" }
         } )
             if( content.find( field ) == content.end() )
                 throw handler_exit{
                     show::code::BAD_REQUEST,
                     "missing required field \""
-                    + static_cast< std::string >( field )
+                    + field
                     + "\""
                 };
-            else if( !content[ field ].is_string() )
+            else if( !content[ field ].is_a< string_document >() )
                 throw handler_exit{
                     show::code::BAD_REQUEST,
                     "required field \""
-                    + static_cast< std::string >( field )
+                    + field
                     + "\" must be a string"
                 };
         
         try
         {
             auto user = load_user_by_email(
-                content[ "email" ].get< std::string >()
+                content[ "email" ].get< string_document >()
             );
             
             if(
                 user.info.password
-                == content[ "password" ].get< std::string >()
+                == content[ "password" ].get< string_document >()
             )
             {
                 permissions_assert_all(

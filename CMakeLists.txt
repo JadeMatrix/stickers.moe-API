@@ -36,6 +36,7 @@ ADD_EXECUTABLE(
     src/handlers/user.cpp
     src/common/auth.cpp
     src/common/config.cpp
+    src/common/document.cpp
     src/common/timestamp.cpp
     src/common/bigid.cpp
     src/common/postgres.cpp

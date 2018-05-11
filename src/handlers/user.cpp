@@ -45,21 +45,29 @@ namespace stickers
             { "create_user" }
         );
         
-        auto details_json = parse_request_content( request );
+        auto details_doc = parse_request_content( request );
+        
+        if( !details_doc.is_a< map_document >() )
+            throw handler_exit{
+                show::code::BAD_REQUEST,
+                "invalid data format"
+            };
+        
+        auto& details_map{ details_doc.get< map_document >() };
         
         for( const auto& field : {
-            "password",
-            "display_name",
-            "email"
+            std::string{ "password"     },
+            std::string{ "display_name" },
+            std::string{ "email"        }
         } )
-            if( details_json.find( field ) == details_json.end() )
+            if( details_map.find( field ) == details_map.end() )
                 throw handler_exit{
                     show::code::BAD_REQUEST,
                     "missing required field \""
                     + static_cast< std::string >( field )
                     + "\""
                 };
-            else if( !details_json[ field ].is_string() )
+            else if( !details_map[ field ].is_a< string_document >() )
                 throw handler_exit{
                     show::code::BAD_REQUEST,
                     "required field \""
@@ -69,10 +77,10 @@ namespace stickers
         
         user_info details;
         
-        details.password     = details_json[ "password" ].get< std::string >();
+        details.password     = details_map[ "password"     ].get< string_document >();
         details.created      = now();
-        details.display_name = details_json[ "display_name" ];
-        details.email        = details_json[ "email"        ];
+        details.display_name = details_map[ "display_name" ].get< string_document >();
+        details.email        = details_map[ "email"        ].get< string_document >();
         
         try
         {
@@ -86,7 +94,7 @@ namespace stickers
                 }
             );
             
-            details_json = {
+            nlj::json details_json{
                 { "user_id"     , created_user.id                             },
                 { "created"     , to_iso8601_str( created_user.info.created ) },
                 { "revised"     , to_iso8601_str( created_user.info.revised ) },
