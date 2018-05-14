@@ -188,6 +188,26 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
     {
         return !( *this < o );
     }
+    
+    void sha256::builder::append( const char* s, std::size_t l )
+    {
+        algorithm.Update(
+            reinterpret_cast< const CryptoPP::byte* >( s ),
+            l
+        );
+    }
+    
+    void sha256::builder::append( const std::string& s )
+    {
+        append( s.c_str(), s.size() );
+    }
+    
+    sha256 sha256::builder::generate_and_clear()
+    {
+        sha256 h;
+        algorithm.Final( h.digest.begin() );
+        return h;
+    }
 }
 
 

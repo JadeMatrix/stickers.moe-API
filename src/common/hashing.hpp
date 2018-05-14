@@ -51,6 +51,17 @@ namespace stickers
         bool operator  >( const sha256& ) const;
         bool operator <=( const sha256& ) const;
         bool operator >=( const sha256& ) const;
+        
+        class builder
+        {
+        protected:
+            CryptoPP::SHA256 algorithm;
+        public:
+            void append( const char*, std::size_t );
+            void append( const std::string& );
+            
+            sha256 generate_and_clear();
+        };
     };
     
     class scrypt
