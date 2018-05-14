@@ -42,6 +42,9 @@ namespace stickers
         void      get_product( show::request&, const handler_vars_type& );
         void     edit_product( show::request&, const handler_vars_type& );
         void   delete_product( show::request&, const handler_vars_type& );
+        
+        void     upload_media( show::request&, const handler_vars_type& );
+        void   get_media_info( show::request&, const handler_vars_type& );
     }
 }
 

@@ -30,6 +30,7 @@ ADD_EXECUTABLE(
     src/handlers/auth.cpp
     src/handlers/design.cpp
     src/handlers/list.cpp
+    src/handlers/media.cpp
     src/handlers/person.cpp
     src/handlers/product.cpp
     src/handlers/shop.cpp
@@ -43,6 +44,7 @@ ADD_EXECUTABLE(
     src/common/hashing.cpp
     src/common/jwt.cpp
     src/common/uuid.cpp
+    src/api/media.cpp
     src/api/person.cpp
     src/api/shop.cpp
     src/api/user.cpp
@@ -50,6 +52,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     server
     "-L/usr/local/Cellar/llvm/6.0.0/lib"
+    "-lc++experimental"
     ${PQXX_LIBRARY}
     ${REDOX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
@@ -72,6 +75,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     password_gen
     "-L/usr/local/Cellar/llvm/5.0.1/lib"
+    "-lc++experimental"
     ${PQXX_LIBRARY}
     ${FASTFORMAT_LIBRARY}
     ${CRYPTOPP_LIBRARY}

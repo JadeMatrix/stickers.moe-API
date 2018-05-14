@@ -160,6 +160,15 @@ namespace
         }
     };
     
+    routing_node::variable_type media_info{
+        "hash",
+        {
+            { { "GET", stickers::handlers::get_media_info } },
+            {},
+            nullptr
+        }
+    };
+    
     const routing_node tree{
         {},
         {
@@ -203,6 +212,22 @@ namespace
                 {},
                 &product_manip
             } },
+            { "media", {
+                {},
+                {
+                    { "upload", {
+                        { { "POST", stickers::handlers::upload_media } },
+                        {},
+                        nullptr
+                    } },
+                    { "info", {
+                        {},
+                        {},
+                        &media_info
+                    } }
+                },
+                nullptr
+            } }
         },
         nullptr
     };
