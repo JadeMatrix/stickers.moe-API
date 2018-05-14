@@ -45,10 +45,11 @@ namespace stickers
     
     // May throw `indeterminate_mime_type` or `unacceptable_mime_type`
     media save_media(
-        std::streambuf              & file_contents,
-        std::optional< std::string >  original_filename,
-        media_decency                 decency,
-        const audit::blame          & blame
+        std::streambuf                    & file_contents,
+        const std::optional< std::string >&  original_filename,
+        const std::optional< std::string >&  mime_type,
+        media_decency                       decency,
+        const audit::blame                & blame
     );
     // May throw `indeterminate_mime_type`, `unacceptable_mime_type`, or
     // `handler_exit`

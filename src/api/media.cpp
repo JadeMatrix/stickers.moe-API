@@ -79,6 +79,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
     
     std::string guess_mime_type(
         const std::optional< std::string >& file_name,
+        const std::optional< std::string >& mime_type,
         const                std::string  & beginning_chunk,
         const                std::string  &    ending_chunk
     )
@@ -103,7 +104,8 @@ namespace // Utilities /////////////////////////////////////////////////////////
         static const std::string   trailer_gif { '\x00', '\x3b'                                                 };
         
         if(
-            ( !file_name || ( extension == ".JPG" || extension == ".JPEG" ) )
+               ( !mime_type || ( *mime_type == "image/jpeg" ) )
+            && ( !file_name || ( extension == ".JPG" || extension == ".JPEG" ) )
             && beginning_chunk.substr( 0, magic_num_jpeg.size()                  ) == magic_num_jpeg
             &&    ending_chunk.substr( ending_chunk.size() - trailer_jpeg.size() ) == trailer_jpeg
             && beginning_chunk[ 2 ] == '\xff'
@@ -114,13 +116,15 @@ namespace // Utilities /////////////////////////////////////////////////////////
         )
             return "image/jpeg";
         else if(
-            ( !file_name || extension == ".PNG" )
+               ( !mime_type || ( *mime_type == "image/png" ) )
+            && ( !file_name || extension == ".PNG" )
             && beginning_chunk.substr( 0, magic_num_png.size()                  ) == magic_num_png
             &&    ending_chunk.substr( ending_chunk.size() - trailer_png.size() ) == trailer_png
         )
             return "image/png";
         else if(
-            ( !file_name || extension == ".GIF" )
+               ( !mime_type || ( *mime_type == "image/gif" ) )
+            && ( !file_name || extension == ".GIF" )
             && (
                    beginning_chunk.substr( 0, magic_num_gif7.size() ) == magic_num_gif7
                 || beginning_chunk.substr( 0, magic_num_gif9.size() ) == magic_num_gif9
@@ -129,7 +133,8 @@ namespace // Utilities /////////////////////////////////////////////////////////
         )
             return "image/gif";
         else if(
-            ( !file_name || extension == ".WEBM" )
+               ( !mime_type || ( *mime_type == "video/webm" ) )
+            && ( !file_name || extension == ".WEBM" )
             && beginning_chunk.substr( 0, magic_num_webm.size() ) == magic_num_webm
         )
             return "video/webm";
@@ -193,7 +198,8 @@ namespace // Internal implementations //////////////////////////////////////////
     
     file_info save_temp_file(
         std::streambuf                    & file_contents,
-        const std::optional< std::string >& original_filename
+        const std::optional< std::string >& original_filename,
+        const std::optional< std::string >& sent_mime_type
     )
     {
         auto temp_file_id = stickers::uuid::generate();
@@ -259,12 +265,13 @@ namespace // Internal implementations //////////////////////////////////////////
             beginning_chunk = std::string( buffer, remaining );
         }
         
-        std::string mime_type;
+        std::string detected_mime_type;
         try
         {
             if( file_size < chunk_bytes )
-                mime_type = guess_mime_type(
+                detected_mime_type = guess_mime_type(
                     original_filename,
+                    sent_mime_type,
                     beginning_chunk,
                     beginning_chunk
                 );
@@ -273,8 +280,9 @@ namespace // Internal implementations //////////////////////////////////////////
                 temp_file.seekg( file_size - chunk_bytes );
                 temp_file.read( buffer, chunk_bytes );
                 
-                mime_type = guess_mime_type(
+                detected_mime_type = guess_mime_type(
                     original_filename,
+                    sent_mime_type,
                     beginning_chunk,
                     std::string( buffer, chunk_bytes )
                 );
@@ -289,17 +297,19 @@ namespace // Internal implementations //////////////////////////////////////////
         return {
             temp_file_path,
             file_hash,
-            mime_type
+            detected_mime_type
         };
     }
     
     file_info save_temp_file(
         std::string                       & file_contents,
-        const std::optional< std::string >& original_filename
+        const std::optional< std::string >& original_filename,
+        const std::optional< std::string >& sent_mime_type
     )
     {
         auto mime_type{ guess_mime_type(
             original_filename,
+            sent_mime_type,
             file_contents.substr( 0, 64 ),
             file_contents.substr(
                 file_contents.size() - 64
@@ -433,13 +443,18 @@ namespace // Internal implementations //////////////////////////////////////////
 namespace stickers // Media ////////////////////////////////////////////////////
 {
     media save_media(
-        std::streambuf              & file_contents,
-        std::optional< std::string >  original_filename,
-        media_decency                 decency,
-        const audit::blame          & blame
+        std::streambuf                    & file_contents,
+        const std::optional< std::string >&  original_filename,
+        const std::optional< std::string >&  mime_type,
+        media_decency                       decency,
+        const audit::blame                & blame
     )
     {
-        auto info{ save_temp_file( file_contents, original_filename ) };
+        auto info{ save_temp_file(
+            file_contents,
+            original_filename,
+            mime_type
+        ) };
         
         return save_media_impl(
             info.temp_file_path,
@@ -517,7 +532,8 @@ namespace stickers // Media ////////////////////////////////////////////////////
         
         auto info{ save_temp_file(
             file_field.get< string_document >(),
-            file_field.name
+            file_field.name,
+            file_field.mime_type
         ) };
         
         return save_media_impl(
