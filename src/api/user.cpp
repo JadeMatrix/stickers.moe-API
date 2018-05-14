@@ -3,6 +3,7 @@
 
 #include "user.hpp"
 
+#include "media.hpp"
 #include "../common/config.hpp"
 #include "../common/formatting.hpp"
 #include "../common/logging.hpp"
@@ -25,6 +26,12 @@ namespace
     {
         pqxx::work transaction{ *connection };
         std::string current_email;
+        
+        if( user.info.avatar_hash )
+            stickers::assert_media_exist(
+                transaction,
+                { *user.info.avatar_hash }
+            );
         
         if( generate_id )
         {

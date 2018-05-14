@@ -3,33 +3,17 @@
 
 #include "handlers.hpp"
 
+#include "../api/media.hpp"
 #include "../api/user.hpp"
 #include "../common/auth.hpp"
 #include "../common/crud.hpp"
 #include "../common/json.hpp"
 #include "../common/logging.hpp"
-#include "../server/routing.hpp"
 #include "../server/parse.hpp"
 
 #include <show/constants.hpp>
 
 #include <array>
-
-namespace
-{
-    std::string image_hash_to_image( stickers::sha256 hash )
-    {
-        std::string hash_hex = hash.hex_digest();
-        return (
-              "/images/"
-            + hash_hex.substr( 0, 2 )
-            + "/"
-            + hash_hex.substr( 2, 2 )
-            + "/"
-            + hash_hex
-        );
-    }
-}
 
 
 namespace stickers
@@ -108,9 +92,9 @@ namespace stickers
                 details_json[ "real_name" ] = nullptr;
             
             if( created_user.info.avatar_hash )
-                details_json[ "avatar" ] = image_hash_to_image(
+                details_json[ "avatar" ] = load_media_info(
                     *created_user.info.avatar_hash
-                );
+                ).file_url;
             else
                 details_json[ "avatar" ] = nullptr;
             
@@ -177,7 +161,9 @@ namespace stickers
                 user_json[ "real_name" ] = nullptr;
             
             if( info.avatar_hash )
-                user_json[ "avatar" ] = image_hash_to_image( *info.avatar_hash );
+                user_json[ "avatar" ] = load_media_info(
+                    *info.avatar_hash
+                ).file_url;
             else
                 user_json[ "avatar" ] = nullptr;
             
