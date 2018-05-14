@@ -96,7 +96,8 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
     {
         std::string hex;
         CryptoPP::StringSource{
-            digest,
+            reinterpret_cast< const CryptoPP::byte* >( digest.data() ),
+            digest.size(),
             true,
             new CryptoPP::HexEncoder{
                 new CryptoPP::StringSink{ hex }
