@@ -161,14 +161,6 @@ namespace stickers
             }
             catch( const show::base64_decode_error& e )
             {
-                // DEBUG:
-                STICKERS_LOG(
-                    log_level::DEBUG,
-                    "invalid base64 header (",
-                    e.what(),
-                    "): ",
-                    log_sanitize( jwt_segments[ 0 ] )
-                );
                 throw validation_error{ "header segment is not valid base64" };
             }
             
