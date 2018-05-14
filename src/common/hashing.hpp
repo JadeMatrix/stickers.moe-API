@@ -35,7 +35,17 @@ namespace stickers
         sha256( const CryptoPP::SecByteBlock& );
         sha256( const std::string& );
         sha256( const char*, std::size_t );
-        sha256( const sha256& );
+        sha256( const sha256&  );
+        sha256(       sha256&& );
+        
+        sha256& operator  =( const sha256&  )      ;
+        sha256& operator  =(       sha256&& )      ;
+        bool    operator ==( const sha256&  ) const;
+        bool    operator !=( const sha256&  ) const;
+        bool    operator  <( const sha256&  ) const;
+        bool    operator  >( const sha256&  ) const;
+        bool    operator <=( const sha256&  ) const;
+        bool    operator >=( const sha256&  ) const;
         
         std::string raw_digest() const;
         std::string hex_digest() const;
@@ -44,13 +54,6 @@ namespace stickers
         static sha256 make( const std::string& );
         
         static sha256 from_hex_string( const std::string& );
-        
-        bool operator ==( const sha256& ) const;
-        bool operator !=( const sha256& ) const;
-        bool operator  <( const sha256& ) const;
-        bool operator  >( const sha256& ) const;
-        bool operator <=( const sha256& ) const;
-        bool operator >=( const sha256& ) const;
         
         class builder
         {
@@ -76,7 +79,6 @@ namespace stickers
         unsigned char _parallelization;
         
     public:
-        scrypt( const scrypt& );
         scrypt( // Load from database fields
             const std::string& digest,
             const std::string& salt,
@@ -84,6 +86,17 @@ namespace stickers
             unsigned char      block_size,
             unsigned char      parallelization
         );
+        scrypt( const scrypt&  );
+        scrypt(       scrypt&& );
+        
+        scrypt& operator  =( const scrypt&  )      ;
+        scrypt& operator  =(       scrypt&& )      ;
+        bool    operator ==( const scrypt&  ) const;
+        bool    operator !=( const scrypt&  ) const;
+        bool    operator  <( const scrypt&  ) const;
+        bool    operator  >( const scrypt&  ) const;
+        bool    operator <=( const scrypt&  ) const;
+        bool    operator >=( const scrypt&  ) const;
         
         std::string   raw_digest     () const;
         std::string   hex_digest     () const;
@@ -130,13 +143,6 @@ namespace stickers
             unsigned char& block_size,
             unsigned char& parallelization
         );
-        
-        bool operator ==( const scrypt& ) const;
-        bool operator !=( const scrypt& ) const;
-        bool operator  <( const scrypt& ) const;
-        bool operator  >( const scrypt& ) const;
-        bool operator <=( const scrypt& ) const;
-        bool operator >=( const scrypt& ) const;
     };
 }
 
