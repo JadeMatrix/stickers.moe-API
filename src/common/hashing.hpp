@@ -164,20 +164,26 @@ namespace pqxx
         
         static void from_string( const char str[], stickers::sha256& h )
         {
-            try
-            {
-                h = stickers::sha256{ str, strlen( str ) };
-            }
-            catch( const stickers::hash_error& he )
-            {
-                throw argument_error{
-                    "Failed conversion to "
-                    + std::string( name() )
-                    + ": '"
-                    + std::string( str )
-                    + "'"
-                };
-            }
+            auto len{ strlen( str ) };
+            if( len == 64 + 2 && str[ 0 ] == '\\' && str[ 1 ] == 'x' )
+                try
+                {
+                    h = stickers::sha256::make_from_hex_string( std::string(
+                        str + 2,
+                        len - 2
+                    ) );
+                    return;
+                }
+                catch( const stickers::hash_error& he )
+                {}
+            
+            throw argument_error{
+                "Failed conversion to "
+                + std::string{ name() }
+                + ": '"
+                + std::string{ str }
+                + "'"
+            };
         }
         
         static std::string to_string( const stickers::sha256& h )
@@ -190,7 +196,7 @@ namespace pqxx
                 if( std::isprint( b ) )
                     decoded << b;
                 else
-                    decoded << "\\x" << ( unsigned int )b;
+                    decoded << "\\x" << static_cast< unsigned int >( b );
             
             return decoded.str();
         }
