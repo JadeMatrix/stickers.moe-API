@@ -124,7 +124,7 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
         return make( s.c_str(), s.size() );
     }
     
-    sha256 sha256::make_from_hex_string( const std::string& s )
+    sha256 sha256::from_hex_string( const std::string& s )
     {
         if( s.size() != CryptoPP::SHA256::DIGESTSIZE * 2 )
             throw hash_error{

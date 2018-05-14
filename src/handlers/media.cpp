@@ -124,7 +124,7 @@ namespace stickers
         
         try
         {
-            auto hash = sha256::make_from_hex_string(
+            auto hash = sha256::from_hex_string(
                 found_hash_variable -> second
             );
             

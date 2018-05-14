@@ -43,7 +43,7 @@ namespace stickers
         static sha256 make( const char*, std::size_t );
         static sha256 make( const std::string& );
         
-        static sha256 make_from_hex_string( const std::string& );
+        static sha256 from_hex_string( const std::string& );
         
         bool operator ==( const sha256& ) const;
         bool operator !=( const sha256& ) const;
@@ -168,7 +168,7 @@ namespace pqxx
             if( len == 64 + 2 && str[ 0 ] == '\\' && str[ 1 ] == 'x' )
                 try
                 {
-                    h = stickers::sha256::make_from_hex_string( std::string(
+                    h = stickers::sha256::from_hex_string( std::string(
                         str + 2,
                         len - 2
                     ) );
