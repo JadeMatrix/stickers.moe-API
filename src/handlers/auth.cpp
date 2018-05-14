@@ -6,6 +6,7 @@
 #include "../api/user.hpp"
 #include "../common/auth.hpp"
 #include "../common/config.hpp"
+#include "../common/logging.hpp"
 #include "../server/parse.hpp"
 
 #include <show/constants.hpp>
@@ -82,8 +83,17 @@ namespace stickers
                 );
                 auto auth_token = jwt::serialize( auth_jwt );
                 
+                STICKERS_LOG(
+                    stickers::log_level::INFO,
+                    "user with ID ",
+                    user.id,
+                    " logged in from ",
+                    request.client_address()
+                );
+                
                 auto token_message_json = nlj::json{
-                    { "jwt", auth_token }
+                    { "jwt"    , auth_token },
+                    { "user_id", user.id    }
                 }.dump();
                 
                 show::response response{
