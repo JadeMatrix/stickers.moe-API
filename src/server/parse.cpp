@@ -90,7 +90,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
                 ) };
                 auto boundary{ header_remainder -> substr(
                     boundary_begin,
-                    boundary_end
+                    boundary_end - boundary_begin
                 ) };
                 
                 if( boundary.size() > 0 )
@@ -140,7 +140,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
                 
                 auto filename{ header_value.substr(
                     filename_start,
-                    header_value.find( "\"", filename_start )
+                    header_value.find( "\"", filename_start ) - filename_start
                 ) };
                 
                 std::string::size_type esc_seq_pos;
@@ -267,7 +267,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
             {
                 info.filename = show::url_decode( header_value.substr(
                     filename_begin,
-                    header_value.find( ";", filename_begin )
+                    header_value.find( ";", filename_begin ) - filename_begin
                 ) );
             }
             catch( const show::url_decode_error& e )
@@ -547,6 +547,7 @@ namespace // Parser implementations ////////////////////////////////////////////
             ) );
         }
         
+        doc.mime_type = content_type -> mime_type;
         return doc;
     }
 }
