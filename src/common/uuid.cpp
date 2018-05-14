@@ -70,11 +70,11 @@ namespace stickers
         std::size_t max_possible_length = 32 + 4;
         
         if( s.size() > max_possible_length )
-            throw std::invalid_argument(
+            throw std::invalid_argument{
                 "max standard UUID representation length is "
                 + std::to_string( max_possible_length )
                 + " chars"
-            );
+            };
         
         std::string filtered( 32, '\0' );
         for( auto c : s )

@@ -196,7 +196,7 @@ namespace stickers
         if( found_person_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
-        stickers::bigid person_id{ bigid::MIN() };
+        bigid person_id{ bigid::MIN() };
         try
         {
             person_id = bigid::from_string(
