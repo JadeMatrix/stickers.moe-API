@@ -44,6 +44,7 @@ ADD_EXECUTABLE(
     src/common/hashing.cpp
     src/common/jwt.cpp
     src/common/uuid.cpp
+    src/api/design.cpp
     src/api/media.cpp
     src/api/person.cpp
     src/api/shop.cpp
