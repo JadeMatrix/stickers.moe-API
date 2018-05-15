@@ -138,7 +138,7 @@ namespace stickers
         {
             user_id = bigid::from_string( found_user_id_variable -> second );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
@@ -204,7 +204,7 @@ namespace stickers
         {
             user_id = bigid::from_string( found_user_id_variable -> second );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
@@ -252,7 +252,7 @@ namespace stickers
         {
             user_id = bigid::from_string( found_user_id_variable -> second );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }

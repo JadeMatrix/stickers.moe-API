@@ -100,7 +100,7 @@ namespace
                 >()
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw stickers::handler_exit{
                 show::code::BAD_REQUEST,
@@ -241,7 +241,7 @@ namespace stickers
                 found_shop_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,
@@ -303,7 +303,7 @@ namespace stickers
                 found_shop_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,
@@ -380,7 +380,7 @@ namespace stickers
                 found_shop_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,

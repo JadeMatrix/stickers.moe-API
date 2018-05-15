@@ -165,3 +165,61 @@ namespace stickers
         }
     }
 }
+
+
+// DEBUG: //////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    const std::string form{
+R"###(<!doctype html>
+<html>
+    <head>
+        <meta charset=utf-8>
+        <title>Form Analyzer</title>
+    </head>
+    <body>
+        <form action="http://0.0.0.0:9090/media/upload" method="post" enctype="multipart/form-data">
+            <div>
+                <label for="file">File:</label>
+                <input type="file" id="file" name="file"></input>
+            </div>
+            <div>
+                <label for="decency">Decency:</label>
+                <select id="decency" name="decency">
+                    <option value="safe">Safe</option>
+                    <option value="questionable">Questionable</option>
+                    <option value="explicit">Explicit</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+    </body>
+</html>
+)###"
+};
+}
+
+namespace stickers
+{
+    void handlers::upload_media_debug_form(
+        show::request& request,
+        const handler_vars_type& variables
+    )
+    {
+        show::response response{
+            request.connection(),
+            show::http_protocol::HTTP_1_0,
+            { 200, "OK" },
+            {
+                show::server_header,
+                { "Content-Type"  , { "text/html"                   } },
+                { "Content-Length", { std::to_string( form.size() ) } }
+            }
+        };
+        
+        response.sputn( form.c_str(), form.size() );
+    }
+}

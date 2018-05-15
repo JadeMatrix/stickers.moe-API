@@ -4,7 +4,7 @@
 #include "bigid.hpp"
 
 
-namespace stickers // Big-ID ///////////////////////////////////////////////////
+namespace stickers // BigID ////////////////////////////////////////////////////
 {
     bigid::bigid() {}
     
@@ -45,7 +45,9 @@ namespace stickers // Big-ID ///////////////////////////////////////////////////
         if( v >= MIN().value && v <= MAX().value )
             value = v;
         else
-            throw bigid_out_of_range{ v };
+            throw std::invalid_argument{
+                "can't convert \"" + std::to_string( v ) + "\" to a bigid"
+            };
         return *this;
     }
     
@@ -138,29 +140,8 @@ namespace stickers // Big-ID ///////////////////////////////////////////////////
         catch( const pqxx::argument_error& e )
         {
             throw std::invalid_argument{
-                "can't convert \"" + str + "\" to a big-ID"
+                "can't convert \"" + str + "\" to a bigid"
             };
         }
     }
-}
-
-
-namespace stickers // Big-ID exceptions ////////////////////////////////////////
-{
-    bigid_out_of_range::bigid_out_of_range( long long value ) noexcept :
-        std::out_of_range( std::to_string( value ) + " out of range for bigid" )
-    {}
-    
-    // bigid_out_of_range::bigid_out_of_range(
-    //     long long value,
-    //     const std::string& operation
-    // ) noexcept :
-    //     std::out_of_range(
-    //         "operation"
-    //         + std::to_string( value )
-    //         + " "
-    //         + operation
-    //         + " would put bigid out-of-range"
-    //     )
-    // {}
 }

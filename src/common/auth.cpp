@@ -49,13 +49,24 @@ namespace
                 && user_id_found.value().is_string()
             )
             {
-                info = {
-                    stickers::bigid::from_string(
+                auto user_id{ stickers::bigid::MIN() };
+                try
+                {
+                    user_id = stickers::bigid::from_string(
                         user_id_found.value().get< std::string >()
-                    ),
+                    );
+                }
+                catch( const std::invalid_argument& e )
+                {
+                    throw stickers::authentication_error{
+                        "required claim \"user_id\" not a valid bigid"
+                    };
+                }
+                
+                info = {
+                    user_id,
                     permissions
                 };
-                
                 return true;
             }
             else

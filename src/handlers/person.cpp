@@ -97,7 +97,7 @@ namespace
                     details_map[ "user_id" ].get< stickers::string_document >()
                 );
             }
-            catch( const stickers::bigid_out_of_range& e )
+            catch( const std::invalid_argument& e )
             {
                 throw stickers::handler_exit{
                     show::code::BAD_REQUEST,
@@ -203,7 +203,7 @@ namespace stickers
                 found_person_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,
@@ -265,7 +265,7 @@ namespace stickers
                 found_person_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,
@@ -344,7 +344,7 @@ namespace stickers
                 found_person_id_variable -> second
             );
         }
-        catch( const std::exception& e )
+        catch( const std::invalid_argument& e )
         {
             throw handler_exit{
                 show::code::NOT_FOUND,

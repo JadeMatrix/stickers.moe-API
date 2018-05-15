@@ -47,18 +47,6 @@ namespace stickers
         
         static bigid from_string( const std::string& );
     };
-    
-    class bigid_out_of_range : public std::out_of_range
-    {
-    public:
-        bigid_out_of_range( long long value ) noexcept;
-        // bigid_out_of_range(
-        //     long long value,
-        //     const std::string& operation
-        // );
-        // virtual const char* what() const noexcept;
-        using std::out_of_range::what;
-    };
 }
 
 
@@ -92,15 +80,8 @@ namespace pqxx
                 string_traits< long long >::from_string( str, llid );
                 id = llid;
             }
-            catch( const argument_error& e )
+            catch( const std::invalid_argument& e )
             {
-                conversion_error = true;
-            }
-            catch( const stickers::bigid_out_of_range& e )
-            {
-                conversion_error = true;
-            }
-            if( conversion_error )
                 throw argument_error{
                     "Failed conversion to "
                     + static_cast< std::string >( name() )
@@ -108,6 +89,7 @@ namespace pqxx
                     + static_cast< std::string >( str )
                     + "'"
                 };
+            }
         }
         
         static std::string to_string( const stickers::bigid& id )
