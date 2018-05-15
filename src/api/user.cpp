@@ -268,6 +268,14 @@ namespace stickers // Passwords ////////////////////////////////////////////////
     
     bool password::operator==( const password& o ) const
     {
+        if( _type != o._type )
+        {
+            if( o._type == password_type::RAW )
+                return *this == o.raw_value;
+            else
+                return false;
+        }
+        
         switch( _type )
         {
         case password_type::RAW:
