@@ -42,7 +42,7 @@ namespace stickers
             ) };
             
             STICKERS_LOG(
-                log_level::DEBUG,
+                log_level::VERBOSE,
                 "created PostgreSQL connection {host=",
                 connection -> hostname(),
                 " port=",
