@@ -195,6 +195,9 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
+        // Authenticate first, check permissions later
+        auto auth{ authenticate( request ) };
+        
         auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
@@ -209,7 +212,6 @@ namespace stickers
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
-        auto auth{ authenticate( request ) };
         if( auth.user_id == user_id )
             permissions_assert_all(
                 auth.user_permissions,
@@ -243,6 +245,9 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
+        // Authenticate first, check permissions later
+        auto auth{ authenticate( request ) };
+        
         auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
@@ -257,7 +262,6 @@ namespace stickers
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
-        auto auth{ authenticate( request ) };
         if( auth.user_id == user_id )
             permissions_assert_all(
                 auth.user_permissions,
