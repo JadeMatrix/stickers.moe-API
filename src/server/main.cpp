@@ -34,7 +34,19 @@ int main( int argc, char* argv[] )
             std::ifstream config_file{ argv[ 1 ] };
             
             if( config_file.is_open() )
+            {
                 config_file >> config;
+                if( !config_file.good() )
+                {
+                    STICKERS_LOG(
+                        stickers::log_level::ERROR,
+                        "config file ",
+                        argv[ 1 ],
+                        " not a valid JSON file"
+                    );
+                    return -1;
+                }
+            }
             else
             {
                 STICKERS_LOG(
@@ -42,7 +54,7 @@ int main( int argc, char* argv[] )
                     "could not open config file ",
                     argv[ 1 ]
                 );
-                return 2;
+                return -1;
             }
             
             stickers::set_config( config );
