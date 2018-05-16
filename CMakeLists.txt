@@ -23,10 +23,21 @@ FIND_LIBRARY( SCRYPT_LIBRARY     scrypt     )
 
 ADD_EXECUTABLE(
     server
-    src/server/main.cpp
-    src/server/server.cpp
-    src/server/parse.cpp
-    src/server/routing.cpp
+    src/api/design.cpp
+    src/api/list.cpp
+    src/api/media.cpp
+    src/api/person.cpp
+    src/api/shop.cpp
+    src/api/user.cpp
+    src/common/auth.cpp
+    src/common/bigid.cpp
+    src/common/config.cpp
+    src/common/document.cpp
+    src/common/hashing.cpp
+    src/common/jwt.cpp
+    src/common/postgres.cpp
+    src/common/timestamp.cpp
+    src/common/uuid.cpp
     src/handlers/auth.cpp
     src/handlers/design.cpp
     src/handlers/list.cpp
@@ -35,20 +46,10 @@ ADD_EXECUTABLE(
     src/handlers/product.cpp
     src/handlers/shop.cpp
     src/handlers/user.cpp
-    src/common/auth.cpp
-    src/common/config.cpp
-    src/common/document.cpp
-    src/common/timestamp.cpp
-    src/common/bigid.cpp
-    src/common/postgres.cpp
-    src/common/hashing.cpp
-    src/common/jwt.cpp
-    src/common/uuid.cpp
-    src/api/design.cpp
-    src/api/media.cpp
-    src/api/person.cpp
-    src/api/shop.cpp
-    src/api/user.cpp
+    src/server/main.cpp
+    src/server/parse.cpp
+    src/server/routing.cpp
+    src/server/server.cpp
 )
 TARGET_LINK_LIBRARIES(
     server
@@ -65,13 +66,17 @@ TARGET_LINK_LIBRARIES(
 
 ADD_EXECUTABLE(
     password_gen
-    src/utilities/password_gen.cpp
-    src/common/config.cpp
-    src/common/timestamp.cpp
-    src/common/bigid.cpp
-    src/common/postgres.cpp
-    src/common/hashing.cpp
+    src/api/media.cpp
     src/api/user.cpp
+    src/common/bigid.cpp
+    src/common/config.cpp
+    src/common/document.cpp
+    src/common/hashing.cpp
+    src/common/postgres.cpp
+    src/common/timestamp.cpp
+    src/common/uuid.cpp
+    src/server/parse.cpp
+    src/utilities/password_gen.cpp
 )
 TARGET_LINK_LIBRARIES(
     password_gen
