@@ -19,7 +19,7 @@ namespace
         pqxx::work& transaction
     )
     {
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT image_hash
                 FROM designs.design_images
@@ -30,7 +30,7 @@ namespace
                 ;
             ),
             id
-        );
+        ) };
         
         std::vector< stickers::sha256 > images;
         
@@ -45,7 +45,7 @@ namespace
         pqxx::work& transaction
     )
     {
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT person_id
                 FROM designs.design_contributors
@@ -55,7 +55,7 @@ namespace
                 ;
             ),
             id
-        );
+        ) };
         
         std::vector< stickers::bigid > contributors;
         
@@ -73,12 +73,12 @@ namespace
         bool                          generate_id
     )
     {
-        auto connection = stickers::postgres::connect();
+        auto connection{ stickers::postgres::connect() };
         pqxx::work transaction{ *connection };
         
         if( generate_id )
         {
-            auto result = transaction.exec_params(
+            auto result{ transaction.exec_params(
                 PSQL(
                     INSERT INTO designs.designs_core (
                         design_id,
@@ -92,7 +92,7 @@ namespace
                     ;
                 ),
                 blame.when
-            );
+            ) };
             result[ 0 ][ "design_id" ].to< stickers::bigid >( design.id );
         }
         else
@@ -268,10 +268,10 @@ namespace stickers // Design ///////////////////////////////////////////////////
     
     design_info load_design( const bigid& id )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT
                     created,
@@ -284,12 +284,12 @@ namespace stickers // Design ///////////////////////////////////////////////////
                 ;
             ),
             id
-        );
+        ) };
         
         if( result.size() < 1 )
             throw no_such_design{ id };
         
-        auto& row = result[ 0 ];
+        auto& row{ result[ 0 ] };
         
         design_info info{
             row[ "created"     ].as< timestamp   >(),
@@ -306,19 +306,19 @@ namespace stickers // Design ///////////////////////////////////////////////////
     
     design_info update_design( const design& s, const audit::blame& blame )
     {
-        auto updated_design = s;
+        auto updated_design{ s };
         write_design_details( updated_design, blame, true );
         return updated_design.info;
     }
     
     void delete_design( const bigid& id, const audit::blame& blame )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
         assert_designs_exist( transaction, { id } );
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 INSERT INTO designs.design_deletions (
                     design_id,
@@ -333,7 +333,7 @@ namespace stickers // Design ///////////////////////////////////////////////////
             blame.when,
             blame.who,
             blame.where
-        );
+        ) };
         transaction.commit();
     }
 }
@@ -380,7 +380,7 @@ namespace stickers // Assertion ////////////////////////////////////////////////
             ids_string
         );
         
-        auto result = transaction.exec( query_string );
+        auto result{ transaction.exec( query_string ) };
         
         if( result.size() > 0 )
             throw no_such_design{ result[ 0 ][ 0 ].as< bigid >() };

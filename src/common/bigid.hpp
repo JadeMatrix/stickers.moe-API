@@ -73,7 +73,7 @@ namespace pqxx
         
         static void from_string( const char str[], stickers::bigid& id )
         {
-            bool conversion_error = false;
+            bool conversion_error{ false };
             try
             {
                 long long llid;

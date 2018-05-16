@@ -35,7 +35,7 @@ namespace
         
         if( generate_id )
         {
-            auto result = transaction.exec_params(
+            auto result{ transaction.exec_params(
                 PSQL(
                     INSERT INTO users.user_core (
                         user_id,
@@ -57,12 +57,12 @@ namespace
                 pqxx::binarystring( user.info.password.hash() ),
                 pqxx::binarystring( user.info.password.salt() ),
                 user.info.password.factor()
-            );
+            ) };
             result[ 0 ][ "user_id" ].to< stickers::bigid >( user.id );
         }
         else
         {
-            auto result = transaction.exec_params(
+            auto result{ transaction.exec_params(
                 PSQL(
                     SELECT email
                     FROM users.user_emails
@@ -72,13 +72,13 @@ namespace
                     ;
                 ),
                 user.id
-            );
+            ) };
             if( result.size() >= 1 )
                 current_email = result[ 0 ][ "email" ].as< std::string >();
         }
         
         // TODO: update user password
-        std::string add_user_revision = PSQL(
+        std::string add_user_revision{ PSQL(
             INSERT INTO users.user_revisions (
                 user_id,
                 revised,
@@ -90,7 +90,7 @@ namespace
             )
             VALUES ( $1, $2, $3, $4, $5, $6, $7 )
             ;
-        );
+        ) };
         transaction.exec_params(
             add_user_revision,
             user.id,
@@ -156,10 +156,10 @@ namespace
             field
         );
         
-        pqxx::result result = transaction.exec_params(
+        pqxx::result result{ transaction.exec_params(
             query_string,
             iden
-        );
+        ) };
         transaction.commit();
         
         return result;
@@ -242,7 +242,7 @@ namespace stickers // Passwords ////////////////////////////////////////////////
     }
     
     password::password() :
-        _type{         password_type::INVALID },
+        _type        { password_type::INVALID },
         invalid_value{ nullptr                }
     {}
     
@@ -252,12 +252,12 @@ namespace stickers // Passwords ////////////////////////////////////////////////
     }
     
     password::password( const std::string& v ) :
-        _type{     password_type::RAW },
+        _type    { password_type::RAW },
         raw_value{ v                  }
     {}
     
     password::password( const scrypt& v ) :
-        _type{        password_type::SCRYPT },
+        _type       { password_type::SCRYPT },
         scrypt_value{ v                     }
     {}
     
@@ -280,16 +280,16 @@ namespace stickers // Passwords ////////////////////////////////////////////////
         {
         case password_type::RAW:
         {
-            bool equals = true;
+            bool equals{ true };
             
-            std::size_t slen = (
+            auto slen{
                 raw_value.size() > o.raw_value.size()
                 ? raw_value.size() : o.raw_value.size()
-            );
-            for( std::size_t i = 0; i < slen; ++i )
+            };
+            for( decltype( slen ) i = 0; i < slen; ++i )
             {
-                char c1 = i >=   raw_value.size() ? o.raw_value[ i ] :   raw_value[ i ];
-                char c2 = i >= o.raw_value.size() ?   raw_value[ i ] : o.raw_value[ i ];
+                char c1{ i >=   raw_value.size() ? o.raw_value[ i ] :   raw_value[ i ] };
+                char c2{ i >= o.raw_value.size() ?   raw_value[ i ] : o.raw_value[ i ] };
                 equals = equals && ( c1 == c2 );
             }
             
@@ -439,7 +439,7 @@ namespace stickers // User management //////////////////////////////////////////
             "creating new user"
         );
         
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         
         user new_user{
             blame.who,
@@ -477,14 +477,14 @@ namespace stickers // User management //////////////////////////////////////////
     
     user_info load_user( const bigid& id )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = query_user_records_by(
+        auto result{ query_user_records_by(
             transaction,
             "user_id",
             id
-        );
+        ) };
         
         if( result.size() < 1 )
             throw no_such_user::by_id( id, "loading" );
@@ -494,9 +494,9 @@ namespace stickers // User management //////////////////////////////////////////
     
     user_info update_user( const user& u, const audit::blame& blame )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         
-        user updated_user = u;
+        user updated_user{ u };
         
         if( updated_user.info.password.type() == password_type::RAW )
             updated_user.info.password = hash_password(
@@ -515,10 +515,10 @@ namespace stickers // User management //////////////////////////////////////////
     
     void delete_user( const bigid& id, const audit::blame& blame )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = transaction.exec_params(
+        transaction.exec_params(
             PSQL(
                 INSERT INTO users.user_deletions (
                     user_id,
@@ -534,20 +534,19 @@ namespace stickers // User management //////////////////////////////////////////
             blame.who,
             blame.where
         );
-        
         transaction.commit();
     }
     
     user load_user_by_email( const std::string& email )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = query_user_records_by(
+        auto result{ query_user_records_by(
             transaction,
             "email",
             email
-        );
+        ) };
         
         if( result.size() < 1 )
             throw no_such_user::by_email( email, "loading" );
@@ -631,7 +630,7 @@ namespace stickers // Assertions ///////////////////////////////////////////////
             ids_string
         );
         
-        auto result = transaction.exec( query_string );
+        auto result{ transaction.exec( query_string ) };
         
         if( result.size() > 0 )
             throw no_such_user::by_id(

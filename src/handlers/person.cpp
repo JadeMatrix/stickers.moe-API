@@ -76,13 +76,6 @@ namespace
                 "missing one of \"name\" or \"user\""
             };
         
-        stickers::person_info info{
-            stickers::now(),
-            stickers::now(),
-            "",
-            stickers::bigid::MIN()
-        };
-        
         if( has_user )
         {
             if( !details_map[ "user_id" ].is_a< stickers::string_document >() )
@@ -104,7 +97,7 @@ namespace
                     "required field \"user\" is not a valid user ID"
                 };
             }
-            info = {
+            return {
                 stickers::now(),
                 stickers::now(),
                 details_map[ "about" ].get< stickers::string_document >(),
@@ -118,15 +111,13 @@ namespace
                     show::code::BAD_REQUEST,
                     "required field \"name\" must be a string"
                 };
-            info = {
+            return {
                 stickers::now(),
                 stickers::now(),
                 details_map[ "about" ].get< stickers::string_document >(),
                 details_map[ "name"  ].get< stickers::string_document >()
             };
         }
-        
-        return info;
     }
 }
 
@@ -138,7 +129,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
@@ -146,7 +137,7 @@ namespace stickers
         
         try
         {
-            auto created = create_person(
+            auto created{ create_person(
                 person_info_from_document( parse_request_content( request ) ),
                 {
                     auth.user_id,
@@ -154,11 +145,11 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json person_json;
             person_to_json( created.id, created.info, person_json );
-            auto person_json_string = person_json.dump();
+            auto person_json_string{ person_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -192,7 +183,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_person_id_variable = variables.find( "person_id" );
+        auto found_person_id_variable{ variables.find( "person_id" ) };
         if( found_person_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
@@ -213,11 +204,11 @@ namespace stickers
         
         try
         {
-            auto info = load_person( person_id );
+            auto info{ load_person( person_id ) };
             
             nlj::json person_json;
             person_to_json( person_id, info, person_json );
-            auto person_json_string = person_json.dump();
+            auto person_json_string{ person_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -248,13 +239,13 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
         );
         
-        auto found_person_id_variable = variables.find( "person_id" );
+        auto found_person_id_variable{ variables.find( "person_id" ) };
         if( found_person_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
@@ -275,7 +266,7 @@ namespace stickers
         
         try
         {
-            auto updated_info = update_person(
+            auto updated_info{ update_person(
                 {
                     person_id,
                     person_info_from_document(
@@ -288,11 +279,11 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json person_json;
             person_to_json( person_id, updated_info, person_json );
-            auto person_json_string = person_json.dump();
+            auto person_json_string{ person_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -327,13 +318,13 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
         );
         
-        auto found_person_id_variable = variables.find( "person_id" );
+        auto found_person_id_variable{ variables.find( "person_id" ) };
         if( found_person_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a person ID" };
         
@@ -364,7 +355,7 @@ namespace stickers
                 }
             );
             
-            std::string null_json = "null";
+            std::string null_json{ "null" };
             
             show::response response{
                 request.connection(),

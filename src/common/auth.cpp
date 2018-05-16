@@ -22,22 +22,22 @@ namespace
     {
         try
         {
-            auto auth_jwt = stickers::jwt::parse( token_string );
+            auto auth_jwt{ stickers::jwt::parse( token_string ) };
             
-            auto user_id_found = auth_jwt.claims.find(
+            auto found_user_id{ auth_jwt.claims.find(
                 "user_id"
-            );
-            auto permissions_found = auth_jwt.claims.find(
+            ) };
+            auto found_permissions{ auth_jwt.claims.find(
                 "permissions"
-            );
+            ) };
             
             stickers::permissions_type permissions;
             
             if(
-                permissions_found != auth_jwt.claims.end()
-                && permissions_found.value().is_array()
+                found_permissions != auth_jwt.claims.end()
+                && found_permissions.value().is_array()
             )
-                for( const auto& permission : permissions_found.value() )
+                for( const auto& permission : found_permissions.value() )
                     permissions.insert( permission.get< std::string >() );
             else
                 throw stickers::authentication_error{
@@ -45,15 +45,15 @@ namespace
                 };
             
             if(
-                user_id_found != auth_jwt.claims.end()
-                && user_id_found.value().is_string()
+                found_user_id != auth_jwt.claims.end()
+                && found_user_id.value().is_string()
             )
             {
                 auto user_id{ stickers::bigid::MIN() };
                 try
                 {
                     user_id = stickers::bigid::from_string(
-                        user_id_found.value().get< std::string >()
+                        found_user_id.value().get< std::string >()
                     );
                 }
                 catch( const std::invalid_argument& e )
@@ -105,12 +105,12 @@ namespace stickers
 {
     auth_info authenticate( const show::request& request )
     {
-        bool header_found = false;
-        bool   auth_found = false;
+        bool header_found{ false };
+        bool   auth_found{ false };
         
         auth_info info{ bigid::MIN(), {} };
         
-        auto authorization_headers = request.headers().find( "Authorization" );
+        auto authorization_headers{ request.headers().find( "Authorization" ) };
         if( authorization_headers != request.headers().end() )
         {
             header_found = true;
@@ -130,7 +130,7 @@ namespace stickers
             }
         }
         
-        auto cookie_headers = request.headers().find( "Cookie" );
+        auto cookie_headers{ request.headers().find( "Cookie" ) };
         if( cookie_headers != request.headers().end() )
         {
             header_found = true;
@@ -170,7 +170,7 @@ namespace stickers
         const audit::blame& blame
     )
     {
-        auto permissions = get_user_permissions( user_id );
+        auto permissions{ get_user_permissions( user_id ) };
         
         auto token_lifetime = std::chrono::hours{
             config()[ "auth" ][ "token_lifetime_hours" ].get< int >()
@@ -222,10 +222,10 @@ namespace stickers
     
     permissions_type get_user_permissions( bigid user_id )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        pqxx::result result = transaction.exec_params(
+        pqxx::result result{ transaction.exec_params(
             PSQL(
                 SELECT p.permission AS permission
                 FROM
@@ -238,7 +238,7 @@ namespace stickers
                 ;
             ),
             user_id
-        );
+        ) };
         transaction.commit();
         
         if( result.size() < 1 )
@@ -274,12 +274,12 @@ namespace stickers
         );
         
         if( difference.size() == expect.size() )
-            throw authorization_error(
+            throw authorization_error{
                 "missing one of these permissions: \"" + join(
                     difference,
                     std::string{ "\", \"" }
                 ) + "\""
-            );
+            };
     }
     
     void permissions_assert_all(
@@ -298,11 +298,11 @@ namespace stickers
         );
         
         if( difference.size() )
-            throw authorization_error(
+            throw authorization_error{
                 "missing permissions: \"" + join(
                     difference,
                     std::string{ "\", \"" }
                 ) + "\""
-            );
+            };
     }
 }

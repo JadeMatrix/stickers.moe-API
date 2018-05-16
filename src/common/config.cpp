@@ -20,24 +20,24 @@ namespace
     
     void set_log_level()
     {
-        auto level_setting = global_config.find( "log_level" );
+        auto level_setting{ global_config.find( "log_level" ) };
         
         if(
             level_setting == global_config.end()
             || !level_setting -> is_string()
         )
             log_level_cache = stickers::log_level::INFO;
-        else if( *level_setting == "SILENT"   )
+        else if( *level_setting == "SILENT" )
             log_level_cache = stickers::log_level::SILENT;
-        else if( *level_setting == "ERROR"   )
+        else if( *level_setting == "ERROR" )
             log_level_cache = stickers::log_level::ERROR;
         else if( *level_setting == "WARNING" )
             log_level_cache = stickers::log_level::WARNING;
-        else if( *level_setting == "INFO"   )
+        else if( *level_setting == "INFO" )
             log_level_cache = stickers::log_level::INFO;
-        else if( *level_setting == "VERBOSE"  )
+        else if( *level_setting == "VERBOSE" )
             log_level_cache = stickers::log_level::VERBOSE;
-        else if( *level_setting == "DEBUG"    )
+        else if( *level_setting == "DEBUG" )
             log_level_cache = stickers::log_level::DEBUG;
         else
             log_level_cache = stickers::log_level::INFO;

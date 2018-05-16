@@ -17,12 +17,12 @@ namespace stickers
     )
     {
         CollectionType c;
-        auto segment_begin = v.begin();
+        auto segment_begin{ v.begin() };
         for( auto iter = v.begin(); iter != v.end(); ++iter )
         {
             {
-                auto joiner_candidate_begin = iter + 1 - joiner.size();
-                auto joiner_candidate_end   = iter + 1                ;
+                auto joiner_candidate_begin{ iter + 1 - joiner.size() };
+                auto joiner_candidate_end  { iter + 1                 };
                 if( ValueType{
                     joiner_candidate_begin,
                     joiner_candidate_end

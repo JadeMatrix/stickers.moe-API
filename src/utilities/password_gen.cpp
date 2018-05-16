@@ -47,7 +47,7 @@ int main( int argc, char* argv[] )
             stickers::set_config( config );
         }
         
-        auto pw = stickers::hash_password( argv[ 2 ] );
+        auto pw{ stickers::hash_password( argv[ 2 ] ) };
         
         std::cout
             << "('"

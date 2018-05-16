@@ -35,7 +35,7 @@ namespace stickers
         
         if( current_log_level() >= level )
         {
-            auto t = std::time( nullptr );
+            auto t{ std::time( nullptr ) };
             std::stringstream time_string;
             time_string << std::put_time(
                 std::localtime( &t ),

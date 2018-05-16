@@ -30,7 +30,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
         const show::headers_type& headers
     )
     {
-        auto found_content_type = headers.find( "Content-Type" );
+        auto found_content_type{ headers.find( "Content-Type" ) };
         
         if(
             found_content_type == headers.end()
@@ -119,7 +119,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
         const show::headers_type& request_headers
     )
     {
-        auto found_user_agent = request_headers.find( "User-Agent" );
+        auto found_user_agent{ request_headers.find( "User-Agent" ) };
         
         if(
             found_user_agent != request_headers.end()
@@ -306,10 +306,10 @@ namespace // Utilities /////////////////////////////////////////////////////////
         else if( parsed.is_number() )
         {
             double  integer_part;
-            double fraction_part = std::modf(
+            double fraction_part{ std::modf(
                 parsed.get< double >(),
                 &integer_part
-            );
+            ) };
             
             if( fraction_part > 0 )
                 return parsed.get< double >();

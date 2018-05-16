@@ -34,10 +34,10 @@ namespace stickers
         const std::map< std::string, std::string >& signing_keys
     )
     {
-        auto token = parse_no_validate( raw );
+        auto token{ parse_no_validate( raw ) };
         
-        auto split_pos = raw.rfind( "." );
-        std::string payload = raw.substr( 0, split_pos );
+        auto split_pos{ raw.rfind( "." ) };
+        auto payload{ raw.substr( 0, split_pos ) };
         std::string signature;
         
         try
@@ -65,7 +65,7 @@ namespace stickers
             throw validation_error{ "missing signing key ID" };
         }
         
-        auto signing_key_found = signing_keys.find( *token.kid );
+        auto signing_key_found{ signing_keys.find( *token.kid ) };
         if( signing_key_found == signing_keys.end() )
         {
             STICKERS_LOG(
@@ -82,7 +82,7 @@ namespace stickers
         {
         case signature_alg::HS512:
             {
-                bool validated = false;
+                bool validated{ false };
                 
                 CryptoPP::HMAC< CryptoPP::SHA512 > hmac{
                     reinterpret_cast< const CryptoPP::byte* >(
@@ -144,10 +144,10 @@ namespace stickers
         std::string  claims_string;
         
         {
-            auto jwt_segments = split< std::vector< std::string > >(
+            auto jwt_segments{ split< std::vector< std::string > >(
                 raw,
                 std::string{ "." }
-            );
+            ) };
             
             if( jwt_segments.size() != 3 )
                 throw structure_error{ "token does not have 3 segments" };
@@ -166,7 +166,7 @@ namespace stickers
             
             try
             {
-                claims_string  = show::base64_decode(
+                claims_string = show::base64_decode(
                     jwt_segments[ 1 ],
                     show::base64_chars_urlsafe
                 );
@@ -190,8 +190,8 @@ namespace stickers
         if( !header.is_object() )
             throw structure_error{ "header segment is not a JSON object" };
         
-        auto alg = header.find( "alg" );
-        auto kid = header.find( "kid" );
+        auto alg{ header.find( "alg" ) };
+        auto kid{ header.find( "kid" ) };
         
         if( alg == header.end() )
             throw structure_error{ "header missing required key \"alg\"" };
@@ -203,7 +203,7 @@ namespace stickers
         if( !kid.value().is_string() )
             throw structure_error{ "header key \"kid\" is not a string" };
         
-        auto alg_string = alg.value().get< std::string >();
+        auto alg_string{ alg.value().get< std::string >() };
         
         if( alg_string == "HS512" )
             token.alg = signature_alg::HS512;
@@ -244,8 +244,8 @@ namespace stickers
         
         // Check known header keys /////////////////////////////////////////////
         
-        auto typ = header.find( "typ" );
-        auto jti = header.find( "jti" );
+        auto typ{ header.find( "typ" ) };
+        auto jti{ header.find( "jti" ) };
         
         if( typ == header.end() )
             throw structure_error{ "missing required header field \"typ\"" };
@@ -274,7 +274,7 @@ namespace stickers
         if( jti != header.end() )
             try
             {
-                auto jti_string = jti.value().get< std::string >();
+                auto jti_string{ jti.value().get< std::string >() };
                 try
                 {
                     token.jti = uuid::from_string( jti_string );
@@ -298,9 +298,9 @@ namespace stickers
         
         // Check known claims //////////////////////////////////////////////////
         
-        auto iat = token.claims.find( "iat" );
-        auto nbf = token.claims.find( "nbf" );
-        auto exp = token.claims.find( "exp" );
+        auto iat{ token.claims.find( "iat" ) };
+        auto nbf{ token.claims.find( "nbf" ) };
+        auto exp{ token.claims.find( "exp" ) };
         
         if( iat != token.claims.end() )
             try
@@ -403,9 +403,9 @@ namespace stickers
     
     std::string jwt::serialize( const jwt& token )
     {
-        auto signing_keys = config()[ "auth" ][ "jwt_keys" ].get<
+        auto signing_keys{ config()[ "auth" ][ "jwt_keys" ].get<
             std::map< std::string, std::string >
-        >();
+        >() };
         
         for( auto& kv : signing_keys )
             kv.second = show::base64_decode( kv.second );
@@ -421,7 +421,7 @@ namespace stickers
         const std::map< std::string, std::string >& signing_keys
     )
     {
-        nlj::json header = { { "alg", "HS512" } };
+        nlj::json header{ { "alg", "HS512" } };
         
         if( token.typ == jwt_type::JWT_PLUS )
             header[ "typ" ] = "JWT+";
@@ -437,7 +437,7 @@ namespace stickers
         if( token.kid )
         {
             // Find the specified signing key in `signing_keys`
-            auto key_found = signing_keys.find( *token.kid );
+            auto key_found{ signing_keys.find( *token.kid ) };
             if( key_found == signing_keys.end() )
                 throw std::runtime_error{
                     "specified a JWT signing key that does not exist in the "
@@ -449,8 +449,8 @@ namespace stickers
         else
         {
             // Choose a random signing key from `signing_keys`
-            int random_int = std::rand() % signing_keys.size();
-            auto key_to_use = signing_keys.begin();
+            auto random_int{ std::rand() % signing_keys.size() };
+            auto key_to_use{ signing_keys.begin() };
             for( int i = 0; i < random_int; ++i )
                 ++key_to_use;
             header[ "kid" ]    = key_to_use -> first;
@@ -458,9 +458,9 @@ namespace stickers
         }
         
         // Make a writable copy of the claims
-        nlj::json claims = token.claims;
+        auto claims{ token.claims };
         
-        timestamp iat = now();
+        auto iat{ now() };
         if( token.iat )
             iat = *token.iat;
         
@@ -484,11 +484,11 @@ namespace stickers
                 claims[ "exp" ] = to_unix_time( *token.exp );
         }
         
-        std::string header_claims_string = (
+        std::string header_claims_string{
               show::base64_encode( header.dump(), show::base64_chars_urlsafe )
             + "."
             + show::base64_encode( claims.dump(), show::base64_chars_urlsafe )
-        );
+        };
         std::string signature_string;
         
         CryptoPP::HMAC< CryptoPP::SHA512 > hmac{

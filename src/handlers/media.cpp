@@ -64,7 +64,7 @@ namespace stickers
         
         try
         {
-            auto uploaded = save_media(
+            auto uploaded{ save_media(
                 request,
                 {
                     auth.user_id,
@@ -72,11 +72,11 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json media_json;
             media_info_to_json( uploaded.file_hash, uploaded.info, media_json );
-            auto media_json_string = media_json.dump();
+            auto media_json_string{ media_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -118,21 +118,21 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_hash_variable = variables.find( "hash" );
+        auto found_hash_variable{ variables.find( "hash" ) };
         if( found_hash_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need an image hash" };
         
         try
         {
-            auto hash = sha256::from_hex_string(
+            auto hash{ sha256::from_hex_string(
                 found_hash_variable -> second
-            );
+            ) };
             
-            auto info = load_media_info( hash );
+            auto info{ load_media_info( hash ) };
             
             nlj::json media_json;
             media_info_to_json( hash, info, media_json );
-            auto media_json_string = media_json.dump();
+            auto media_json_string{ media_json.dump() };
             
             show::response response{
                 request.connection(),

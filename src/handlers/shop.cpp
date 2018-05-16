@@ -91,7 +91,7 @@ namespace
                     + "\" must be a string or null"
                 };
         
-        auto owner_person_id = stickers::bigid::MIN();
+        auto owner_person_id{ stickers::bigid::MIN() };
         try
         {
             owner_person_id = stickers::bigid::from_string(
@@ -176,7 +176,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
@@ -184,7 +184,7 @@ namespace stickers
         
         try
         {
-            auto created = create_shop(
+            auto created{ create_shop(
                 shop_info_from_document( parse_request_content( request ) ),
                 {
                     auth.user_id,
@@ -192,11 +192,11 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json shop_json;
             shop_to_json( created.id, created.info, shop_json );
-            auto shop_json_string = shop_json.dump();
+            auto shop_json_string{ shop_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -230,11 +230,11 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_shop_id_variable = variables.find( "shop_id" );
+        auto found_shop_id_variable{ variables.find( "shop_id" ) };
         if( found_shop_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
-        stickers::bigid shop_id{ bigid::MIN() };
+        auto shop_id{ bigid::MIN() };
         try
         {
             shop_id = bigid::from_string(
@@ -251,11 +251,11 @@ namespace stickers
         
         try
         {
-            auto info = load_shop( shop_id );
+            auto info{ load_shop( shop_id ) };
             
             nlj::json shop_json;
             shop_to_json( shop_id, info, shop_json );
-            auto shop_json_string = shop_json.dump();
+            auto shop_json_string{ shop_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -286,13 +286,13 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
         );
         
-        auto found_shop_id_variable = variables.find( "shop_id" );
+        auto found_shop_id_variable{ variables.find( "shop_id" ) };
         if( found_shop_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
@@ -313,7 +313,7 @@ namespace stickers
         
         try
         {
-            auto updated_info = update_shop(
+            auto updated_info{ update_shop(
                 {
                     shop_id,
                     shop_info_from_document( parse_request_content( request ) )
@@ -324,7 +324,7 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json shop_json;
             shop_to_json( shop_id, updated_info, shop_json );
@@ -363,13 +363,13 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "edit_public_pages" }
         );
         
-        auto found_shop_id_variable = variables.find( "shop_id" );
+        auto found_shop_id_variable{ variables.find( "shop_id" ) };
         if( found_shop_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a shop ID" };
         
@@ -400,7 +400,7 @@ namespace stickers
                 }
             );
             
-            std::string null_json = "null";
+            std::string null_json{ "null" };
             
             show::response response{
                 request.connection(),

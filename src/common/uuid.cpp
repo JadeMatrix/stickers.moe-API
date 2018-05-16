@@ -14,7 +14,7 @@ namespace stickers
     uuid::uuid( const std::string& str )
     {
         if( str.size() != 16 )
-            throw std::invalid_argument( "UUID string must be 16 bytes" );
+            throw std::invalid_argument{ "UUID string must be 16 bytes" };
         value = str;
     }
     
@@ -44,7 +44,7 @@ namespace stickers
     
     std::string uuid::hex_value_8_4_4_4_12() const
     {
-        auto unbroken = hex_value();
+        auto unbroken{ hex_value() };
         return (
               unbroken.substr(  0,  8 )
             + "-"
@@ -67,7 +67,7 @@ namespace stickers
     
     uuid uuid::from_string( const std::string& s )
     {
-        std::size_t max_possible_length = 32 + 4;
+        std::string::size_type max_possible_length{ 32 + 4 };
         
         if( s.size() > max_possible_length )
             throw std::invalid_argument{

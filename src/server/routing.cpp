@@ -248,11 +248,12 @@ namespace stickers
         {
             handler_vars_type variables;
             
-            const auto* current_node = &tree;
+            // Need a mutable pointer to const data, so `const auto*`
+            const auto* current_node{ &tree };
             
             for( auto& element : request.path() )
             {
-                auto found_sub = current_node -> subs.find( element );
+                auto found_sub{ current_node -> subs.find( element ) };
                 
                 if( found_sub != current_node -> subs.end() )
                 {
@@ -366,11 +367,11 @@ namespace stickers
         if( handler_finished )
             return;
         
-        nlj::json error_object = {
+        nlj::json error_object{
             { "message", error_message                   },
             { "contact", config()[ "server" ][ "admin" ] }
         };
-        std::string error_json = error_object.dump();
+        std::string error_json{ error_object.dump() };
         
         error_headers[ "Content-Type"   ] = { "application/json" };
         error_headers[ "Content-Length" ] = {

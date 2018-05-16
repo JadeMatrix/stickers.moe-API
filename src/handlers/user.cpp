@@ -23,13 +23,13 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         permissions_assert_all(
             auth.user_permissions,
             { "create_user" }
         );
         
-        auto details_doc = parse_request_content( request );
+        auto details_doc{ parse_request_content( request ) };
         
         if( !details_doc.is_a< map_document >() )
             throw handler_exit{
@@ -68,7 +68,7 @@ namespace stickers
         
         try
         {
-            auto created_user = create_user(
+            auto created_user{ create_user(
                 details,
                 {
                     auth.user_id,
@@ -76,7 +76,7 @@ namespace stickers
                     now(),
                     request.client_address()
                 }
-            );
+            ) };
             
             nlj::json details_json{
                 { "user_id"     , created_user.id                             },
@@ -98,7 +98,7 @@ namespace stickers
             else
                 details_json[ "avatar" ] = nullptr;
             
-            auto user_json = details_json.dump();
+            auto user_json{ details_json.dump() };
             
             show::response response{
                 request.connection(),
@@ -129,7 +129,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_user_id_variable = variables.find( "user_id" );
+        auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
@@ -145,7 +145,7 @@ namespace stickers
         
         try
         {
-            auto info = load_user( user_id );
+            auto info{ load_user( user_id ) };
             
             nlj::json user_json{
                 { "user_id"     , user_id                        },
@@ -195,7 +195,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_user_id_variable = variables.find( "user_id" );
+        auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
@@ -209,7 +209,7 @@ namespace stickers
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         if( auth.user_id == user_id )
             permissions_assert_all(
                 auth.user_permissions,
@@ -243,7 +243,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_user_id_variable = variables.find( "user_id" );
+        auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
@@ -257,7 +257,7 @@ namespace stickers
             throw handler_exit{ show::code::NOT_FOUND, "need a valid user ID" };
         }
         
-        auto auth = authenticate( request );
+        auto auth{ authenticate( request ) };
         if( auth.user_id == user_id )
             permissions_assert_all(
                 auth.user_permissions,

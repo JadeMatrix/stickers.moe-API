@@ -16,12 +16,12 @@ namespace
         bool                          generate_id
     )
     {
-        auto connection = stickers::postgres::connect();
+        auto connection{ stickers::postgres::connect() };
         pqxx::work transaction{ *connection };
         
         if( generate_id )
         {
-            auto result = transaction.exec_params(
+            auto result{ transaction.exec_params(
                 PSQL(
                     INSERT INTO shops.shops_core (
                         shop_id,
@@ -35,7 +35,7 @@ namespace
                     ;
                 ),
                 blame.when
-            );
+            ) };
             result[ 0 ][ "shop_id" ].to< stickers::bigid >( shop.id );
         }
         else
@@ -93,10 +93,10 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     shop_info load_shop( const bigid& id )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT
                     created,
@@ -113,13 +113,13 @@ namespace stickers // Person ///////////////////////////////////////////////////
                 ;
             ),
             id
-        );
+        ) };
         transaction.commit();
         
         if( result.size() < 1 )
             throw no_such_shop{ id };
         
-        auto& row = result[ 0 ];
+        auto& row{ result[ 0 ] };
         
         shop_info info{
             row[ "created"   ].as< timestamp   >(),
@@ -141,19 +141,19 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     shop_info update_shop( const shop& s, const audit::blame& blame )
     {
-        auto updated_shop = s;
+        auto updated_shop{ s };
         write_shop_details( updated_shop, blame, true );
         return updated_shop.info;
     }
     
     void delete_shop( const bigid& id, const audit::blame& blame )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
         assert_shops_exist( transaction, { id } );
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 INSERT INTO shops.shop_deletions (
                     shop_id,
@@ -168,7 +168,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
             blame.when,
             blame.who,
             blame.where
-        );
+        ) };
         transaction.commit();
     }
 }
@@ -215,7 +215,7 @@ namespace stickers // Assertion ////////////////////////////////////////////////
             ids_string
         );
         
-        auto result = transaction.exec( query_string );
+        auto result{ transaction.exec( query_string ) };
         
         if( result.size() > 0 )
             throw no_such_shop{ result[ 0 ][ 0 ].as< bigid >() };

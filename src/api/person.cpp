@@ -16,12 +16,12 @@ namespace
         bool                          generate_id
     )
     {
-        auto connection = stickers::postgres::connect();
+        auto connection{ stickers::postgres::connect() };
         pqxx::work transaction{ *connection };
         
         if( generate_id )
         {
-            auto result = transaction.exec_params(
+            auto result{ transaction.exec_params(
                 PSQL(
                     INSERT INTO people.people_core (
                         person_id,
@@ -35,7 +35,7 @@ namespace
                     ;
                 ),
                 blame.when
-            );
+            ) };
             result[ 0 ][ "person_id" ].to< stickers::bigid >( person.id );
         }
         else
@@ -57,9 +57,9 @@ namespace
         
         if( person.info.has_user() )
         {
-            const auto& user_id = std::get< stickers::bigid >(
+            const auto& user_id{ std::get< stickers::bigid >(
                 person.info.identifier
-            );
+            ) };
             
             stickers::assert_users_exist( transaction, { user_id } );
             
@@ -106,10 +106,10 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     person_info load_person( const bigid& id )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT
                     created,
@@ -124,13 +124,13 @@ namespace stickers // Person ///////////////////////////////////////////////////
                 ;
             ),
             id
-        );
+        ) };
         transaction.commit();
         
         if( result.size() < 1 )
             throw no_such_person{ id };
         
-        auto& row = result[ 0 ];
+        auto& row{ result[ 0 ] };
         
         if( row[ "person_user" ].is_null() )
         {
@@ -154,19 +154,19 @@ namespace stickers // Person ///////////////////////////////////////////////////
     
     person_info update_person( const person& p, const audit::blame& blame )
     {
-        auto updated_person = p;
+        auto updated_person{ p };
         write_person_details( updated_person, blame, true );
         return updated_person.info;
     }
     
     void delete_person( const bigid& id, const audit::blame& blame )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
         assert_people_exist( transaction, { id } );
         
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 INSERT INTO people.person_deletions (
                     person_id,
@@ -181,7 +181,7 @@ namespace stickers // Person ///////////////////////////////////////////////////
             blame.when,
             blame.who,
             blame.where
-        );
+        ) };
         transaction.commit();
     }
 }
@@ -228,7 +228,7 @@ namespace stickers // Assertion ////////////////////////////////////////////////
             ids_string
         );
         
-        auto result = transaction.exec( query_string );
+        auto result{ transaction.exec( query_string ) };
         
         if( result.size() > 0 )
             throw no_such_person{ result[ 0 ][ 0 ].as< bigid >() };

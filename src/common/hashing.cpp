@@ -20,9 +20,9 @@ namespace
             return c - 'A' + 10;
         if( c >= 'a' && c <= 'f' )
             return c - 'a' + 10;
-        throw stickers::hash_error(
+        throw stickers::hash_error{
             "char with value " + std::to_string( c ) + " out of range for hex"
-        );
+        };
     }
 }
 
@@ -196,7 +196,7 @@ namespace stickers // SHA256 ///////////////////////////////////////////////////
         
         sha256 h;
         
-        std::size_t i = 0;
+        std::size_t i{ 0 };
         for( auto& b : h.digest )
         {
             b = ( unhex( s[ i ] ) << 4 ) | ( unhex( s[ i + 1 ] ) );
@@ -324,7 +324,7 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
         
         // `std::string::size()` is guaranteed constant-time as of C++11
         
-        auto first_diff = salt.size() - o.salt.size();
+        auto first_diff{ salt.size() - o.salt.size() };
         
         if( first_diff == 0 )
             first_diff = digest.size() - o.digest.size();
@@ -444,7 +444,7 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
         // when compiling with clang
         sc.digest = std::string( digest_size, '\0' );
         
-        int result = libscrypt_scrypt(
+        auto result{ libscrypt_scrypt(
             reinterpret_cast< const uint8_t* >( input ),
             input_len,
             reinterpret_cast< const uint8_t* >( salt ),
@@ -454,7 +454,7 @@ namespace stickers // SCRYPT ///////////////////////////////////////////////////
             parallelization,
             reinterpret_cast< uint8_t* >( sc.digest.data() ),
             sc.digest.size()
-        );
+        ) };
         if( result )
             throw hash_error{
                 "failed to make scrypt (libscrypt_scrypt() returned "

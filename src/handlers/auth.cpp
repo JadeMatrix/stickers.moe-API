@@ -27,7 +27,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto content_doc = parse_request_content( request );
+        auto content_doc{ parse_request_content( request ) };
         
         if( !content_doc.is_a< map_document >() )
             throw handler_exit{
@@ -58,9 +58,9 @@ namespace stickers
         
         try
         {
-            auto user = load_user_by_email(
+            auto user{ load_user_by_email(
                 content[ "email" ].get< string_document >()
-            );
+            ) };
             
             if(
                 user.info.password
@@ -72,7 +72,7 @@ namespace stickers
                     { "log_in" }
                 );
                 
-                auto auth_jwt = generate_auth_token_for_user(
+                auto auth_jwt{ generate_auth_token_for_user(
                     user.id,
                     {
                         user.id,
@@ -80,8 +80,8 @@ namespace stickers
                         now(),
                         request.client_address()
                     }
-                );
-                auto auth_token = jwt::serialize( auth_jwt );
+                ) };
+                auto auth_token{ jwt::serialize( auth_jwt ) };
                 
                 STICKERS_LOG(
                     stickers::log_level::INFO,
@@ -91,10 +91,10 @@ namespace stickers
                     request.client_address()
                 );
                 
-                auto token_message_json = nlj::json{
+                auto token_message_json{ nlj::json{
                     { "jwt"    , auth_token },
                     { "user_id", user.id    }
-                }.dump();
+                }.dump() };
                 
                 show::response response{
                     request.connection(),

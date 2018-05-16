@@ -41,7 +41,7 @@ namespace // Utilities /////////////////////////////////////////////////////////
         const std::string     & mime_type
     )
     {
-        std::string hash_hex = hash.hex_digest();
+        auto hash_hex{ hash.hex_digest() };
         return (
               hash_hex.substr( 0, 2 )
             + "/"
@@ -151,7 +151,7 @@ namespace // Internal implementations //////////////////////////////////////////
         pqxx::work& transaction
     )
     {
-        auto result = transaction.exec_params(
+        auto result{ transaction.exec_params(
             PSQL(
                 SELECT
                     mime_type,
@@ -164,14 +164,14 @@ namespace // Internal implementations //////////////////////////////////////////
                 ;
             ),
             pqxx::binarystring{ hash.raw_digest() }
-        );
+        ) };
         
         if( result.size() < 1 )
             throw stickers::no_such_media{ hash };
         
-        auto& row = result[ 0 ];
+        auto& row{ result[ 0 ] };
         
-        auto mime_type = row[ "mime_type" ].as< std::string >();
+        auto mime_type{ row[ "mime_type" ].as< std::string >() };
         stickers::media_info info{
             image_hash_to_disk_path( hash, mime_type ),
             image_hash_to_url      ( hash, mime_type ),
@@ -202,7 +202,7 @@ namespace // Internal implementations //////////////////////////////////////////
         const std::optional< std::string >& sent_mime_type
     )
     {
-        auto temp_file_id = stickers::uuid::generate();
+        auto temp_file_id{ stickers::uuid::generate() };
         
         auto temp_file_path{ std::experimental::filesystem::u8path(
             stickers::config()[ "media" ][ "temp_file_location" ].get<
@@ -233,7 +233,7 @@ namespace // Internal implementations //////////////////////////////////////////
             hash_builder.append( buffer, sizeof( buffer ) );
             file_size += sizeof( buffer );
         }
-        auto remaining = file_stream.gcount();
+        auto remaining{ file_stream.gcount() };
         temp_file.write    ( buffer, remaining );
         hash_builder.append( buffer, remaining );
         file_size += remaining;
@@ -247,7 +247,7 @@ namespace // Internal implementations //////////////////////////////////////////
             "\""
         );
         
-        auto file_hash = hash_builder.generate_and_clear();
+        auto file_hash{ hash_builder.generate_and_clear() };
         
         temp_file.seekg( 0, std::ios::beg );
         std::streamsize chunk_bytes{ 64 };
@@ -358,7 +358,7 @@ namespace // Internal implementations //////////////////////////////////////////
         const stickers::audit::blame             & blame
     )
     {
-        auto connection = stickers::postgres::connect();
+        auto connection{ stickers::postgres::connect() };
         pqxx::work transaction{ *connection };
         
         try
@@ -394,7 +394,7 @@ namespace // Internal implementations //////////////////////////////////////////
             blame.where
         );
         
-        auto final_file_path = image_hash_to_disk_path( file_hash, mime_type );
+        auto final_file_path{ image_hash_to_disk_path( file_hash, mime_type ) };
         
         std::experimental::filesystem::create_directories(
             final_file_path.parent_path()
@@ -512,7 +512,7 @@ namespace stickers // Media ////////////////////////////////////////////////////
             };
         
         // TODO: `stickers::file_document` type
-        auto found_file_field = upload_map.find( "file" );
+        auto found_file_field{ upload_map.find( "file" ) };
         if( found_file_field == upload_map.end() )
             throw handler_exit{
                 show::code::BAD_REQUEST,
@@ -548,7 +548,7 @@ namespace stickers // Media ////////////////////////////////////////////////////
     
     media_info load_media_info( const sha256& hash )
     {
-        auto connection = postgres::connect();
+        auto connection{ postgres::connect() };
         pqxx::work transaction{ *connection };
         
         return load_media_info_impl( hash, transaction );
@@ -608,7 +608,7 @@ namespace stickers // Assertion ////////////////////////////////////////////////
             ids_string
         );
         
-        auto result = transaction.exec( query_string );
+        auto result{ transaction.exec( query_string ) };
         
         if( result.size() > 0 )
             throw no_such_media{ result[ 0 ][ 0 ].as< sha256 >() };

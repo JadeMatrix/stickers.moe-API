@@ -37,8 +37,8 @@ namespace stickers
             std::string s;
             
             // Use the begin() and end() functions like range-based `for`
-            auto current = begin( values );
-            auto    last =   end( values );
+            auto current{ begin( values ) };
+            auto    last{   end( values ) };
             
             while( true )
             {

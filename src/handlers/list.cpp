@@ -17,7 +17,7 @@ namespace stickers
         const handler_vars_type& variables
     )
     {
-        auto found_user_id_variable = variables.find( "user_id" );
+        auto found_user_id_variable{ variables.find( "user_id" ) };
         if( found_user_id_variable == variables.end() )
             throw handler_exit{ show::code::NOT_FOUND, "need a user ID" };
         
@@ -33,7 +33,7 @@ namespace stickers
         
         try
         {
-            nlj::json list = nlj::json::array();
+            nlj::json list{ nlj::json::array() };
             
             for( auto& item : get_user_list( user_id ) )
                 list.push_back( nlj::json{
@@ -45,7 +45,7 @@ namespace stickers
                     { "updated" , to_iso8601_str( item.updated ) }
                 } );
             
-            auto list_json = list.dump();
+            auto list_json{ list.dump() };
             
             show::response response{
                 request.connection(),

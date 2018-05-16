@@ -18,7 +18,7 @@ namespace stickers
     std::vector< list_entry > get_user_list( const bigid& user_id )
     {
         // Assert user exists
-        auto user_info = load_user( user_id );
+        auto user_info{ load_user( user_id ) };
         
         auto connection = postgres::connect();
         pqxx::work transaction{ *connection };

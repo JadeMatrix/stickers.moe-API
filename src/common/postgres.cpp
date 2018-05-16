@@ -13,7 +13,7 @@ namespace stickers
     {
         std::unique_ptr< pqxx::connection > connect()
         {
-            const nlj::json& pg_config = config()[ "database" ];
+            auto& pg_config{ config()[ "database" ] };
             
             // TODO: Make all of these optional
             return connect(
@@ -33,15 +33,13 @@ namespace stickers
             const std::string& dbname
         )
         {
-            std::unique_ptr< pqxx::connection > connection(
-                new pqxx::connection{
-                        "host="    + ( host   == "" ? "''" : host   )
-                    + " port="     + std::to_string( port )
-                    + " user="     + ( user   == "" ? "''" : user   )
-                    + " password=" + ( pass   == "" ? "''" : pass   )
-                    + " dbname="   + ( dbname == "" ? "''" : dbname )
-                }
-            );
+            auto connection{ std::make_unique< pqxx::connection >(
+                    "host="    + ( host   == "" ? "''" : host   )
+                + " port="     + std::to_string( port )
+                + " user="     + ( user   == "" ? "''" : user   )
+                + " password=" + ( pass   == "" ? "''" : pass   )
+                + " dbname="   + ( dbname == "" ? "''" : dbname )
+            ) };
             
             STICKERS_LOG(
                 log_level::DEBUG,

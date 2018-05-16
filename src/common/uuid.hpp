@@ -72,13 +72,13 @@ namespace pqxx
             }
             catch( const std::invalid_argument& e )
             {
-                throw argument_error(
+                throw argument_error{
                     "Failed conversion to "
                     + static_cast< std::string >( name() )
                     + ": '"
                     + static_cast< std::string >( str )
                     + "'"
-                );
+                };
             }
         }
         

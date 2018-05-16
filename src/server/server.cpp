@@ -74,9 +74,9 @@ namespace
                 stickers::route_request( request );
                 
                 // HTTP/1.1 support
-                auto connection_header = request.headers().find(
+                auto connection_header{ request.headers().find(
                     "Connection"
-                );
+                ) };
                 if(
                     connection_header != request.headers().end()
                     && connection_header -> second.size() == 1
@@ -166,7 +166,7 @@ namespace stickers
         {
             try
             {
-                auto connection = new show::connection{ server.serve() };
+                auto connection{ new show::connection{ server.serve() } };
                 
                 std::lock_guard< std::mutex > guard{ worker_count_mutex };
                 ++worker_count;
