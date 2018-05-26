@@ -36,6 +36,7 @@ ADD_EXECUTABLE(
     src/common/hashing.cpp
     src/common/jwt.cpp
     src/common/postgres.cpp
+    src/common/sorting.cpp
     src/common/timestamp.cpp
     src/common/uuid.cpp
     src/handlers/auth.cpp
