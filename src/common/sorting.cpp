@@ -8,18 +8,19 @@
 
 namespace
 {
-    static const stickers::binary_string::value_type key_segment_new     { 0x80 };
-    static const stickers::binary_string::value_type key_segment_min_head{ 0x01 };
-    static const stickers::binary_string::value_type key_segment_min     { 0x00 };
-    static const stickers::binary_string::value_type key_segment_max     { 0xff };
+    using char_type = stickers::byte_string::value_type;
+    static const char_type key_segment_new     { 0x80 };
+    static const char_type key_segment_min_head{ 0x01 };
+    static const char_type key_segment_min     { 0x00 };
+    static const char_type key_segment_max     { 0xff };
 }
 
 
 namespace stickers
 {
-    binary_string next_sorting_key_between(
-        std::optional< binary_string > before,
-        std::optional< binary_string > after
+    byte_string next_sorting_key_between(
+        std::optional< byte_string > before,
+        std::optional< byte_string > after
     )
     {
         if(
@@ -36,7 +37,7 @@ namespace stickers
             return { key_segment_new };
         else if( before && !after )
         {
-            binary_string new_key;
+            byte_string new_key;
             
             auto before_iter{ before -> begin() };
             
@@ -58,7 +59,7 @@ namespace stickers
         }
         else if( !before && after )
         {
-            binary_string new_key;
+            byte_string new_key;
             
             auto after_iter{ after -> begin() };
             
@@ -85,7 +86,7 @@ namespace stickers
         }
         else
         {
-            binary_string new_key;
+            byte_string new_key;
             
             auto before_iter{ before -> begin() };
             auto  after_iter{  after -> begin() };
@@ -110,13 +111,13 @@ namespace stickers
             {
                 if( before_iter != before -> end() )
                     new_key += next_sorting_key_between(
-                        binary_string{ before_iter, before -> end() },
+                        byte_string{ before_iter, before -> end() },
                         std::nullopt
                     );
                 else if( after_iter != after -> end() )
                     new_key += next_sorting_key_between(
                         std::nullopt,
-                        binary_string{  after_iter,  after -> end() }
+                        byte_string{  after_iter,  after -> end() }
                     );
                 else
                     new_key += next_sorting_key_between(
