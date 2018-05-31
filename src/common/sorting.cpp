@@ -30,7 +30,7 @@ namespace stickers
             throw std::invalid_argument{ "zero-length sorting key" };
         else if( before && after && *before >= *after )
             throw std::invalid_argument{
-                "'before' & 'after' sorting keys same or inverted"
+                "'before' sorting key must be less than 'after'"
             };
         
         if( !before && !after )
